@@ -1,0 +1,78 @@
+import jwt from "jsonwebtoken";
+
+export const verifyToken = async (req, res, next) => {
+    const { token } = req.cookies;
+    console.log("Middleware verifyToken - Cookie token present:", !!token);
+
+    if (!token) {
+        console.log("No token cookie found in middleware");
+        return res.status(401).json({
+            success: false,
+            message: 'Session expired. Please login again.'
+        });
+    }
+
+    try {
+        const tokenDecode = jwt.verify(token, process.env.JWT_CODE);
+        console.log("Middleware verifyToken - Decoded ID:", tokenDecode?.id, "Role:", tokenDecode?.role);
+
+        if (!tokenDecode?.id) {
+            console.log("Middleware verifyToken - No ID in decoded token");
+            return res.status(401).json({
+                success: false,
+                message: 'Not authorized. Login again'
+            });
+        }
+
+        req.user = {
+            id: tokenDecode.id,
+            role: tokenDecode.role
+        };
+
+        // Attach to both for compatibility with existing controllers
+        req.userId = tokenDecode.id;
+        if (!req.body) req.body = {};
+        req.body.userId = tokenDecode.id;
+        next();
+    } catch (error) {
+        console.error("Middleware verifyToken - JWT Error:", error.message);
+        return res.status(401).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+export const isAdmin = (req, res, next) => {
+    if (req.user?.role === 'admin' || req.user?.role === 'super-admin') return next();
+    return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admins only.'
+    });
+};
+
+export const isSuperAdmin = (req, res, next) => {
+    if (req.user?.role === 'super-admin') return next();
+    return res.status(403).json({
+        success: false,
+        message: 'Access denied. Super Admin only.'
+    });
+};
+
+// 🔴 FIXED: organizer must be approved
+export const isOrganizer = async (req, res, next) => {
+    const user = await (await import('../models/User.js')).default.findById(req.user.id);
+
+    if (
+        user &&
+        (user.role === 'admin' ||
+            (user.role === 'organizer' && user.isApproved))
+    ) {
+        return next();
+    }
+
+    return res.status(403).json({
+        success: false,
+        message: 'Account pending admin approval.'
+    });
+};
