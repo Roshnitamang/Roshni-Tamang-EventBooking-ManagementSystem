@@ -66,7 +66,7 @@ const Navbar = () => {
             <NavLink to="/all-events" className="hover:text-black dark:hover:text-white">
               Find Events
             </NavLink>
-            <NavLink to="/events/create" className="hover:text-black dark:hover:text-white">
+            <NavLink to="/organizer-dashboard" className="hover:text-black dark:hover:text-white">
               Create Events
             </NavLink>
             <NavLink to="/help" className="hover:text-black dark:hover:text-white">
@@ -108,6 +108,12 @@ const Navbar = () => {
                       <p className="text-xs text-gray-400">Signed in as</p>
                       <p className="text-sm font-semibold truncate text-gray-800 dark:text-gray-200">{userData.name}</p>
                     </div>
+                    <button
+                      onClick={() => navigate('/profile')}
+                      className="w-full text-left px-4 py-3 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/40 text-gray-700 dark:text-gray-300 transition"
+                    >
+                      Profile Settings
+                    </button>
                     <button
                       onClick={() =>
                         navigate(

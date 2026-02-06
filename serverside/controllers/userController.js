@@ -14,16 +14,50 @@ export const getUserData = async (req, res) => {
             success: true,
             userData: {
                 name: user.name,
+                email: user.email,
                 isAccountVerified: user.isAccountVerified,
                 role: user.role,
-                isApproved: user.isApproved
+                isApproved: user.isApproved,
+                isOrganizerRequested: user.isOrganizerRequested
             }
         });
 
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
-}
+};
+
+// Update User Profile
+export const updateUserProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { name } = req.body;
+
+        if (!name) {
+            return res.json({ success: false, message: 'Name is required' });
+        }
+
+        const user = await userModal.findByIdAndUpdate(userId, { name }, { new: true });
+
+        if (!user) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        res.json({
+            success: true,
+            message: 'Profile updated successfully',
+            userData: {
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                isAccountVerified: user.isAccountVerified
+            }
+        });
+
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
 
 // Request Organizer Role
 export const requestOrganizerRole = async (req, res) => {

@@ -18,6 +18,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import SuperAdminDashboard from './pages/SuperAdminDashboard'
 import AttendeeDashboard from './pages/AttendeeDashboard'
 import RequestOrganizer from './pages/RequestOrganizer'
+import Profile from './pages/Profile'
 
 const App = () => {
   const { theme } = useTheme()
@@ -73,6 +74,11 @@ const App = () => {
             <Route path="/request-organizer" element={
               <ProtectedRoute allowedRoles={['user', 'super-admin']}>
                 <RequestOrganizer />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute allowedRoles={['user', 'organizer', 'admin', 'super-admin']}>
+                <Profile />
               </ProtectedRoute>
             } />
           </Routes>

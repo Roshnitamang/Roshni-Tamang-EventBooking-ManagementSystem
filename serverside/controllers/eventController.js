@@ -14,6 +14,14 @@ export const createEvent = async (req, res) => {
             return res.json({ success: false, message: 'Title and Date are required' });
         }
 
+        const parseJSON = (str) => {
+            try {
+                return typeof str === 'string' ? JSON.parse(str) : str;
+            } catch (e) {
+                return str;
+            }
+        };
+
         const newEvent = new Event({
             title,
             summary,
@@ -25,9 +33,9 @@ export const createEvent = async (req, res) => {
             ticketsAvailable: ticketsAvailable || 100,
             category: category || 'General',
             image: req.file ? `/uploads/${req.file.filename}` : (image || ''),
-            ticketTypes: ticketTypes || [],
-            highlights: highlights || {},
-            faqs: faqs || []
+            ticketTypes: ticketTypes ? parseJSON(ticketTypes) : [],
+            highlights: highlights ? parseJSON(highlights) : {},
+            faqs: faqs ? parseJSON(faqs) : []
         });
 
         await newEvent.save();
