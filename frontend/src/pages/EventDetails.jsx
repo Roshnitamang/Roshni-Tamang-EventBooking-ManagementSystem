@@ -35,17 +35,16 @@ const EventDetails = () => {
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
-            {/* Hero Image Container */}
             <div className="w-full h-[400px] relative overflow-hidden bg-black flex items-center justify-center">
                 {event.image ? (
-                    <img src={event.image} alt={event.title} className="w-full h-full object-cover blur-2xl opacity-40 scale-110" />
+                    <img src={event.image.startsWith('/uploads') ? backendUrl + event.image : event.image} alt={event.title} className="w-full h-full object-cover blur-2xl opacity-40 scale-110" />
                 ) : null}
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 to-transparent" />
 
                 <div className="relative z-20 max-w-5xl w-full px-6 flex justify-center">
                     <div className="w-full max-w-4xl aspect-[16/9] shadow-2xl rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
                         {event.image ? (
-                            <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                            <img src={event.image.startsWith('/uploads') ? backendUrl + event.image : event.image} alt={event.title} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center">
                                 <svg className="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>

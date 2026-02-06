@@ -31,12 +31,12 @@ const ManageBookings = () => {
     if (loading) return <div className="p-10 text-center">Loading bookings...</div>;
 
     return (
-        <div className="p-6 max-w-5xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6 text-gray-800">Event Bookings</h1>
+        <div className="p-6 max-w-5xl mx-auto transition-colors duration-300">
+            <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Event Bookings</h1>
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow dark:border dark:border-gray-800 overflow-hidden">
                 <table className="w-full text-left">
-                    <thead className="bg-gray-100 text-gray-600 uppercase text-sm">
+                    <thead className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 uppercase text-sm">
                         <tr>
                             <th className="py-3 px-4">User</th>
                             <th className="py-3 px-4">Email</th>
@@ -45,19 +45,19 @@ const ManageBookings = () => {
                             <th className="py-3 px-4">Date</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                         {bookings.length === 0 ? (
                             <tr>
                                 <td colSpan="5" className="py-4 px-4 text-center text-gray-500">No bookings yet.</td>
                             </tr>
                         ) : (
                             bookings.map(booking => (
-                                <tr key={booking._id} className="hover:bg-gray-50">
-                                    <td className="py-3 px-4">{booking.userId?.name || 'Unknown'}</td>
-                                    <td className="py-3 px-4">{booking.userId?.email || '-'}</td>
-                                    <td className="py-3 px-4">{booking.tickets}</td>
-                                    <td className="py-3 px-4">${booking.totalAmount}</td>
-                                    <td className="py-3 px-4">{new Date(booking.createdAt).toLocaleDateString()}</td>
+                                <tr key={booking._id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                    <td className="py-3 px-4 dark:text-gray-300">{booking.userId?.name || 'Unknown'}</td>
+                                    <td className="py-3 px-4 dark:text-gray-400">{booking.userId?.email || '-'}</td>
+                                    <td className="py-3 px-4 dark:text-gray-300">{booking.tickets}</td>
+                                    <td className="py-3 px-4 font-bold text-gray-900 dark:text-white">${booking.totalAmount}</td>
+                                    <td className="py-3 px-4 text-gray-500 dark:text-gray-400">{new Date(booking.createdAt).toLocaleDateString()}</td>
                                 </tr>
                             ))
                         )}

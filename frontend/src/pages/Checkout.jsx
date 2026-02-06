@@ -171,7 +171,7 @@ const Checkout = () => {
                     <div className="relative">
                         <div className="sticky top-24 bg-white dark:bg-[#1a1a1c] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-xl overflow-hidden">
                             <div className="aspect-[2/1]">
-                                <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                                <img src={event.image && event.image.startsWith('/uploads') ? backendUrl + event.image : event.image} alt={event.title} className="w-full h-full object-cover" />
                             </div>
                             <div className="p-8">
                                 <h3 className="font-black text-gray-900 dark:text-white mb-2 leading-tight">{event.title}</h3>

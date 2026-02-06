@@ -62,19 +62,19 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f6efe7] px-4">
-      <div className="w-full max-w-5xl bg-[#fffaf3] rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2">
+    <div className="min-h-screen flex items-center justify-center bg-[#f6efe7] dark:bg-gray-950 px-4 transition-colors duration-300">
+      <div className="w-full max-w-5xl bg-[#fffaf3] dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2 border border-transparent dark:border-gray-800">
 
         {/* LEFT PANEL */}
-        <div className="hidden md:flex flex-col justify-between p-10 bg-[#e6d3b1] text-[#5b3a29]">
+        <div className="hidden md:flex flex-col justify-between p-10 bg-[#e6d3b1] dark:bg-gray-800 text-[#5b3a29] dark:text-gray-200 transition-colors">
           <div>
             <p className="text-sm opacity-80">Welcome to</p>
 
             <div className="flex items-center gap-3 mt-3">
-              <div className="w-10 h-10 rounded-full bg-[#fffaf3] flex items-center justify-center text-lg">
+              <div className="w-10 h-10 rounded-full bg-[#fffaf3] dark:bg-gray-900 flex items-center justify-center text-lg">
                 ☁️
               </div>
-              <h1 className="text-2xl font-bold">Planora</h1>
+              <h1 className="text-2xl font-bold dark:text-white">Planora</h1>
             </div>
 
             <p className="mt-6 text-sm leading-relaxed opacity-90">
@@ -89,7 +89,7 @@ const Login = () => {
 
         {/* RIGHT FORM */}
         <div className="p-8 md:p-12">
-          <h2 className="text-2xl font-semibold text-[#5b3a29]">
+          <h2 className="text-2xl font-semibold text-[#5b3a29] dark:text-white">
             {state === 'sign up' ? 'Create your account' : 'Sign in'}
           </h2>
 
@@ -97,7 +97,7 @@ const Login = () => {
 
             {state === 'sign up' && (
               <div>
-                <label className="block text-sm font-medium text-[#5b3a29] mb-1">
+                <label className="block text-sm font-medium text-[#5b3a29] dark:text-gray-300 mb-1">
                   Name
                 </label>
                 <input
@@ -106,13 +106,13 @@ const Login = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your name"
-                  className="w-full px-3 py-2 border border-[#d8c2ae] rounded-md bg-white focus:ring-2 focus:ring-[#c49a6c]"
+                  className="w-full px-3 py-2 border border-[#d8c2ae] dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-[#c49a6c] dark:focus:ring-blue-500 outline-none transition-all"
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-[#5b3a29] mb-1">
+              <label className="block text-sm font-medium text-[#5b3a29] dark:text-gray-300 mb-1">
                 E-mail Address
               </label>
               <input
@@ -121,12 +121,12 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="w-full px-3 py-2 border border-[#d8c2ae] rounded-md bg-white focus:ring-2 focus:ring-[#c49a6c]"
+                className="w-full px-3 py-2 border border-[#d8c2ae] dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-[#c49a6c] dark:focus:ring-blue-500 outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#5b3a29] mb-1">
+              <label className="block text-sm font-medium text-[#5b3a29] dark:text-gray-300 mb-1">
                 Password
               </label>
               <input
@@ -135,7 +135,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-full px-3 py-2 border border-[#d8c2ae] rounded-md bg-white focus:ring-2 focus:ring-[#c49a6c]"
+                className="w-full px-3 py-2 border border-[#d8c2ae] dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-[#c49a6c] dark:focus:ring-blue-500 outline-none transition-all"
               />
             </div>
 
@@ -147,7 +147,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/reset-password')}
-                  className="text-sm text-[#7a4a2e] hover:underline"
+                  className="text-sm text-[#7a4a2e] dark:text-blue-400 hover:underline"
                 >
                   Forgot password?
                 </button>
@@ -157,14 +157,14 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 rounded-md bg-[#7a4a2e] text-white font-medium hover:bg-[#5b3a29] transition disabled:opacity-50"
+              className="w-full py-2 rounded-md bg-[#7a4a2e] dark:bg-blue-600 text-white font-medium hover:bg-[#5b3a29] dark:hover:bg-blue-700 transition disabled:opacity-50"
             >
               {state === 'sign up' ? 'Sign Up' : 'Sign In'}
             </button>
           </form>
 
           {/* SWITCH */}
-          <div className="mt-6 text-center text-sm text-[#7a5a45]">
+          <div className="mt-6 text-center text-sm text-[#7a5a45] dark:text-gray-400">
             {state === 'sign up'
               ? 'Already have an account?'
               : "Don't have an account?"}
@@ -174,7 +174,7 @@ const Login = () => {
                 setState(state === 'sign up' ? 'login' : 'sign up')
                 setAccountType('user')
               }}
-              className="ml-1 text-[#7a4a2e] font-medium hover:underline"
+              className="ml-1 text-[#7a4a2e] dark:text-blue-400 font-medium hover:underline"
             >
               {state === 'sign up' ? 'Sign In' : 'Sign Up'}
             </button>

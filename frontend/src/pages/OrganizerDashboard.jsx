@@ -30,6 +30,7 @@ const OrganizerDashboard = () => {
         },
         faqs: []
     })
+    const [imageFile, setImageFile] = useState(null)
 
     const [loading, setLoading] = useState(false)
     const [events, setEvents] = useState([])
@@ -54,9 +55,30 @@ const OrganizerDashboard = () => {
     const handleCreateEvent = async () => {
         try {
             setLoading(true)
+
+            const formData = new FormData()
+            // Append all eventData fields to formData
+            Object.keys(eventData).forEach(key => {
+                if (key === 'highlights' || key === 'faqs') {
+                    formData.append(key, JSON.stringify(eventData[key]))
+                } else if (key === 'image' && imageFile) {
+                    // Skip 'image' URL if we have a file
+                } else {
+                    formData.append(key, eventData[key])
+                }
+            })
+
+            // Append the image file if it exists
+            if (imageFile) {
+                formData.append('image', imageFile)
+            }
+
             const { data } = await axios.post(backendUrl + '/api/events/create',
-                eventData,
-                { withCredentials: true }
+                formData,
+                {
+                    withCredentials: true,
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                }
             )
 
             if (data.success) {
@@ -179,7 +201,7 @@ const OrganizerDashboard = () => {
                                             events.map(event => (
                                                 <div key={event._id} className="group bg-white dark:bg-gray-900 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-all flex flex-col md:flex-row gap-6 items-center">
                                                     <div className="w-full md:w-32 h-24 bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden">
-                                                        {event.image && <img src={event.image} className="w-full h-full object-cover" />}
+                                                        {event.image && <img src={event.image.startsWith('/uploads') ? backendUrl + event.image : event.image} className="w-full h-full object-cover" />}
                                                     </div>
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2 mb-1">
@@ -230,23 +252,53 @@ const OrganizerDashboard = () => {
 
                                     <div className="space-y-8">
                                         {/* Image Upload Placeholder */}
-                                        <div className="relative group overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-[2.5rem] border-2 border-dashed border-gray-200 dark:border-gray-800 aspect-video flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 transition-all">
+                                        <div
+                                            className="relative group overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-[2.5rem] border-2 border-dashed border-gray-200 dark:border-gray-800 aspect-video flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 transition-all"
+                                            onClick={() => document.getElementById('imageInput').click()}
+                                        >
                                             {eventData.image ? (
                                                 <img src={eventData.image} className="absolute inset-0 w-full h-full object-cover" />
                                             ) : (
                                                 <>
                                                     <span className="text-4xl mb-4">🖼️</span>
-                                                    <p className="font-bold text-gray-400">Paste Image URL or Drag & Drop</p>
+                                                    <p className="font-bold text-gray-400">Click to upload Image or Paste URL below</p>
                                                     <p className="text-[10px] text-gray-300 uppercase font-black mt-2">Recommended: 16:9 Aspect Ratio</p>
                                                 </>
                                             )}
                                             <input
-                                                type="text"
-                                                placeholder="Paste image URL here..."
-                                                className="absolute bottom-6 mx-10 left-0 right-0 py-3 px-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl border-none shadow-2xl text-sm outline-none focus:ring-2 ring-blue-500"
-                                                value={eventData.image}
-                                                onChange={e => setEventData({ ...eventData, image: e.target.value })}
+                                                id="imageInput"
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={e => {
+                                                    const file = e.target.files[0]
+                                                    if (file) {
+                                                        setImageFile(file)
+                                                        setEventData({ ...eventData, image: URL.createObjectURL(file) })
+                                                    }
+                                                }}
                                             />
+                                            <input
+                                                type="text"
+                                                placeholder="Or paste image URL here..."
+                                                className="absolute bottom-6 mx-10 left-0 right-0 py-3 px-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl border-none shadow-2xl text-sm outline-none focus:ring-2 ring-blue-500"
+                                                value={imageFile ? "Image selected from device" : eventData.image}
+                                                readOnly={!!imageFile}
+                                                onChange={e => setEventData({ ...eventData, image: e.target.value })}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                            {imageFile && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setImageFile(null)
+                                                        setEventData({ ...eventData, image: '' })
+                                                    }}
+                                                    className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-full text-xs"
+                                                >
+                                                    Remove
+                                                </button>
+                                            )}
                                         </div>
 
                                         <div className="grid gap-6">

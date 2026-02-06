@@ -89,7 +89,7 @@ const ResetPassword = () => {
   const currentStep = !isEmailSent ? 1 : !isOtpSubmitted ? 2 : 3
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f6efe7] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#f6efe7] dark:bg-gray-950 px-4 transition-colors duration-300">
       <div className="w-full max-w-md">
 
         {/* HEADER */}
@@ -100,10 +100,10 @@ const ResetPassword = () => {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-[#5b3a29]">
+          <h2 className="text-2xl font-bold text-[#5b3a29] dark:text-white transition-colors">
             Reset Password
           </h2>
-          <p className="mt-2 text-[#7a5a45]">
+          <p className="mt-2 text-[#7a5a45] dark:text-gray-400 transition-colors">
             Secure your account with a new password
           </p>
         </div>
@@ -113,31 +113,31 @@ const ResetPassword = () => {
           {[1, 2, 3].map((s) => (
             <React.Fragment key={s}>
               <div
-                className={`w-7 h-7 rounded-full text-xs flex items-center justify-center
-                  ${s <= currentStep ? 'bg-[#7a4a2e] text-white' : 'bg-[#e6d3b1] text-[#5b3a29]'}`}
+                className={`w-7 h-7 rounded-full text-xs flex items-center justify-center transition-colors
+                  ${s <= currentStep ? 'bg-[#7a4a2e] dark:bg-blue-600 text-white' : 'bg-[#e6d3b1] dark:bg-gray-800 text-[#5b3a29] dark:text-gray-400'}`}
               >
                 {s}
               </div>
-              {s < 3 && <div className="w-10 h-[2px] bg-[#d8c2ae]" />}
+              {s < 3 && <div className="w-10 h-[2px] bg-[#d8c2ae] dark:bg-gray-700" />}
             </React.Fragment>
           ))}
         </div>
 
         {/* CARD */}
-        <div className="bg-[#fffaf3] border border-[#e5d3c1] rounded-lg p-6 shadow-sm">
+        <div className="bg-[#fffaf3] dark:bg-gray-900 border border-[#e5d3c1] dark:border-gray-800 rounded-lg p-6 shadow-sm transition-colors">
 
           {/* STEP 1 */}
           {currentStep === 1 && (
             <form onSubmit={onSubmitEmail} className="space-y-4">
-              <label className="text-sm font-medium text-[#5b3a29]">
+              <label className="text-sm font-medium text-[#5b3a29] dark:text-gray-300">
                 Email Address
               </label>
-              <div className="mb-4 flex items-center gap-3 w-full px-3 py-2 border border-[#d8c2ae] rounded-md focus-within:ring-2 focus-within:ring-[#c49a6c]">
-                <img src={assets.mail_icon} alt="" className="w-4 h-4 opacity-50" />
+              <div className="mb-4 flex items-center gap-3 w-full px-3 py-2 border border-[#d8c2ae] dark:border-gray-700 rounded-md focus-within:ring-2 focus-within:ring-[#c49a6c] dark:focus-within:ring-blue-500">
+                <img src={assets.mail_icon} alt="" className="w-4 h-4 opacity-50 dark:invert" />
                 <input
                   type="email"
                   placeholder="Enter registered email"
-                  className="bg-transparent outline-none flex-1 text-[#5b3a29]"
+                  className="bg-transparent outline-none flex-1 text-[#5b3a29] dark:text-white"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
@@ -146,7 +146,7 @@ const ResetPassword = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2 bg-[#7a4a2e] text-white rounded-md hover:bg-[#5b3a29]"
+                className="w-full py-2 bg-[#7a4a2e] dark:bg-blue-600 text-white rounded-md hover:bg-[#5b3a29] dark:hover:bg-blue-700 transition"
               >
                 {loading ? 'Sending OTP...' : 'Send Verification Code'}
               </button>
@@ -156,7 +156,7 @@ const ResetPassword = () => {
           {/* STEP 2 */}
           {currentStep === 2 && (
             <form onSubmit={onSubmitOTP} className="space-y-4">
-              <label className="text-sm font-medium text-[#5b3a29]">
+              <label className="text-sm font-medium text-[#5b3a29] dark:text-gray-300">
                 Verification Code
               </label>
 
@@ -168,14 +168,14 @@ const ResetPassword = () => {
                     ref={(el) => (inputRefs.current[i] = el)}
                     onInput={(e) => handleInput(e, i)}
                     onKeyDown={(e) => handleKeyDown(e, i)}
-                    className="w-10 h-10 text-center border border-[#d8c2ae] rounded-md focus:ring-2 focus:ring-[#c49a6c]"
+                    className="w-10 h-10 text-center border border-[#d8c2ae] dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#c49a6c] dark:focus:ring-blue-500 outline-none transition-all"
                   />
                 ))}
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2 bg-[#7a4a2e] text-white rounded-md hover:bg-[#5b3a29]"
+                className="w-full py-2 bg-[#7a4a2e] dark:bg-blue-600 text-white rounded-md hover:bg-[#5b3a29] dark:hover:bg-blue-700 transition"
               >
                 Verify Code
               </button>
@@ -185,7 +185,7 @@ const ResetPassword = () => {
           {/* STEP 3 */}
           {currentStep === 3 && (
             <form onSubmit={onSubmitNewPassword} className="space-y-4">
-              <label className="text-sm font-medium text-[#5b3a29]">
+              <label className="text-sm font-medium text-[#5b3a29] dark:text-gray-300">
                 New Password
               </label>
               <input
@@ -193,12 +193,12 @@ const ResetPassword = () => {
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-[#d8c2ae] rounded-md focus:ring-2 focus:ring-[#c49a6c]"
+                className="w-full px-3 py-2 border border-[#d8c2ae] dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#c49a6c] dark:focus:ring-blue-500 outline-none transition-all"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2 bg-[#7a4a2e] text-white rounded-md hover:bg-[#5b3a29]"
+                className="w-full py-2 bg-[#7a4a2e] dark:bg-blue-600 text-white rounded-md hover:bg-[#5b3a29] dark:hover:bg-blue-700 transition"
               >
                 {loading ? 'Updating…' : 'Reset Password'}
               </button>
@@ -210,7 +210,7 @@ const ResetPassword = () => {
         <div className="mt-6 text-center">
           <button
             onClick={() => navigate('/login')}
-            className="text-sm text-[#7a5a45] hover:text-[#5b3a29]"
+            className="text-sm text-[#7a5a45] dark:text-gray-400 hover:text-[#5b3a29] dark:hover:text-blue-400 transition-colors"
           >
             ← Back to login
           </button>

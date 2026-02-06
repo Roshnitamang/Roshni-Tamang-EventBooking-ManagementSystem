@@ -24,7 +24,7 @@ export const createEvent = async (req, res) => {
             price: price || 0,
             ticketsAvailable: ticketsAvailable || 100,
             category: category || 'General',
-            image: image || '',
+            image: req.file ? `/uploads/${req.file.filename}` : (image || ''),
             ticketTypes: ticketTypes || [],
             highlights: highlights || {},
             faqs: faqs || []

@@ -119,14 +119,14 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="bg-gray-50 min-h-screen">
+        <div className="bg-gray-50 dark:bg-gray-950 transition-colors duration-300 min-h-screen">
             <div className="max-w-7xl mx-auto px-6 py-8">
 
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-                        <p className="text-gray-500 mt-1">Management and oversight panel</p>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1">Management and oversight panel</p>
                     </div>
                     <button
                         onClick={() => {
@@ -135,16 +135,16 @@ const AdminDashboard = () => {
                             if (activeTab === 'events') fetchEvents();
                             if (activeTab === 'organizers') fetchPendingOrganizers();
                         }}
-                        className="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition shadow-sm"
+                        className="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm"
                     >
-                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-8 mb-8 border-b border-gray-200">
+                <div className="flex gap-8 mb-8 border-b border-gray-200 dark:border-gray-800">
                     {[
                         { id: 'stats', label: 'Overview' },
                         { id: 'users', label: 'User Directory' },
@@ -167,30 +167,30 @@ const AdminDashboard = () => {
                 {/* Stats Grid */}
                 {activeTab === 'stats' && stats && (
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
                             <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Total Users</p>
-                            <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalUsers}</p>
                         </div>
-                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
                             <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Total Events</p>
-                            <p className="text-3xl font-bold text-gray-900">{stats.totalEvents}</p>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalEvents}</p>
                         </div>
-                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
                             <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Revenue</p>
-                            <p className="text-3xl font-bold text-green-600">${stats.totalRevenue}</p>
+                            <p className="text-3xl font-bold text-green-600 dark:text-green-400">${stats.totalRevenue}</p>
                         </div>
-                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
                             <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Bookings</p>
-                            <p className="text-3xl font-bold text-blue-600">{stats.totalBookings}</p>
+                            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.totalBookings}</p>
                         </div>
                     </div>
                 )}
 
                 {/* Users Management */}
                 {activeTab === 'users' && (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold text-[10px] uppercase tracking-wider">
+                            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 font-bold text-[10px] uppercase tracking-wider">
                                 <tr>
                                     <th className="px-6 py-4">User Details</th>
                                     <th className="px-6 py-4">Role</th>
@@ -198,19 +198,19 @@ const AdminDashboard = () => {
                                     <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 italic">
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800 italic">
                                 {isLoading ? (
                                     <tr><td colSpan="4" className="px-6 py-10 text-center text-gray-400">Loading directory...</td></tr>
                                 ) : users.map(user => (
-                                    <tr key={user._id} className="hover:bg-gray-50/50 transition-colors not-italic">
+                                    <tr key={user._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors not-italic">
                                         <td className="px-6 py-4 text-sm">
-                                            <div className="font-bold text-gray-900">{user.name}</div>
-                                            <div className="text-gray-500">{user.email}</div>
+                                            <div className="font-bold text-gray-900 dark:text-white">{user.name}</div>
+                                            <div className="text-gray-500 dark:text-gray-400">{user.email}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${user.role === 'admin' ? 'bg-blue-100 text-blue-700' :
-                                                    user.role === 'organizer' ? 'bg-green-100 text-green-700' :
-                                                        'bg-gray-100 text-gray-700'
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${user.role === 'admin' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
+                                                user.role === 'organizer' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                                                    'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400'
                                                 }`}>
                                                 {user.role}
                                             </span>
@@ -219,7 +219,7 @@ const AdminDashboard = () => {
                                             {/* Admin can only toggle User/Organizer */}
                                             {user.role !== 'admin' && user.role !== 'super-admin' ? (
                                                 <select
-                                                    className="text-xs border border-gray-200 rounded px-2 py-1 bg-white outline-none focus:ring-2 focus:ring-blue-500"
+                                                    className="text-xs border border-gray-200 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
                                                     value={user.role}
                                                     onChange={(e) => updateUserRole(user._id, e.target.value)}
                                                 >
@@ -227,7 +227,7 @@ const AdminDashboard = () => {
                                                     <option value="organizer">Organizer</option>
                                                 </select>
                                             ) : (
-                                                <span className="text-[10px] text-gray-400 font-bold uppercase">Locked</span>
+                                                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase">Locked</span>
                                             )}
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -244,9 +244,9 @@ const AdminDashboard = () => {
 
                 {/* Events Management */}
                 {activeTab === 'events' && (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold text-[10px] uppercase tracking-wider">
+                            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 font-bold text-[10px] uppercase tracking-wider">
                                 <tr>
                                     <th className="px-6 py-4">Event</th>
                                     <th className="px-6 py-4">Organizer</th>
@@ -254,20 +254,20 @@ const AdminDashboard = () => {
                                     <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 italic">
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800 italic">
                                 {isLoading ? (
                                     <tr><td colSpan="4" className="px-6 py-10 text-center text-gray-400">Loading events...</td></tr>
                                 ) : events.map(event => (
-                                    <tr key={event._id} className="hover:bg-gray-50/50 transition-colors not-italic">
+                                    <tr key={event._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors not-italic">
                                         <td className="px-6 py-4">
-                                            <div className="font-bold text-gray-900 text-sm">{event.title}</div>
-                                            <div className="text-xs text-gray-500">{new Date(event.date).toLocaleDateString()}</div>
+                                            <div className="font-bold text-gray-900 dark:text-white text-sm">{event.title}</div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">{new Date(event.date).toLocaleDateString()}</div>
                                         </td>
-                                        <td className="px-6 py-4 text-xs font-medium text-gray-600">
+                                        <td className="px-6 py-4 text-xs font-medium text-gray-600 dark:text-gray-400">
                                             {event.organizer?.name}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${event.isApproved ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${event.isApproved ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
                                                 }`}>
                                                 {event.isApproved ? 'Approved' : 'Pending'}
                                             </span>
@@ -284,27 +284,27 @@ const AdminDashboard = () => {
 
                 {/* Organizer Requests */}
                 {activeTab === 'organizers' && (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold text-[10px] uppercase tracking-wider">
+                            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 font-bold text-[10px] uppercase tracking-wider">
                                 <tr>
                                     <th className="px-6 py-4">Requested By</th>
                                     <th className="px-6 py-4">Request Date</th>
                                     <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 italic">
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800 italic">
                                 {isLoading ? (
                                     <tr><td colSpan="3" className="px-6 py-10 text-center text-gray-400">Checking requests...</td></tr>
                                 ) : pendingOrganizers.length === 0 ? (
                                     <tr><td colSpan="3" className="px-6 py-10 text-center text-gray-400 font-medium">No pending requests record</td></tr>
                                 ) : pendingOrganizers.map(org => (
-                                    <tr key={org._id} className="hover:bg-gray-50/50 transition-colors not-italic">
+                                    <tr key={org._id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors not-italic">
                                         <td className="px-6 py-4">
-                                            <div className="font-bold text-gray-900 text-sm">{org.name}</div>
-                                            <div className="text-xs text-gray-500">{org.email}</div>
+                                            <div className="font-bold text-gray-900 dark:text-white text-sm">{org.name}</div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">{org.email}</div>
                                         </td>
-                                        <td className="px-6 py-4 text-xs text-gray-500">
+                                        <td className="px-6 py-4 text-xs text-gray-500 dark:text-gray-400">
                                             {new Date(org.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 text-right">
