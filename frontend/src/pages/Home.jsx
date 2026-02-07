@@ -3,56 +3,127 @@ import Header from '../components/Header'
 import axios from 'axios'
 import { AppContent } from '../context/AppContext'
 import { Link } from 'react-router-dom'
+import { Music, Moon, Heart, Calendar, Briefcase, ShoppingCart, Palette } from 'lucide-react'
 
 function Home() {
   const { backendUrl } = useContext(AppContent)
+  const [heroData, setHeroData] = useState({
+    heroTitle: 'Discover Amazing Events',
+    heroSubtitle: 'Find and book the best local events happening around you.',
+    heroImage: ''
+  })
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedCategory, setSelectedCategory] = useState(null)
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const { data } = await axios.get(`${backendUrl}/api/events`)
-        if (data.success) {
-          setEvents(data.events)
-        }
-      } catch (error) {
-        console.error("Error fetching events:", error.message)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchEvents()
-  }, [backendUrl])
+    fetchSiteSettings()
+  }, [backendUrl, selectedCategory])
+
+  const fetchSiteSettings = async () => {
+    try {
+      const { data } = await axios.get(`${backendUrl}/api/settings`)
+      if (data.success && data.settings) {
+        setHeroData({
+          heroTitle: data.settings.heroTitle || 'Discover Amazing Events',
+          heroSubtitle: data.settings.heroSubtitle || 'Find and book the best local events happening around you.',
+          heroImage: data.settings.heroImage || ''
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching site settings:", error)
+    }
+  }
+
+  const fetchEvents = async () => {
+    setLoading(true)
+    try {
+      const url = selectedCategory
+        ? `${backendUrl}/api/events/category/${selectedCategory}`
+        : `${backendUrl}/api/events`
+
+      const { data } = await axios.get(url)
+      if (data.success) {
+        setEvents(data.events)
+      }
+    } catch (error) {
+      console.error("Error fetching events:", error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const categories = [
+    { name: 'Music', icon: Music },
+    { name: 'Nightlife', icon: Moon },
+    { name: 'Health', icon: Heart },
+    { name: 'Holidays', icon: Calendar },
+    { name: 'Hobbies', icon: Palette },
+    { name: 'Business', icon: Briefcase },
+    { name: 'Food', icon: ShoppingCart }
+  ]
 
   return (
     <div className="w-full min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
       <Header />
 
+      {/* Hero Section */}
+      <div className="relative w-full h-[500px] md:h-[600px] overflow-hidden">
+        {/* Background Image */}
+        {heroData.heroImage ? (
+          <img
+            src={heroData.heroImage.startsWith('/uploads') ? backendUrl + heroData.heroImage : heroData.heroImage}
+            alt="Hero"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900 to-purple-900" />
+        )}
+
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+
+        {/* Content */}
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 max-w-4xl mx-auto">
+          <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4 drop-shadow-lg">
+            {heroData.heroTitle}
+          </h1>
+          <p className="text-lg md:text-2xl text-gray-200 font-medium max-w-2xl drop-shadow-md">
+            {heroData.heroSubtitle}
+          </p>
+        </div>
+      </div>
+
       {/* Categories */}
       <section className="max-w-7xl mx-auto px-6 py-16">
         <div className="flex flex-wrap justify-between items-center gap-8 border-b border-gray-100 dark:border-gray-800 pb-10">
-          {[
-            { name: 'Music', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg> },
-            { name: 'Nightlife', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg> },
-            { name: 'Health', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg> },
-            { name: 'Holidays', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> },
-            { name: 'Hobbies', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v12a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg> },
-            { name: 'Business', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> },
-            { name: 'Food', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg> }
-          ].map((item, i) => (
-            <button
-              key={i}
-              className="flex items-center gap-2 group transition-all"
-            >
-              <div className="text-gray-400 group-hover:text-blue-600 transition">
-                {item.icon}
-              </div>
-              <p className="text-sm font-bold text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white transition">
-                {item.name}
-              </p>
-            </button>
-          ))}
+          {categories.map((item, i) => {
+            const IconComponent = item.icon
+            const isActive = selectedCategory === item.name
+
+            return (
+              <button
+                key={i}
+                onClick={() => setSelectedCategory(isActive ? null : item.name)}
+                className={`flex items-center gap-2 group transition-all ${isActive ? 'text-blue-600' : ''
+                  }`}
+              >
+                <div className={`transition ${isActive
+                  ? 'text-blue-600'
+                  : 'text-gray-400 group-hover:text-blue-600'
+                  }`}>
+                  <IconComponent className="w-5 h-5" />
+                </div>
+                <p className={`text-sm font-bold transition ${isActive
+                  ? 'text-blue-600'
+                  : 'text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white'
+                  }`}>
+                  {item.name}
+                </p>
+              </button>
+            )
+          })}
         </div>
       </section>
 
@@ -61,9 +132,11 @@ function Home() {
         <div className="flex justify-between items-end mb-12">
           <div>
             <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-              Popular in Online Events
+              {selectedCategory ? `${selectedCategory} Events` : 'Popular in Online Events'}
             </h2>
-            <p className="text-gray-500 mt-2 font-medium">Curated events picked just for you</p>
+            <p className="text-gray-500 mt-2 font-medium">
+              {selectedCategory ? `Browse all ${selectedCategory.toLowerCase()} events` : 'Curated events picked just for you'}
+            </p>
           </div>
           <Link to="/all-events" className="text-blue-600 font-bold hover:text-blue-700 transition text-sm underline underline-offset-4">
             Browse all events
@@ -82,7 +155,9 @@ function Home() {
           </div>
         ) : events.length === 0 ? (
           <div className="text-center py-24 bg-gray-50 dark:bg-gray-800/30 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
-            <p className="text-gray-500 dark:text-gray-400 font-bold">No upcoming events yet</p>
+            <p className="text-gray-500 dark:text-gray-400 font-bold">
+              {selectedCategory ? `No ${selectedCategory.toLowerCase()} events found` : 'No upcoming events yet'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">

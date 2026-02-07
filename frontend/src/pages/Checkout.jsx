@@ -19,8 +19,7 @@ const Checkout = () => {
 
     useEffect(() => {
         if (!isLoggedin) {
-            toast.info("Please login to continue to checkout");
-            navigate('/login');
+            navigate('/login', { state: { from: 'checkout', message: "Please login to continue to checkout", mode: 'login' } });
             return;
         }
 
@@ -63,8 +62,7 @@ const Checkout = () => {
             );
 
             if (data.success) {
-                toast.success("Order successful! Redirecting to your tickets...");
-                navigate('/my-bookings');
+                navigate('/my-bookings', { state: { message: "Order successful! Your tickets have been sent to your email." } });
             } else {
                 toast.error(data.message);
             }

@@ -6,7 +6,7 @@ export const createEvent = async (req, res) => {
         const {
             title, summary, description, date, location, price,
             ticketsAvailable, category, image, ticketTypes,
-            highlights, faqs
+            highlights, faqs, coordinates
         } = req.body;
 
         // Basic validation
@@ -28,6 +28,7 @@ export const createEvent = async (req, res) => {
             description: description || 'No description',
             date,
             location: location || 'TBD',
+            coordinates: coordinates ? parseJSON(coordinates) : undefined,
             organizer: req.user.id,
             price: price || 0,
             ticketsAvailable: ticketsAvailable || 100,
@@ -120,6 +121,64 @@ export const deleteEvent = async (req, res) => {
 
         await Event.findByIdAndDelete(req.params.id);
         res.json({ success: true, message: 'Event deleted successfully' });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// Get Events by Category
+export const getEventsByCategory = async (req, res) => {
+    try {
+        const { category } = req.params;
+        const events = await Event.find({ category: { $regex: category, $options: 'i' } })
+            .populate('organizer', 'name email')
+            .sort({ date: 1 });
+
+        res.json({ success: true, events });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// Get Events by Location (with radius in km)
+export const getEventsByLocation = async (req, res) => {
+    try {
+        const { lat, lng, radius = 50 } = req.query; // radius in km, default 50km
+
+        if (!lat || !lng) {
+            return res.json({ success: false, message: 'Latitude and longitude are required' });
+        }
+
+        const latitude = parseFloat(lat);
+        const longitude = parseFloat(lng);
+        const radiusInKm = parseFloat(radius);
+
+        // Find all events with coordinates
+        const events = await Event.find({
+            'coordinates.latitude': { $exists: true },
+            'coordinates.longitude': { $exists: true }
+        }).populate('organizer', 'name email');
+
+        // Calculate distance and filter by radius
+        const eventsWithDistance = events.map(event => {
+            const eventLat = event.coordinates.latitude;
+            const eventLng = event.coordinates.longitude;
+
+            // Haversine formula to calculate distance
+            const R = 6371; // Earth's radius in km
+            const dLat = (eventLat - latitude) * Math.PI / 180;
+            const dLng = (eventLng - longitude) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(latitude * Math.PI / 180) * Math.cos(eventLat * Math.PI / 180) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c;
+
+            return { ...event.toObject(), distance };
+        }).filter(event => event.distance <= radiusInKm)
+            .sort((a, b) => a.distance - b.distance);
+
+        res.json({ success: true, events: eventsWithDistance });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }

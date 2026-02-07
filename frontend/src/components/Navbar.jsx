@@ -1,5 +1,5 @@
-import React, { useContext } from 'react'
-import { useNavigate, NavLink } from 'react-router-dom'
+import React, { useContext, useEffect } from 'react'
+import { useNavigate, NavLink, useLocation } from 'react-router-dom'
 import { AppContent } from '../context/AppContext'
 import { useTheme } from '../context/ThemeContext'
 import axios from 'axios'
@@ -9,9 +9,28 @@ import ThemeToggle from './ThemeToggle'
 
 const Navbar = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { theme, toggleTheme } = useTheme()
   const { userData, backendUrl, setUserData, setIsLoggedin, isLoggedin } =
     useContext(AppContent)
+
+  useEffect(() => {
+    if (location.state?.welcomeMessage) {
+      toast.success(location.state.welcomeMessage, {
+        toastId: 'welcome-toast', // Prevent duplicates
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      })
+      // Clear welcomeMessage from state but keep other state like mode
+      const newState = { ...location.state }
+      delete newState.welcomeMessage
+      window.history.replaceState(newState, document.title)
+    }
+  }, [location.state])
 
   const logout = async () => {
     try {
@@ -20,11 +39,11 @@ const Navbar = () => {
       if (data.success) {
         setIsLoggedin(false)
         setUserData(null)
-        toast.success('Logged out successfully')
-        navigate('/')
+        navigate('/login', { state: { welcomeMessage: "Logged out successfully", mode: 'login' } })
       }
     } catch (error) {
-      toast.error(error.message)
+      console.error(error)
+      navigate('/login', { state: { welcomeMessage: "Logged out", mode: 'login' } })
     }
   }
 

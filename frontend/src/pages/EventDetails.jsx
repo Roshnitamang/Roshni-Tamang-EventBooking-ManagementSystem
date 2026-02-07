@@ -1,10 +1,9 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify';
-import { motion } from 'framer-motion';
-import Webcam from 'react-webcam';
+import MapComponent from '../components/MapComponent';
 
 const EventDetails = () => {
     const { id } = useParams();
@@ -104,6 +103,29 @@ const EventDetails = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* LOCATION WITH MAP */}
+                        {event.location && (
+                            <div className="space-y-6 pt-12 border-t border-gray-100 dark:border-gray-800">
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Location</h3>
+                                <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span className="font-semibold">{event.location}</span>
+                                </div>
+
+                                {/* Google Map */}
+                                <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                                    <MapComponent
+                                        latitude={event.coordinates?.latitude}
+                                        longitude={event.coordinates?.longitude}
+                                        height="300px"
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         {/* FAQs */}
                         {event.faqs && event.faqs.length > 0 && (

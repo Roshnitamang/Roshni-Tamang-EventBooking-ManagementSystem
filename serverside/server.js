@@ -10,6 +10,7 @@ import bookingRouter from "./routes/bookingRoutes.js";
 import organizerRouter from "./routes/organizerRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
 import notificationRouter from "./routes/notificationRoutes.js";
+import siteSettingsRouter from "./routes/siteSettingsRoutes.js";
 
 
 const app = express();
@@ -32,5 +33,6 @@ app.use('/api/bookings', bookingRouter);
 app.use('/api/organizer', organizerRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/notifications', notificationRouter);
+app.use('/api/settings', siteSettingsRouter);
 
 app.listen(port, () => console.log(`server start on PORT:${port}`));
