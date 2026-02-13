@@ -1,4 +1,6 @@
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import { debugLog, errorLog } from "../config/debug.js";
 
 export const verifyToken = async (req, res, next) => {
     const { token } = req.cookies;
@@ -14,7 +16,7 @@ export const verifyToken = async (req, res, next) => {
 
     try {
         const tokenDecode = jwt.verify(token, process.env.JWT_CODE);
-        console.log("Middleware verifyToken - Decoded ID:", tokenDecode?.id, "Role:", tokenDecode?.role);
+        debugLog("Decoded Token", { id: tokenDecode?.id, role: tokenDecode?.role });
 
         if (!tokenDecode?.id) {
             console.log("Middleware verifyToken - No ID in decoded token");
@@ -61,18 +63,29 @@ export const isSuperAdmin = (req, res, next) => {
 
 // 🔴 FIXED: organizer must be approved
 export const isOrganizer = async (req, res, next) => {
-    const user = await (await import('../models/User.js')).default.findById(req.user.id);
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
 
-    if (
-        user &&
-        (user.role === 'admin' ||
-            (user.role === 'organizer' && user.isApproved))
-    ) {
-        return next();
+        const user = await User.findById(req.user.id);
+        debugLog("isOrganizer user check", { id: user?._id, role: user?.role, isApproved: user?.isApproved });
+
+        if (
+            user &&
+            (user.role === 'admin' ||
+                (user.role === 'organizer' && user.isApproved))
+        ) {
+            return next();
+        }
+
+        debugLog("isOrganizer check failed", { userId: req.user.id });
+        return res.status(403).json({
+            success: false,
+            message: 'Account pending admin approval or restricted access.'
+        });
+    } catch (error) {
+        errorLog("isOrganizer Middleware Error", error);
+        return res.status(500).json({ success: false, message: 'Internal Server Error in Authorization' });
     }
-
-    return res.status(403).json({
-        success: false,
-        message: 'Account pending admin approval.'
-    });
 };

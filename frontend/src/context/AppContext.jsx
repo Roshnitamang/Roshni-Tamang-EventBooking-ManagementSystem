@@ -48,6 +48,10 @@ export const AppContextProvider = (props) => {
         }
     }
 
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const currency = 'रू';
+
     const value = {
         backendUrl,
         isLoggedin,
@@ -55,7 +59,10 @@ export const AppContextProvider = (props) => {
         userData,
         setUserData,
         getUserData,
-        loading
+        loading,
+        searchQuery,
+        setSearchQuery,
+        currency
     }
 
     return (

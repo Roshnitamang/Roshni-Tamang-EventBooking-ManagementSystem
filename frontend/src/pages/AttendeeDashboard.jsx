@@ -2,6 +2,8 @@ import { useEffect, useState, useContext } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { AppContent } from '../context/AppContext'
+import OpenSourceMap from '../components/OpenSourceMap'
+import { MapPin, Calendar, Ticket, CreditCard, ChevronDown, ChevronUp } from 'lucide-react'
 
 const AttendeeDashboard = () => {
   const [events, setEvents] = useState([]);
@@ -9,7 +11,7 @@ const AttendeeDashboard = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [activeTab, setActiveTab] = useState('browse'); // 'browse' or 'bookings'
-  const { backendUrl, userData } = useContext(AppContent);
+  const { backendUrl, userData, currency } = useContext(AppContent);
 
   const fetchEvents = async () => {
     try {
@@ -110,36 +112,85 @@ const AttendeeDashboard = () => {
 }
 
 const BookingCard = ({ booking }) => {
+  const { backendUrl, currency } = useContext(AppContent);
+  const [showMap, setShowMap] = useState(false);
   const { eventId, tickets, totalAmount, createdAt } = booking;
   if (!eventId) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 p-6 rounded-xl shadow-sm flex flex-col md:flex-row gap-6 items-center">
-      {eventId.image && <img src={eventId.image} alt={eventId.title} className="w-24 h-24 object-cover rounded-lg" />}
-      <div className="flex-1">
-        <h3 className="font-bold text-lg text-gray-900 dark:text-white">{eventId.title}</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 text-sm">
-          <div>
-            <p className="text-gray-500 dark:text-gray-400">Date</p>
-            <p className="font-medium dark:text-gray-200">{new Date(eventId.date).toLocaleDateString()}</p>
+    <div className="bg-white dark:bg-[#1a1a1c] border dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border-gray-100">
+      <div className="p-6 flex flex-col md:flex-row gap-8 items-center">
+        {/* Event Poster */}
+        <div className="w-full md:w-48 h-32 relative rounded-2xl overflow-hidden shadow-lg flex-shrink-0">
+          <img
+            src={eventId.image && eventId.image.startsWith('/uploads') ? backendUrl + eventId.image : eventId.image}
+            alt={eventId.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        <div className="flex-1 w-full">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+            <h3 className="font-black text-2xl text-gray-900 dark:text-white tracking-tight">{eventId.title}</h3>
+            <div className="flex gap-2">
+              <Link to={`/event/${eventId._id}`} className="px-4 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 text-xs font-black uppercase tracking-widest hover:bg-blue-100 transition whitespace-nowrap">
+                Event Page
+              </Link>
+            </div>
           </div>
-          <div>
-            <p className="text-gray-500 dark:text-gray-400">Tickets</p>
-            <p className="font-medium dark:text-gray-200">{tickets} Tickets</p>
-          </div>
-          <div>
-            <p className="text-gray-500 dark:text-gray-400">Total Paid</p>
-            <p className="font-bold text-blue-600">${totalAmount}</p>
-          </div>
-          <div>
-            <p className="text-gray-500 dark:text-gray-400">Booked On</p>
-            <p className="dark:text-gray-300">{new Date(createdAt).toLocaleDateString()}</p>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex items-start gap-2">
+              <Calendar className="w-4 h-4 text-blue-600 mt-0.5" />
+              <div>
+                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Date</p>
+                <p className="text-sm font-bold dark:text-gray-200">{new Date(eventId.date).toLocaleDateString()}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <Ticket className="w-4 h-4 text-blue-600 mt-0.5" />
+              <div>
+                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Quantity</p>
+                <p className="text-sm font-bold dark:text-gray-200">{tickets} Tickets</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <CreditCard className="w-4 h-4 text-blue-600 mt-0.5" />
+              <div>
+                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Total Paid</p>
+                <p className="text-sm font-black text-blue-600">{currency}{totalAmount}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <MapPin className="w-4 h-4 text-blue-600 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Location</p>
+                <div className="flex flex-col">
+                  <p className="text-sm font-bold dark:text-gray-200 truncate">{eventId.location}</p>
+                  <button
+                    onClick={() => setShowMap(!showMap)}
+                    className="text-[10px] text-blue-600 font-bold uppercase tracking-widest hover:underline text-left mt-1 flex items-center gap-1"
+                  >
+                    {showMap ? <><ChevronUp className="w-3 h-3" /> Hide Map</> : <><ChevronDown className="w-3 h-3" /> View on Map</>}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <Link to={`/event/${eventId._id}`} className="border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-4 py-2 rounded-lg text-sm font-medium transition">
-        Event Page
-      </Link>
+
+      {/* Map Section */}
+      {showMap && (
+        <div className="border-t border-gray-50 dark:border-gray-800 p-4 bg-gray-50 dark:bg-[#151517] animate-in fade-in slide-in-from-top-4 duration-300">
+          <OpenSourceMap
+            latitude={eventId.coordinates?.latitude}
+            longitude={eventId.coordinates?.longitude}
+            address={eventId.location}
+            height="250px"
+          />
+        </div>
+      )}
     </div>
   )
 }

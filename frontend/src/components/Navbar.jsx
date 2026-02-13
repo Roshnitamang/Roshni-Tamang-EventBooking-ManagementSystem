@@ -11,7 +11,7 @@ const Navbar = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { theme, toggleTheme } = useTheme()
-  const { userData, backendUrl, setUserData, setIsLoggedin, isLoggedin } =
+  const { userData, backendUrl, setUserData, setIsLoggedin, isLoggedin, setSearchQuery } =
     useContext(AppContent)
 
   useEffect(() => {
@@ -70,6 +70,12 @@ const Navbar = () => {
                 type="text"
                 placeholder="Search events"
                 className="bg-transparent flex-1 outline-none text-sm text-gray-700 dark:text-gray-200"
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  if (location.pathname !== '/') {
+                    navigate('/')
+                  }
+                }}
               />
               <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-3" />
               <input

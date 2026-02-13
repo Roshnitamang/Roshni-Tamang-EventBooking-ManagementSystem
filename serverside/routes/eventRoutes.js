@@ -5,7 +5,13 @@ import upload from '../middleware/uploadMiddleware.js';
 
 const eventRouter = express.Router();
 
+eventRouter.use((req, res, next) => {
+    console.log(`Event Router hit: ${req.method} ${req.url}`);
+    next();
+});
+
 eventRouter.post('/create', verifyToken, isOrganizer, upload.single('image'), createEvent);
+
 eventRouter.get('/recommendations', getRecommendedEvents); // Public or Protected
 eventRouter.get('/category/:category', getEventsByCategory); // Filter by category
 eventRouter.get('/location', getEventsByLocation); // Location-based search

@@ -17,13 +17,68 @@ export const getSystemStats = async (req, res) => {
             0
         );
 
+        // --- Data for Charts ---
+
+        // 1. Revenue by Category
+        const events = await Event.find();
+        const categoryMap = {};
+        events.forEach(event => {
+            categoryMap[event.category] = (categoryMap[event.category] || 0) + 1;
+        });
+        const categoryStats = Object.keys(categoryMap).map(cat => ({
+            name: cat,
+            value: categoryMap[cat]
+        }));
+
+        // 2. Revenue Trend (Daily - Last 30 Days)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const recentBookings = await Booking.find({
+            createdAt: { $gte: thirtyDaysAgo }
+        }).sort({ createdAt: 1 });
+
+        const trendMap = {};
+        recentBookings.forEach(booking => {
+            const date = booking.createdAt.toISOString().split('T')[0];
+            trendMap[date] = (trendMap[date] || 0) + booking.totalAmount;
+        });
+
+        const revenueTrend = Object.keys(trendMap).map(date => ({
+            date,
+            revenue: trendMap[date]
+        }));
+
+        // 3. Top Events by Revenue
+        const eventRevenueMap = {};
+        bookings.forEach(booking => {
+            const eId = booking.eventId.toString();
+            eventRevenueMap[eId] = (eventRevenueMap[eId] || 0) + booking.totalAmount;
+        });
+
+        const topEventsData = await Promise.all(
+            Object.keys(eventRevenueMap)
+                .sort((a, b) => eventRevenueMap[b] - eventRevenueMap[a])
+                .slice(0, 5)
+                .map(async (id) => {
+                    const event = await Event.findById(id).select('title');
+                    return {
+                        name: event ? event.title : 'Deleted Event',
+                        revenue: eventRevenueMap[id]
+                    };
+                })
+        );
+
         res.json({
             success: true,
             stats: {
                 totalUsers,
                 totalEvents,
                 totalBookings,
-                totalRevenue
+                totalRevenue,
+                categoryStats,
+                revenueTrend,
+                topEvents: topEventsData
             }
         });
     } catch (error) {
@@ -93,6 +148,20 @@ export const deleteEventAdmin = async (req, res) => {
     }
 };
 
+// Admin Event Bookings (Mirroring Organizer functionality but for Admin)
+export const getEventBookingsAdmin = async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const bookings = await Booking.find({ eventId })
+            .populate('userId', 'name email')
+            .sort({ createdAt: -1 });
+
+        res.json({ success: true, bookings });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
 // ===============================
 // Organizer Approval (FIXED)
 // ===============================
@@ -144,6 +213,7 @@ export const demoteOrganizer = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
+
 export const updateUserRole = async (req, res) => {
     try {
         const { role } = req.body;
@@ -169,3 +239,4 @@ export const updateUserRole = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
+

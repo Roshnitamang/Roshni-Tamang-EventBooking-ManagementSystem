@@ -5,7 +5,7 @@ import { createNotification } from './notificationController.js';
 // Create Booking
 export const createBooking = async (req, res) => {
     try {
-        const { eventId, tickets } = req.body;
+        const { eventId, tickets, bookingType } = req.body;
         const userId = req.user.id;
 
         // Validation
@@ -13,13 +13,13 @@ export const createBooking = async (req, res) => {
             return res.json({ success: false, message: 'Invalid booking details' });
         }
 
-        // Validate Booking Type Limits
-        const type = req.body.bookingType || 'personal';
-        if (type === 'personal' && tickets > 1) {
-            return res.json({ success: false, message: 'Personal booking is limited to 1 ticket.' });
+        // Enforce New Ticket Selection Rules
+        const ticketCount = Number(tickets);
+        if (bookingType === 'single' && ticketCount !== 1) {
+            return res.json({ success: false, message: 'Single ticket booking must have exactly 1 ticket.' });
         }
-        if (type === 'group' && tickets > 7) {
-            return res.json({ success: false, message: 'Group booking is limited to 7 tickets.' });
+        if (bookingType === 'group' && (ticketCount < 2 || ticketCount > 6)) {
+            return res.json({ success: false, message: 'Group booking must be between 2 and 6 tickets.' });
         }
 
         // Check Event
@@ -36,12 +36,22 @@ export const createBooking = async (req, res) => {
         // Calculate Amount
         const totalAmount = event.price * tickets;
 
+        // Group Photo handling
+        let groupPhoto = '';
+        if (bookingType === 'group' && req.file) {
+            groupPhoto = `/uploads/${req.file.filename}`;
+        } else if (bookingType === 'group' && !req.file) {
+            return res.json({ success: false, message: 'Group photo is required for group bookings.' });
+        }
+
         // Create Booking
         const booking = new Booking({
             userId,
             eventId,
             tickets,
-            totalAmount
+            totalAmount,
+            bookingType: bookingType || 'single',
+            groupPhoto
         });
 
         // Deduct tickets from event

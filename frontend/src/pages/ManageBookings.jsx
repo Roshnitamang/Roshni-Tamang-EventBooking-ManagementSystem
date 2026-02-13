@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 
 const ManageBookings = () => {
     const { eventId } = useParams();
-    const { backendUrl } = useContext(AppContent);
+    const { backendUrl, currency } = useContext(AppContent);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -56,7 +56,7 @@ const ManageBookings = () => {
                                     <td className="py-3 px-4 dark:text-gray-300">{booking.userId?.name || 'Unknown'}</td>
                                     <td className="py-3 px-4 dark:text-gray-400">{booking.userId?.email || '-'}</td>
                                     <td className="py-3 px-4 dark:text-gray-300">{booking.tickets}</td>
-                                    <td className="py-3 px-4 font-bold text-gray-900 dark:text-white">${booking.totalAmount}</td>
+                                    <td className="py-3 px-4 font-bold text-gray-900 dark:text-white">{currency}{booking.totalAmount}</td>
                                     <td className="py-3 px-4 text-gray-500 dark:text-gray-400">{new Date(booking.createdAt).toLocaleDateString()}</td>
                                 </tr>
                             ))

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 
 const MyBookings = () => {
-    const { backendUrl } = useContext(AppContent);
+    const { backendUrl, currency } = useContext(AppContent);
     const [bookings, setBookings] = useState([]);
 
     const location = useLocation();
@@ -50,7 +50,7 @@ const MyBookings = () => {
                             <div>
                                 <h2 className="text-xl font-semibold dark:text-white">{booking.eventId?.title || "Unknown Event"}</h2>
                                 <p className="text-gray-600 dark:text-gray-300">
-                                    {booking.tickets} Ticket(s) • Total: ${booking.totalAmount}
+                                    {booking.tickets} Ticket(s) • Total: {currency}{booking.totalAmount}
                                 </p>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                     Booked on: {new Date(booking.createdAt).toLocaleDateString()}

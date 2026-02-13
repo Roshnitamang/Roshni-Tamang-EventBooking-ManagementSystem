@@ -3,50 +3,84 @@ import axios from 'axios';
 import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify';
 import SiteSettingsDashboard from '../components/SiteSettingsDashboard';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    LayoutDashboard,
+    Users,
+    Calendar,
+    Settings,
+    TrendingUp,
+    DollarSign,
+    Ticket,
+    Trash2,
+    Briefcase,
+    ChevronRight,
+    Sparkles,
+    BarChart3,
+    PieChart as PieIcon,
+    LineChart as LineIcon,
+    ArrowLeft,
+    CheckCircle
+} from 'lucide-react';
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    AreaChart,
+    Area,
+    PieChart,
+    Pie,
+    Cell,
+    BarChart,
+    Bar
+} from 'recharts';
 
 const SuperAdminDashboard = () => {
-    const { backendUrl, userData } = useContext(AppContent);
-    const [users, setUsers] = useState([]);
+    const { backendUrl, currency } = useContext(AppContent);
     const [stats, setStats] = useState(null);
+    const [users, setUsers] = useState([]);
+    const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('users'); // 'users' or 'settings'
+    const [activeStep, setActiveStep] = useState('stats'); // stats, analytics, users, events, settings, insights
 
-    useEffect(() => {
-        fetchUsers();
-        fetchStats();
-    }, [backendUrl]);
+    // Insights State
+    const [selectedEventId, setSelectedEventId] = useState(null);
+    const [eventBookings, setEventBookings] = useState([]);
+    const [viewingEventStats, setViewingEventStats] = useState(null);
 
-    const fetchStats = async () => {
+    const fetchData = async () => {
+        setIsLoading(true);
         try {
-            const { data } = await axios.get(`${backendUrl}/api/admin/stats`, { withCredentials: true });
-            if (data.success) setStats(data.stats);
-        } catch (error) {
-            console.error("Error fetching stats:", error.message);
-        }
-    };
+            const statsRes = await axios.get(`${backendUrl}/api/admin/stats`, { withCredentials: true });
+            if (statsRes.data.success) setStats(statsRes.data.stats);
 
-    const fetchUsers = async () => {
-        try {
-            setIsLoading(true);
-            const { data } = await axios.get(`${backendUrl}/api/admin/users`, { withCredentials: true });
-            if (data.success) setUsers(data.users);
+            const usersRes = await axios.get(`${backendUrl}/api/admin/users`, { withCredentials: true });
+            if (usersRes.data.success) setUsers(usersRes.data.users);
+
+            const eventsRes = await axios.get(`${backendUrl}/api/admin/events`, { withCredentials: true });
+            if (eventsRes.data.success) setEvents(eventsRes.data.events);
         } catch (error) {
-            console.error("Error fetching users:", error.message);
+            console.error("Error fetching data:", error);
         } finally {
             setIsLoading(false);
         }
     };
 
+    useEffect(() => {
+        fetchData();
+    }, [backendUrl]);
+
     const updateUserRole = async (id, role) => {
-        const action = role === 'admin' ? 'Promote to Admin' : 'Change Role';
         if (!confirm(`Are you sure you want to change this user's role to ${role}?`)) return;
         try {
             const { data } = await axios.put(`${backendUrl}/api/admin/users/${id}/role`, { role }, { withCredentials: true });
             if (data.success) {
                 toast.success(data.message);
-                fetchUsers();
-            } else {
-                toast.error(data.message);
+                fetchData();
             }
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to update role");
@@ -59,141 +93,393 @@ const SuperAdminDashboard = () => {
             const { data } = await axios.delete(`${backendUrl}/api/admin/users/${id}`, { withCredentials: true });
             if (data.success) {
                 toast.success("User deleted");
-                fetchUsers();
+                fetchData();
             }
         } catch {
             toast.error("Failed to delete user");
         }
     };
 
+    const deleteEvent = async (id) => {
+        if (!confirm("Delete this event?")) return;
+        try {
+            const { data } = await axios.delete(`${backendUrl}/api/admin/events/${id}`, { withCredentials: true });
+            if (data.success) {
+                toast.success("Event deleted");
+                fetchData();
+            }
+        } catch {
+            toast.error("Failed to delete event");
+        }
+    };
+
+    const fetchEventInsights = async (id) => {
+        try {
+            setIsLoading(true);
+            setSelectedEventId(id);
+            const { data } = await axios.get(`${backendUrl}/api/admin/event-bookings/${id}`, { withCredentials: true });
+            if (data.success) {
+                setEventBookings(data.bookings);
+                const totalRevenue = data.bookings.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
+                const ticketsSold = data.bookings.reduce((acc, curr) => acc + (curr.tickets || 0), 0);
+                setViewingEventStats({ revenue: totalRevenue, ticketsSold: ticketsSold });
+                setActiveStep('insights');
+            }
+        } catch (error) {
+            toast.error("Failed to load insights");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const COLORS = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#EC4899'];
+
+    // UI Helpers
+    const NavLink = ({ id, label, icon: Icon }) => (
+        <button
+            onClick={() => setActiveStep(id)}
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-300 group ${activeStep === id
+                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 scale-[1.02]'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400'
+                }`}
+        >
+            <div className={`p-2 rounded-lg transition-all duration-300 ${activeStep === id
+                ? 'bg-white/20'
+                : 'bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20'
+                }`}>
+                <Icon className={`w-5 h-5 transition-transform duration-300 ${activeStep === id ? 'scale-110' : 'group-hover:scale-110'}`} />
+            </div>
+            <span className="font-semibold text-sm">{label}</span>
+            {activeStep === id && <ChevronRight className="w-4 h-4 ml-auto" />}
+        </button>
+    );
+
     return (
-        <div className="bg-gray-50 dark:bg-gray-950 transition-colors duration-300 min-h-screen">
-            <div className="max-w-7xl mx-auto px-6 py-8">
-                <div className="flex justify-between items-center mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Super Admin Dashboard</h1>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">Full system control and user management</p>
+        <div className="bg-white dark:bg-gray-950 min-h-screen text-gray-900 dark:text-gray-100">
+            <div className="max-w-7xl mx-auto px-6 py-10">
+                <div className="flex flex-col md:flex-row gap-10">
+                    {/* Sidebar Nav */}
+                    <div className="md:w-64 space-y-2">
+                        <div className="mb-8 px-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Sparkles className="w-6 h-6 text-purple-600" />
+                                <h1 className="text-2xl font-black tracking-tight text-purple-600">Planora Elite</h1>
+                            </div>
+                            <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Super Admin Access</p>
+                        </div>
+
+                        <NavLink id="stats" label="Overview" icon={LayoutDashboard} />
+                        <NavLink id="analytics" label="System Analytics" icon={BarChart3} />
+                        <div className="h-px bg-gray-100 dark:bg-gray-800 my-4 mx-4"></div>
+                        <p className="px-4 text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Global Control</p>
+                        <NavLink id="users" label="User Management" icon={Users} />
+                        <NavLink id="events" label="Global Events" icon={Calendar} />
+                        <NavLink id="settings" label="Site Appearance" icon={Settings} />
                     </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setActiveTab('users')}
-                            className={`px-4 py-2 rounded-lg font-medium transition ${activeTab === 'users' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                        >
-                            Users
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('settings')}
-                            className={`px-4 py-2 rounded-lg font-medium transition ${activeTab === 'settings' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                        >
-                            Site Appearance
-                        </button>
-                        <button
-                            onClick={fetchUsers}
-                            className="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm ml-2"
-                        >
-                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                        </button>
+
+                    {/* Main Content Area */}
+                    <div className="flex-1">
+                        <AnimatePresence mode="wait">
+                            {/* OVERVIEW STEP */}
+                            {activeStep === 'stats' && (
+                                <motion.div
+                                    key="stats"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="space-y-8"
+                                >
+                                    <header>
+                                        <h2 className="text-3xl font-bold">System Health</h2>
+                                        <p className="text-gray-500 mt-1">High-level platform metrics and totals.</p>
+                                    </header>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {[
+                                            { label: 'Total Users', value: stats?.totalUsers || 0, icon: Users, color: 'blue' },
+                                            { label: 'System Revenue', value: `${currency}${stats?.totalRevenue || 0}`, icon: DollarSign, color: 'green' },
+                                            { label: 'Total Bookings', value: stats?.totalBookings || 0, icon: Ticket, color: 'purple' }
+                                        ].map((s, i) => (
+                                            <div key={i} className="group bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900/50 dark:to-gray-900/30 p-6 rounded-3xl border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{s.label}</p>
+                                                        <h3 className="text-3xl font-black bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{s.value}</h3>
+                                                    </div>
+                                                    <div className={`p-3 rounded-2xl bg-gradient-to-br ${s.color === 'blue' ? 'from-blue-500 to-blue-600' :
+                                                        s.color === 'green' ? 'from-green-500 to-green-600' :
+                                                            'from-purple-500 to-purple-600'
+                                                        } shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                                        <s.icon className="w-6 h-6 text-white" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* ANALYTICS STEP */}
+                            {activeStep === 'analytics' && (
+                                <motion.div
+                                    key="analytics"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="space-y-8"
+                                >
+                                    <header>
+                                        <h2 className="text-3xl font-bold">Deep Dive Analytics</h2>
+                                        <p className="text-gray-500 mt-1">Cross-platform trends and distribution.</p>
+                                    </header>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                        <div className="bg-white dark:bg-gray-900 p-8 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-6 text-blue-600">
+                                                <LineIcon className="w-5 h-5" />
+                                                <h3 className="font-bold">Revenue Trend (30 Days)</h3>
+                                            </div>
+                                            <div className="h-[300px]">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <AreaChart data={stats?.revenueTrend}>
+                                                        <defs>
+                                                            <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                                                                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                                        <XAxis dataKey="date" hide />
+                                                        <Tooltip />
+                                                        <Area type="monotone" dataKey="revenue" stroke="#3B82F6" fillOpacity={1} fill="url(#colorRev)" strokeWidth={3} />
+                                                    </AreaChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white dark:bg-gray-900 p-8 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-6 text-purple-600">
+                                                <PieIcon className="w-5 h-5" />
+                                                <h3 className="font-bold">Event Categories</h3>
+                                            </div>
+                                            <div className="h-[300px]">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <PieChart>
+                                                        <Pie
+                                                            data={stats?.categoryStats}
+                                                            innerRadius={60}
+                                                            outerRadius={100}
+                                                            paddingAngle={5}
+                                                            dataKey="value"
+                                                        >
+                                                            {stats?.categoryStats?.map((entry, index) => (
+                                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                            ))}
+                                                        </Pie>
+                                                        <Tooltip />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </div>
+
+                                        <div className="lg:col-span-2 bg-white dark:bg-gray-900 p-8 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-6 text-green-600">
+                                                <BarChart3 className="w-5 h-5" />
+                                                <h3 className="font-bold">Top Performing Events</h3>
+                                            </div>
+                                            <div className="h-[300px]">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <BarChart data={stats?.topEvents} layout="vertical">
+                                                        <XAxis type="number" hide />
+                                                        <YAxis dataKey="name" type="category" width={150} tick={{ fontSize: 12, fontWeight: 'bold' }} stroke="#888" />
+                                                        <Tooltip />
+                                                        <Bar dataKey="revenue" fill="#10B981" radius={[0, 10, 10, 0]} />
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* USER MANAGEMENT */}
+                            {activeStep === 'users' && (
+                                <motion.div key="users" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+                                    <header>
+                                        <h2 className="text-3xl font-bold">User Management</h2>
+                                        <p className="text-gray-500 mt-1">Full control over user accounts and roles.</p>
+                                    </header>
+                                    <div className="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+                                        <table className="w-full text-left">
+                                            <thead className="bg-gray-50 dark:bg-gray-800/50 text-[10px] uppercase font-bold text-gray-400 tracking-widest">
+                                                <tr>
+                                                    <th className="py-4 px-6">User Details</th>
+                                                    <th className="py-4 px-6">Current Role</th>
+                                                    <th className="py-4 px-6">Change To</th>
+                                                    <th className="py-4 px-6 text-right">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                                {users.map(user => (
+                                                    <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                                        <td className="py-4 px-6">
+                                                            <p className="font-bold text-sm">{user.name}</p>
+                                                            <p className="text-xs text-gray-400">{user.email}</p>
+                                                        </td>
+                                                        <td className="py-4 px-6">
+                                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest 
+                                                                ${user.role === 'super-admin' ? 'bg-purple-50 text-purple-600' :
+                                                                    user.role === 'admin' ? 'bg-blue-50 text-blue-600' :
+                                                                        user.role === 'organizer' ? 'bg-green-50 text-green-600' :
+                                                                            'bg-gray-50 text-gray-500'}`}>
+                                                                {user.role}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-4 px-6">
+                                                            {user.role !== 'super-admin' && (
+                                                                <select
+                                                                    className="text-xs font-bold bg-transparent outline-none cursor-pointer"
+                                                                    value={user.role}
+                                                                    onChange={(e) => updateUserRole(user._id, e.target.value)}
+                                                                >
+                                                                    <option value="user">User</option>
+                                                                    <option value="organizer">Organizer</option>
+                                                                    <option value="admin">Admin</option>
+                                                                </select>
+                                                            )}
+                                                        </td>
+                                                        <td className="py-4 px-6 text-right">
+                                                            {user.role !== 'super-admin' && (
+                                                                <button onClick={() => deleteUser(user._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* GLOBAL EVENTS */}
+                            {activeStep === 'events' && (
+                                <motion.div key="events" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+                                    <header>
+                                        <h2 className="text-3xl font-bold">Global Events</h2>
+                                        <p className="text-gray-500 mt-1">Monitor all activity across the platform.</p>
+                                    </header>
+                                    <div className="space-y-4">
+                                        {events.map(event => (
+                                            <div key={event._id} className="group bg-white dark:bg-gray-900 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 hover:shadow-2xl transition-all duration-300 flex flex-col md:flex-row gap-6 items-center">
+                                                <div className="w-full md:w-32 h-24 bg-gray-100 rounded-2xl overflow-hidden">
+                                                    {event.image && <img src={event.image.startsWith('/uploads') ? backendUrl + event.image : event.image} className="w-full h-full object-cover" />}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <span className="text-[10px] font-bold uppercase bg-blue-50 text-blue-600 px-3 py-1 rounded-full">{event.category}</span>
+                                                        <span className="text-xs text-gray-400 font-medium">by {event.organizer?.name}</span>
+                                                    </div>
+                                                    <h4 className="text-lg font-bold">{event.title}</h4>
+                                                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                                                        <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {new Date(event.date).toLocaleDateString()}</span>
+                                                        <span className={`flex items-center gap-1 font-bold ${event.isApproved ? 'text-green-500' : 'text-orange-500'}`}>
+                                                            {event.isApproved ? <CheckCircle className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
+                                                            {event.isApproved ? 'Approved' : 'Pending'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => fetchEventInsights(event._id)} className="px-5 py-2.5 bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 text-sm font-bold rounded-xl transition-all flex items-center gap-2">
+                                                        <TrendingUp className="w-4 h-4" /> Insights
+                                                    </button>
+                                                    <button onClick={() => deleteEvent(event._id)} className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                                                        <Trash2 className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* SITE SETTINGS */}
+                            {activeStep === 'settings' && (
+                                <motion.div key="settings" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                                    <header>
+                                        <h2 className="text-3xl font-bold">Site Appearance</h2>
+                                        <p className="text-gray-500 mt-1">Customize the global look and feel of Planora.</p>
+                                    </header>
+                                    <SiteSettingsDashboard />
+                                </motion.div>
+                            )}
+
+                            {/* INSIGHTS VIEW (Mirrored from Admin) */}
+                            {activeStep === 'insights' && (
+                                <motion.div key="insights" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+                                    <div className="flex items-center gap-4">
+                                        <button onClick={() => setActiveStep('events')} className="p-3 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 transition-all font-bold">
+                                            <ArrowLeft className="w-5 h-5" />
+                                        </button>
+                                        <div>
+                                            <h2 className="text-3xl font-black tracking-tight">Master Insights</h2>
+                                            <p className="text-gray-500">Global analytics for "{events.find(e => e._id === selectedEventId)?.title}"</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Total Revenue</p>
+                                            <h3 className="text-4xl font-black text-green-500">{currency}{viewingEventStats?.revenue || 0}</h3>
+                                        </div>
+                                        <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Tickets Sold</p>
+                                            <h3 className="text-4xl font-black text-blue-500">{viewingEventStats?.ticketsSold || 0}</h3>
+                                        </div>
+                                        <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Organizer</p>
+                                            <h3 className="text-xl font-bold text-gray-700">{events.find(e => e._id === selectedEventId)?.organizer?.name}</h3>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+                                        <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                                            <h3 className="text-xl font-bold">Booking Logs</h3>
+                                        </div>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left">
+                                                <thead className="bg-gray-50 dark:bg-gray-800/50 text-[10px] uppercase font-bold text-gray-400">
+                                                    <tr>
+                                                        <th className="py-4 px-6">User</th>
+                                                        <th className="py-4 px-6">Tickets</th>
+                                                        <th className="py-4 px-6">Revenue</th>
+                                                        <th className="py-4 px-6">Date</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                                    {eventBookings.map(booking => (
+                                                        <tr key={booking._id} className="hover:bg-gray-50 transition-colors text-sm">
+                                                            <td className="py-4 px-6">
+                                                                <p className="font-bold">{booking.userId?.name || 'User'}</p>
+                                                                <p className="text-[10px] text-gray-400">{booking.userId?.email}</p>
+                                                            </td>
+                                                            <td className="py-4 px-6 font-medium">{booking.tickets}</td>
+                                                            <td className="py-4 px-6 font-black text-green-500">{currency}{booking.totalAmount}</td>
+                                                            <td className="py-4 px-6 text-gray-400">{new Date(booking.createdAt).toLocaleDateString()}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
-
-                {/* Quick Stats */}
-                {stats && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Total Users</p>
-                            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.totalUsers}</p>
-                        </div>
-                        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">System Revenue</p>
-                            <p className="text-3xl font-bold text-green-600 dark:text-green-400">${stats.totalRevenue}</p>
-                        </div>
-                        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Total Bookings</p>
-                            <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.totalBookings}</p>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'users' ? (
-                    /* User Management */
-                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">User Management</h2>
-                            <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full text-xs font-medium">
-                                {users.length} Total Users
-                            </span>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-medium text-sm">
-                                    <tr>
-                                        <th className="px-6 py-4">User Details</th>
-                                        <th className="px-6 py-4">Current Role</th>
-                                        <th className="px-6 py-4">Change Role To</th>
-                                        <th className="px-6 py-4 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100 dark:divide-gray-800 italic">
-                                    {isLoading ? (
-                                        <tr>
-                                            <td colSpan="4" className="px-6 py-10 text-center text-gray-400">Loading users...</td>
-                                        </tr>
-                                    ) : users.map(user => (
-                                        <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors not-italic">
-                                            <td className="px-6 py-4">
-                                                <div className="font-semibold text-gray-900 dark:text-white">{user.name}</div>
-                                                <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-md text-xs font-bold uppercase ${user.role === 'super-admin'
-                                                    ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
-                                                    : user.role === 'admin'
-                                                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                                                        : user.role === 'organizer'
-                                                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400'
-                                                    }`}>
-                                                    {user.role}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {user.role !== 'super-admin' && (
-                                                    <div className="flex gap-2">
-                                                        <select
-                                                            className="text-sm border border-gray-200 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                                            value={user.role}
-                                                            onChange={(e) => updateUserRole(user._id, e.target.value)}
-                                                        >
-                                                            <option value="user">Standard User</option>
-                                                            <option value="organizer">Organizer</option>
-                                                            <option value="admin">Admin</option>
-                                                        </select>
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                {user.role !== 'super-admin' && (
-                                                    <button
-                                                        onClick={() => deleteUser(user._id)}
-                                                        className="text-red-500 hover:text-red-700 transition font-medium text-sm"
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                ) : (
-                    /* Site Settings */
-                    <SiteSettingsDashboard />
-                )}
             </div>
         </div>
     );
 };
 
 export default SuperAdminDashboard;
+

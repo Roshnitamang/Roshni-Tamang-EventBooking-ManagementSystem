@@ -1,7 +1,9 @@
 import Event from '../models/Event.js';
+import { debugLog, errorLog } from '../config/debug.js';
 
 // Create Event
 export const createEvent = async (req, res) => {
+    debugLog("Create Event start", { body: req.body, file: req.file ? req.file.filename : null, user: req.user });
     try {
         const {
             title, summary, description, date, location, price,
@@ -9,9 +11,11 @@ export const createEvent = async (req, res) => {
             highlights, faqs, coordinates
         } = req.body;
 
+        debugLog("Extracted fields", { title, date, location, price, ticketsAvailable });
+
         // Basic validation
-        if (!title || !date) {
-            return res.json({ success: false, message: 'Title and Date are required' });
+        if (!title || !date || !location || !price || !ticketsAvailable) {
+            return res.status(400).json({ success: false, message: 'All fields (Title, Date, Location, Price, Capacity) are required' });
         }
 
         const parseJSON = (str) => {
@@ -40,11 +44,14 @@ export const createEvent = async (req, res) => {
         });
 
         await newEvent.save();
+        debugLog("Event saved successfully", { id: newEvent._id });
         res.json({ success: true, message: 'Event created successfully', event: newEvent });
     } catch (error) {
-        res.json({ success: false, message: error.message });
+        errorLog("Create Event Controller Error", error);
+        res.status(500).json({ success: false, message: error.message });
     }
 };
+
 
 // Get Recommended Events (AI Logic)
 export const getRecommendedEvents = async (req, res) => {
@@ -86,10 +93,11 @@ export const getAllEvents = async (req, res) => {
 
 // Get Single Event
 export const getEventById = async (req, res) => {
+    console.log("GET Event request for ID:", req.params.id);
     try {
         const event = await Event.findById(req.params.id).populate('organizer', 'name email');
         if (!event) {
-            return res.json({ success: false, message: 'Event not found' });
+            return res.status(404).json({ success: false, message: 'Event not found' });
         }
         res.json({ success: true, event });
     } catch (error) {

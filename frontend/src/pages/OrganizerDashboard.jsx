@@ -4,7 +4,7 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { AppContent } from '../context/AppContext'
 import { motion, AnimatePresence } from 'framer-motion'
-import MapLocationPicker from '../components/MapLocationPicker'
+import LeafletLocationPicker from '../components/LeafletLocationPicker'
 import {
     LayoutDashboard,
     Hammer,
@@ -21,15 +21,19 @@ import {
     ChevronRight,
     Sparkles,
     Plus,
-    X
+    X,
+    Edit2
 } from 'lucide-react'
 
 const OrganizerDashboard = () => {
-    const { backendUrl, userData } = useContext(AppContent)
-    const navigate = useNavigate()
+    const context = useContext(AppContent);
+    const { backendUrl, userData, currency } = context || {};
+    const navigate = useNavigate();
+
+    console.log("OrganizerDashboard rendering, userData:", userData);
 
     // Step Management
-    const [activeStep, setActiveStep] = useState('build') // build, tickets, publish, list
+    const [activeStep, setActiveStep] = useState('build'); // build, tickets, publish, list
 
     // Event Data State
     const [eventData, setEventData] = useState({
@@ -49,12 +53,12 @@ const OrganizerDashboard = () => {
             parking: 'Free parking'
         },
         faqs: []
-    })
-    const [imageFile, setImageFile] = useState(null)
+    });
+    const [imageFile, setImageFile] = useState(null);
 
-    const [loading, setLoading] = useState(false)
-    const [events, setEvents] = useState([])
-    const [stats, setStats] = useState(null)
+    const [loading, setLoading] = useState(false);
+    const [events, setEvents] = useState([]);
+    const [stats, setStats] = useState(null);
 
     const fetchData = async () => {
         try {
@@ -72,19 +76,17 @@ const OrganizerDashboard = () => {
         fetchData()
     }, [backendUrl])
 
-    const handleCreateEvent = async () => {
+    const handleSubmitEvent = async () => {
         try {
             setLoading(true)
 
             const formData = new FormData()
             // Append all eventData fields to formData
             Object.keys(eventData).forEach(key => {
-                if (key === 'highlights' || key === 'faqs') {
-                    formData.append(key, JSON.stringify(eventData[key]))
-                } else if (key === 'coordinates') {
+                if (key === 'highlights' || key === 'faqs' || key === 'ticketTypes' || key === 'coordinates') {
                     formData.append(key, JSON.stringify(eventData[key]))
                 } else if (key === 'image' && imageFile) {
-                    // Skip 'image' URL if we have a file
+                    // Skip 'image' URL if we have a file - it will be appended separately
                 } else {
                     formData.append(key, eventData[key])
                 }
@@ -95,25 +97,15 @@ const OrganizerDashboard = () => {
                 formData.append('image', imageFile)
             }
 
-            const { data } = await axios.post(backendUrl + '/api/events/create',
-                formData,
-                {
-                    withCredentials: true,
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                }
-            )
+            const { data } = await axios.post(`${backendUrl}/api/events/create`, formData, {
+                withCredentials: true,
+                headers: { 'Content-Type': 'multipart/form-data' }
+            })
 
             if (data.success) {
                 toast.success('Event launched successfully!')
                 setActiveStep('list')
-                setEventData({
-                    title: '', summary: '', description: '', date: '', location: '',
-                    coordinates: { latitude: null, longitude: null },
-                    category: 'Music', image: '', price: '', ticketsAvailable: '100',
-                    highlights: { ageRestriction: 'All ages allowed', doorTime: '', parking: 'Free parking' },
-                    faqs: []
-                })
-                setImageFile(null)
+                resetForm()
                 fetchData()
             } else {
                 toast.error(data.message)
@@ -124,6 +116,19 @@ const OrganizerDashboard = () => {
             setLoading(false)
         }
     }
+
+    const resetForm = () => {
+        setEventData({
+            title: '', summary: '', description: '', date: '', location: '',
+            coordinates: { latitude: null, longitude: null },
+            category: 'Music', image: '', price: '', ticketsAvailable: '100',
+            highlights: { ageRestriction: 'All ages allowed', doorTime: '', parking: 'Free parking' },
+            faqs: []
+        })
+        setImageFile(null)
+    }
+
+
 
     const deleteEvent = async (id) => {
         if (!confirm('Are you sure you want to delete this event?')) return
@@ -236,7 +241,7 @@ const OrganizerDashboard = () => {
                                         {[
                                             { label: 'Active Events', value: stats?.totalEvents || 0, icon: Calendar, color: 'blue' },
                                             { label: 'Tickets Sold', value: stats?.totalTicketsSold || 0, icon: Ticket, color: 'purple' },
-                                            { label: 'Revenue', value: `$${stats?.totalRevenue || 0}`, icon: DollarSign, color: 'green' }
+                                            { label: 'Revenue', value: `${currency}${stats?.totalRevenue || 0}`, icon: DollarSign, color: 'green' }
                                         ].map((s, i) => (
                                             <div key={i} className="group bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900/50 dark:to-gray-900/30 p-6 rounded-3xl border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer">
                                                 <div className="flex justify-between items-start">
@@ -308,6 +313,7 @@ const OrganizerDashboard = () => {
                                                             <TrendingUp className="w-4 h-4" />
                                                             Insights
                                                         </button>
+
                                                         <button
                                                             onClick={() => deleteEvent(event._id)}
                                                             className="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-all duration-300 hover:scale-110"
@@ -347,7 +353,7 @@ const OrganizerDashboard = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
                                             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Total Revenue</p>
-                                            <h3 className="text-4xl font-black text-green-500">${viewingEventStats?.revenue || 0}</h3>
+                                            <h3 className="text-4xl font-black text-green-500">{currency}{viewingEventStats?.revenue || 0}</h3>
                                         </div>
                                         <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
                                             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Tickets Sold</p>
@@ -396,7 +402,7 @@ const OrganizerDashboard = () => {
                                                                     </div>
                                                                 </td>
                                                                 <td className="py-4 px-6 text-sm font-bold">{booking.tickets}</td>
-                                                                <td className="py-4 px-6 text-sm font-black text-green-500">${booking.totalAmount}</td>
+                                                                <td className="py-4 px-6 text-sm font-black text-green-500">{currency}{booking.totalAmount}</td>
                                                                 <td className="py-4 px-6 text-sm text-gray-500 font-medium">{new Date(booking.createdAt).toLocaleDateString()}</td>
                                                                 <td className="py-4 px-6">
                                                                     <span className="px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-full">
@@ -434,7 +440,7 @@ const OrganizerDashboard = () => {
                                             onClick={() => document.getElementById('imageInput').click()}
                                         >
                                             {eventData.image ? (
-                                                <img src={eventData.image} className="absolute inset-0 w-full h-full object-cover" />
+                                                <img src={eventData.image.startsWith('/uploads') ? backendUrl + eventData.image : eventData.image} className="absolute inset-0 w-full h-full object-cover" />
                                             ) : (
                                                 <>
                                                     <div className="p-4 bg-white dark:bg-gray-800 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -545,7 +551,7 @@ const OrganizerDashboard = () => {
                                             {/* Map Location Picker */}
                                             <div className="border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-6 hover:border-blue-200 dark:hover:border-blue-900 transition-all duration-300">
                                                 <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-4">Pin Location on Map</label>
-                                                <MapLocationPicker
+                                                <LeafletLocationPicker
                                                     initialLat={eventData.coordinates?.latitude}
                                                     initialLng={eventData.coordinates?.longitude}
                                                     onLocationSelect={(coords) => {
@@ -589,7 +595,7 @@ const OrganizerDashboard = () => {
                                                         Base Price
                                                     </label>
                                                     <div className="flex items-center">
-                                                        <span className="text-4xl font-black text-blue-600 mr-2">$</span>
+                                                        <span className="text-4xl font-black text-blue-600 mr-2">{currency}</span>
                                                         <input
                                                             type="number"
                                                             placeholder="0.00"
@@ -753,7 +759,7 @@ const OrganizerDashboard = () => {
                                         </div>
 
                                         <button
-                                            onClick={handleCreateEvent}
+                                            onClick={handleSubmitEvent}
                                             disabled={loading}
                                             className="w-full py-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-[2rem] font-black text-xl hover:from-blue-700 hover:to-blue-600 hover:scale-[1.02] transition-all duration-300 shadow-2xl shadow-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                                         >
@@ -789,4 +795,3 @@ const OrganizerDashboard = () => {
 }
 
 export default OrganizerDashboard
-

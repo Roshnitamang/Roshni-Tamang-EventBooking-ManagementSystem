@@ -3,12 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify';
-import MapComponent from '../components/MapComponent';
+import OpenSourceMap from '../components/OpenSourceMap';
 
 const EventDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { backendUrl, isLoggedin } = useContext(AppContent);
+    const { backendUrl, isLoggedin, currency } = useContext(AppContent);
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -33,27 +33,27 @@ const EventDetails = () => {
     const startDate = new Date(event.date);
 
     return (
-        <div className="min-h-screen bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
-            <div className="w-full h-[400px] relative overflow-hidden bg-black flex items-center justify-center">
-                {event.image ? (
-                    <img src={event.image.startsWith('/uploads') ? backendUrl + event.image : event.image} alt={event.title} className="w-full h-full object-cover blur-2xl opacity-40 scale-110" />
-                ) : null}
-                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="min-h-screen bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 pt-6">
 
-                <div className="relative z-20 max-w-5xl w-full px-6 flex justify-center">
-                    <div className="w-full max-w-4xl aspect-[16/9] shadow-2xl rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
-                        {event.image ? (
-                            <img src={event.image.startsWith('/uploads') ? backendUrl + event.image : event.image} alt={event.title} className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                                <svg className="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                            </div>
-                        )}
-                    </div>
+            {/* Boxed Hero Image Section matching Home.jsx */}
+            <div className="max-w-7xl mx-auto px-6">
+                <div className="w-full h-[360px] relative overflow-hidden rounded-2xl bg-black flex items-center justify-center">
+                    {event.image ? (
+                        <img
+                            src={event.image.startsWith('/uploads') ? backendUrl + event.image : event.image}
+                            alt={event.title}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                            <svg className="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        </div>
+                    )}
+                    {/* Optional: Add a subtle overlay if desired, but keeping it clean for now as per robust image viewing */}
                 </div>
             </div>
 
-            <div className="max-w-5xl mx-auto px-6 py-12">
+            <div className="max-w-7xl mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
 
                     {/* LEFT COLUMN: Info */}
@@ -116,12 +116,15 @@ const EventDetails = () => {
                                     <span className="font-semibold">{event.location}</span>
                                 </div>
 
-                                {/* Google Map */}
-                                <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                                    <MapComponent
+
+
+                                {/* Open Source Map */}
+                                <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-xl">
+                                    <OpenSourceMap
                                         latitude={event.coordinates?.latitude}
                                         longitude={event.coordinates?.longitude}
-                                        height="300px"
+                                        address={event.location}
+                                        height="400px"
                                     />
                                 </div>
                             </div>
@@ -151,7 +154,7 @@ const EventDetails = () => {
                                     <div>
                                         <p className="text-xs font-black uppercase text-gray-400 mb-1">Price from</p>
                                         <p className="text-3xl font-black text-gray-900 dark:text-white">
-                                            {event.price > 0 ? `$${event.price}` : 'Free'}
+                                            {event.price > 0 ? `${currency}${event.price}` : 'Free'}
                                         </p>
                                     </div>
                                     <div className="text-right">
