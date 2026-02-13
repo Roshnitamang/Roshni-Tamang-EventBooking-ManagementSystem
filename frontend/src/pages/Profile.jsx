@@ -9,12 +9,15 @@ const Profile = () => {
     const { backendUrl, userData, getUserData } = useContext(AppContent);
     const navigate = useNavigate();
     const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [newPassword, setNewPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [requestLoading, setRequestLoading] = useState(false);
 
     useEffect(() => {
         if (userData) {
             setName(userData.name);
+            setEmail(userData.email);
         }
     }, [userData]);
 
@@ -22,9 +25,13 @@ const Profile = () => {
         e.preventDefault();
         try {
             setLoading(true);
-            const { data } = await axios.put(`${backendUrl}/api/user/update-profile`, { name }, { withCredentials: true });
+            const { data } = await axios.put(`${backendUrl}/api/user/update-profile`,
+                { name, email, newPassword },
+                { withCredentials: true }
+            );
             if (data.success) {
                 toast.success(data.message);
+                setNewPassword(''); // Clear password field
                 getUserData(); // Refresh global state
             } else {
                 toast.error(data.message);
@@ -92,12 +99,24 @@ const Profile = () => {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase text-gray-400 tracking-widest ml-1 opacity-50">Email Address (Read only)</label>
+                                        <label className="text-xs font-black uppercase text-gray-400 tracking-widest ml-1">Email Address</label>
                                         <input
                                             type="email"
-                                            value={userData.email}
-                                            disabled
-                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 cursor-not-allowed opacity-60 dark:text-gray-400 font-semibold"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition outline-none dark:text-white font-semibold"
+                                            placeholder="Enter your email"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black uppercase text-gray-400 tracking-widest ml-1">New Password (leave blank to keep current)</label>
+                                        <input
+                                            type="password"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition outline-none dark:text-white font-semibold"
+                                            placeholder="Enter new password"
                                         />
                                     </div>
                                     <button

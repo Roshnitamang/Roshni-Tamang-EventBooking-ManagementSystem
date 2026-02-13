@@ -62,26 +62,14 @@ const Navbar = () => {
 
           {/* SEARCH BAR */}
           <div className="hidden md:flex flex-1 items-center gap-2">
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2.5 w-full border border-transparent focus-within:border-blue-500/50 focus-within:bg-white dark:focus-within:bg-gray-800 transition-all duration-300">
+            <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2.5 max-w-sm border border-transparent focus-within:border-blue-500/50 focus-within:bg-white dark:focus-within:bg-gray-800 transition-all duration-300">
               <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
                 type="text"
-                placeholder="Search events"
-                className="bg-transparent flex-1 outline-none text-sm text-gray-700 dark:text-gray-200"
-                onChange={(e) => {
-                  setSearchQuery(e.target.value)
-                  if (location.pathname !== '/') {
-                    navigate('/')
-                  }
-                }}
-              />
-              <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-3" />
-              <input
-                type="text"
                 placeholder="Location"
-                className="bg-transparent w-36 outline-none text-sm text-gray-700 dark:text-gray-200"
+                className="bg-transparent flex-1 outline-none text-sm text-gray-700 dark:text-gray-200"
               />
             </div>
           </div>
@@ -96,9 +84,6 @@ const Navbar = () => {
             </NavLink>
             <NavLink to="/help" className="hover:text-black dark:hover:text-white">
               Help Center
-            </NavLink>
-            <NavLink to="/my-bookings" className="hover:text-black dark:hover:text-white">
-              Find my tickets
             </NavLink>
           </ul>
 
@@ -154,12 +139,6 @@ const Navbar = () => {
                       className="w-full text-left px-4 py-3 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/40 text-gray-700 dark:text-gray-300 transition"
                     >
                       Dashboard
-                    </button>
-                    <button
-                      onClick={() => navigate('/my-bookings')}
-                      className="w-full text-left px-4 py-3 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/40 text-gray-700 dark:text-gray-300 transition"
-                    >
-                      My Tickets
                     </button>
                     <div className="h-px bg-gray-50 dark:bg-gray-800 my-1"></div>
                     <button

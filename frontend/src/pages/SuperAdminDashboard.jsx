@@ -4,6 +4,7 @@ import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify';
 import SiteSettingsDashboard from '../components/SiteSettingsDashboard';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
     Users,
@@ -41,11 +42,24 @@ import {
 
 const SuperAdminDashboard = () => {
     const { backendUrl, currency } = useContext(AppContent);
+    const location = useLocation();
     const [stats, setStats] = useState(null);
     const [users, setUsers] = useState([]);
     const [events, setEvents] = useState([]);
+    const [pendingOrganizers, setPendingOrganizers] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [activeStep, setActiveStep] = useState('stats'); // stats, analytics, users, events, settings, insights
+    const [activeStep, setActiveStep] = useState(location.state?.activeStep || 'stats'); // stats, analytics, users, events, organizers, settings, insights
+
+    useEffect(() => {
+        if (location.state?.activeStep) {
+            setActiveStep(location.state.activeStep);
+
+            // Clear state and mode after handling to prevent re-triggering
+            const newState = { ...location.state };
+            delete newState.activeStep;
+            window.history.replaceState(newState, document.title);
+        }
+    }, [location.state]);
 
     // Insights State
     const [selectedEventId, setSelectedEventId] = useState(null);
@@ -63,6 +77,9 @@ const SuperAdminDashboard = () => {
 
             const eventsRes = await axios.get(`${backendUrl}/api/admin/events`, { withCredentials: true });
             if (eventsRes.data.success) setEvents(eventsRes.data.events);
+
+            const orgsRes = await axios.get(`${backendUrl}/api/admin/organizers/pending`, { withCredentials: true });
+            if (orgsRes.data.success) setPendingOrganizers(orgsRes.data.organizers);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -73,6 +90,32 @@ const SuperAdminDashboard = () => {
     useEffect(() => {
         fetchData();
     }, [backendUrl]);
+
+    const approveOrganizer = async (id) => {
+        if (!confirm("Approve this organizer request?")) return;
+        try {
+            const { data } = await axios.put(`${backendUrl}/api/admin/organizers/${id}/approve`, {}, { withCredentials: true });
+            if (data.success) {
+                toast.success("Organizer approved");
+                fetchData();
+            }
+        } catch {
+            toast.error("Failed to approve");
+        }
+    };
+
+    const rejectOrganizer = async (id) => {
+        if (!confirm("Reject this organizer request?")) return;
+        try {
+            const { data } = await axios.put(`${backendUrl}/api/admin/organizers/${id}/reject`, {}, { withCredentials: true });
+            if (data.success) {
+                toast.warning("Organizer request rejected");
+                fetchData();
+            }
+        } catch {
+            toast.error("Failed to reject");
+        }
+    };
 
     const updateUserRole = async (id, role) => {
         if (!confirm(`Are you sure you want to change this user's role to ${role}?`)) return;
@@ -135,7 +178,7 @@ const SuperAdminDashboard = () => {
     const COLORS = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#EC4899'];
 
     // UI Helpers
-    const NavLink = ({ id, label, icon: Icon }) => (
+    const NavLink = ({ id, label, icon: Icon, badge }) => (
         <button
             onClick={() => setActiveStep(id)}
             className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-300 group ${activeStep === id
@@ -150,7 +193,12 @@ const SuperAdminDashboard = () => {
                 <Icon className={`w-5 h-5 transition-transform duration-300 ${activeStep === id ? 'scale-110' : 'group-hover:scale-110'}`} />
             </div>
             <span className="font-semibold text-sm">{label}</span>
-            {activeStep === id && <ChevronRight className="w-4 h-4 ml-auto" />}
+            {badge > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+                    {badge}
+                </span>
+            )}
+            {activeStep === id && !badge && <ChevronRight className="w-4 h-4 ml-auto" />}
         </button>
     );
 
@@ -174,6 +222,7 @@ const SuperAdminDashboard = () => {
                         <p className="px-4 text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Global Control</p>
                         <NavLink id="users" label="User Management" icon={Users} />
                         <NavLink id="events" label="Global Events" icon={Calendar} />
+                        <NavLink id="organizers" label="Organizer Requests" icon={Briefcase} badge={pendingOrganizers.length} />
                         <NavLink id="settings" label="Site Appearance" icon={Settings} />
                     </div>
 
@@ -400,6 +449,43 @@ const SuperAdminDashboard = () => {
                                                 </div>
                                             </div>
                                         ))}
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* ORGANIZER REQUESTS */}
+                            {activeStep === 'organizers' && (
+                                <motion.div key="organizers" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
+                                    <header>
+                                        <h2 className="text-3xl font-bold">Organizer Requests</h2>
+                                        <p className="text-gray-500 mt-1">Review and approve new organizer account requests.</p>
+                                    </header>
+                                    <div className="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+                                        <table className="w-full text-left">
+                                            <thead className="bg-gray-50 dark:bg-gray-800/50 text-[10px] uppercase font-bold text-gray-400 tracking-widest">
+                                                <tr>
+                                                    <th className="py-4 px-6">Requester</th>
+                                                    <th className="py-4 px-6">Email</th>
+                                                    <th className="py-4 px-6 text-right">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                                {pendingOrganizers.length === 0 ? (
+                                                    <tr><td colSpan="3" className="py-12 text-center text-gray-400">No pending requests.</td></tr>
+                                                ) : pendingOrganizers.map(org => (
+                                                    <tr key={org._id}>
+                                                        <td className="py-4 px-6 font-bold text-sm">{org.name}</td>
+                                                        <td className="py-4 px-6 text-sm text-gray-500">{org.email}</td>
+                                                        <td className="py-4 px-6 text-right">
+                                                            <div className="flex justify-end gap-3">
+                                                                <button onClick={() => approveOrganizer(org._id)} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 hover:scale-105 transition-all">Approve</button>
+                                                                <button onClick={() => rejectOrganizer(org._id)} className="px-5 py-2.5 border border-red-500 text-red-500 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-50 hover:scale-105 transition-all">Reject</button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </motion.div>
                             )}

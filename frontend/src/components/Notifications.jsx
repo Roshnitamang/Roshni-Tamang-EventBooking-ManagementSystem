@@ -2,12 +2,14 @@ import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const Notifications = () => {
     const { backendUrl, userData } = useContext(AppContent);
     const [notifications, setNotifications] = useState([]);
     const [show, setShow] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const navigate = useNavigate();
 
     const fetchNotifications = async () => {
         try {
@@ -29,13 +31,22 @@ const Notifications = () => {
         }
     }, [userData, backendUrl]);
 
-    const markAsRead = async (id) => {
-        try {
-            await axios.put(`${backendUrl}/api/notifications/${id}/read`, {}, { withCredentials: true });
-            setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
-            setUnreadCount(prev => Math.max(0, prev - 1));
-        } catch (error) {
-            console.error("Error marking read");
+    const handleNotificationClick = async (n) => {
+        if (!n.isRead) {
+            try {
+                await axios.put(`${backendUrl}/api/notifications/${n._id}/read`, {}, { withCredentials: true });
+                setNotifications(notifications.map(notif => notif._id === n._id ? { ...notif, isRead: true } : notif));
+                setUnreadCount(prev => Math.max(0, prev - 1));
+            } catch (error) {
+                console.error("Error marking read");
+            }
+        }
+
+        // Handle Navigation
+        if (n.message.toLowerCase().includes('organizer request')) {
+            const targetDashboard = userData.role === 'super-admin' ? '/super-admin-dashboard' : '/admin-dashboard';
+            navigate(targetDashboard, { state: { activeStep: 'organizers' } });
+            setShow(false);
         }
     };
 
@@ -61,7 +72,7 @@ const Notifications = () => {
                                 <div
                                     key={n._id}
                                     className={`p-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 ${n.isRead ? 'opacity-50' : 'bg-blue-50 dark:bg-blue-900/10'}`}
-                                    onClick={() => !n.isRead && markAsRead(n._id)}
+                                    onClick={() => handleNotificationClick(n)}
                                 >
                                     <p className="text-sm text-gray-800 dark:text-gray-200">{n.message}</p>
                                     <span className="text-xs text-gray-400">{new Date(n.createdAt).toLocaleTimeString()}</span>

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
     Users,
@@ -39,12 +40,24 @@ import {
 
 const AdminDashboard = () => {
     const { backendUrl, currency } = useContext(AppContent);
+    const location = useLocation();
     const [stats, setStats] = useState(null);
     const [users, setUsers] = useState([]);
     const [events, setEvents] = useState([]);
     const [pendingOrganizers, setPendingOrganizers] = useState([]);
-    const [activeStep, setActiveStep] = useState('stats'); // stats, analytics, users, events, organizers, insights
+    const [activeStep, setActiveStep] = useState(location.state?.activeStep || 'stats'); // stats, analytics, users, events, organizers, insights
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (location.state?.activeStep) {
+            setActiveStep(location.state.activeStep);
+
+            // Clear state and mode after handling to prevent re-triggering
+            const newState = { ...location.state };
+            delete newState.activeStep;
+            window.history.replaceState(newState, document.title);
+        }
+    }, [location.state]);
 
     // Insights State
     const [selectedEventId, setSelectedEventId] = useState(null);
@@ -116,6 +129,7 @@ const AdminDashboard = () => {
     };
 
     const approveOrganizer = async (id) => {
+        if (!confirm("Approve this organizer request?")) return;
         try {
             const { data } = await axios.put(`${backendUrl}/api/admin/organizers/${id}/approve`, {}, { withCredentials: true });
             if (data.success) {
@@ -124,6 +138,19 @@ const AdminDashboard = () => {
             }
         } catch {
             toast.error("Failed to approve");
+        }
+    };
+
+    const rejectOrganizer = async (id) => {
+        if (!confirm("Reject this organizer request?")) return;
+        try {
+            const { data } = await axios.put(`${backendUrl}/api/admin/organizers/${id}/reject`, {}, { withCredentials: true });
+            if (data.success) {
+                toast.warning("Organizer request rejected");
+                fetchData();
+            }
+        } catch {
+            toast.error("Failed to reject");
         }
     };
 
@@ -149,7 +176,7 @@ const AdminDashboard = () => {
     const COLORS = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#EC4899'];
 
     // UI Helpers
-    const NavLink = ({ id, label, icon: Icon }) => (
+    const NavLink = ({ id, label, icon: Icon, badge }) => (
         <button
             onClick={() => setActiveStep(id)}
             className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-300 group ${activeStep === id
@@ -164,7 +191,12 @@ const AdminDashboard = () => {
                 <Icon className={`w-5 h-5 transition-transform duration-300 ${activeStep === id ? 'scale-110' : 'group-hover:scale-110'}`} />
             </div>
             <span className="font-semibold text-sm">{label}</span>
-            {activeStep === id && <ChevronRight className="w-4 h-4 ml-auto" />}
+            {badge > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+                    {badge}
+                </span>
+            )}
+            {activeStep === id && !badge && <ChevronRight className="w-4 h-4 ml-auto" />}
         </button>
     );
 
@@ -188,7 +220,7 @@ const AdminDashboard = () => {
                         <p className="px-4 text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Management</p>
                         <NavLink id="users" label="User Directory" icon={Users} />
                         <NavLink id="events" label="Events" icon={Calendar} />
-                        <NavLink id="organizers" label="Organizer Requests" icon={Briefcase} />
+                        <NavLink id="organizers" label="Organizer Requests" icon={Briefcase} badge={pendingOrganizers.length} />
                     </div>
 
                     {/* Main Content Area */}
@@ -503,7 +535,10 @@ const AdminDashboard = () => {
                                                         <td className="py-4 px-6 font-bold text-sm">{org.name}</td>
                                                         <td className="py-4 px-6 text-sm text-gray-500">{org.email}</td>
                                                         <td className="py-4 px-6 text-right">
-                                                            <button onClick={() => approveOrganizer(org._id)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase shadow-lg shadow-blue-500/20">Approve</button>
+                                                            <div className="flex justify-end gap-2">
+                                                                <button onClick={() => approveOrganizer(org._id)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all">Approve</button>
+                                                                <button onClick={() => rejectOrganizer(org._id)} className="px-4 py-2 border border-red-500 text-red-500 rounded-lg text-xs font-bold uppercase hover:bg-red-50 transition-all">Reject</button>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))}

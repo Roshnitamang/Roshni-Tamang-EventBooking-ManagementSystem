@@ -40,73 +40,154 @@ const AttendeeDashboard = () => {
   };
 
   useEffect(() => {
+    fetchEvents();
     fetchBookings();
-  }, [backendUrl]);
+  }, [backendUrl, search, category]);
 
-  const upcomingBookings = bookings.filter(b => new Date(b.eventId?.date) >= new Date());
-  const pastBookings = bookings.filter(b => new Date(b.eventId?.date) < new Date());
+  const upcomingBookings = bookings.filter(b => b.eventId && new Date(b.eventId.date) >= new Date());
+  const pastBookings = bookings.filter(b => b.eventId && new Date(b.eventId.date) < new Date());
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto min-h-screen bg-gray-50 dark:bg-[#0f0f10]">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start mb-10 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            My Tickets
+          <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
+            User Dashboard
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 uppercase text-xs font-bold tracking-widest">
-            Manage your booked events and experiences
+          <p className="text-gray-500 dark:text-gray-400 mt-2 uppercase text-[10px] font-black tracking-[0.2em]">
+            {activeTab === 'browse' ? 'Discover and explore upcoming experiences' : 'Manage your booked events and experiences'}
           </p>
         </div>
-        <Link
-          to="/"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-lg shadow-blue-500/30 transition flex items-center gap-2"
-        >
-          <span>Find more events</span>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-        </Link>
+
+        {/* Tab Switcher */}
+        <div className="flex p-1 bg-gray-200/50 dark:bg-gray-800/50 rounded-2xl backdrop-blur-sm">
+          <button
+            onClick={() => setActiveTab('browse')}
+            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'browse' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-xl' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+          >
+            Browse Events
+          </button>
+          <button
+            onClick={() => setActiveTab('bookings')}
+            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'bookings' ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-xl' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+          >
+            My Tickets
+          </button>
+        </div>
       </div>
 
-      {/* Bookings View */}
-      <div className="space-y-12">
-        {/* Upcoming */}
-        <section>
-          <div className="flex items-center gap-3 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Upcoming Events</h2>
-            <span className="bg-green-100 text-green-700 px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-tighter">
-              {upcomingBookings.length}
-            </span>
+      {activeTab === 'browse' ? (
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Search/Filter Bar */}
+          <div className="flex flex-col md:flex-row gap-4">
+            <input
+              type="text"
+              placeholder="Search events..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 px-6 py-3.5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 outline-none shadow-sm focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
+            />
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="px-6 py-3.5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 outline-none shadow-sm focus:ring-2 focus:ring-blue-500/20 transition-all font-bold text-sm"
+            >
+              <option value="">All Categories</option>
+              <option value="Concert">Concert</option>
+              <option value="Conference">Conference</option>
+              <option value="Workshop">Workshop</option>
+              <option value="Meetup">Meetup</option>
+            </select>
           </div>
 
-          {upcomingBookings.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
-              <p className="text-gray-400">No upcoming bookings. Start exploring!</p>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              {upcomingBookings.map((booking) => (
-                <BookingCard key={booking._id} booking={booking} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Past */}
-        <section>
-          <div className="flex items-center gap-3 mb-8">
-            <h2 className="text-2xl font-bold text-gray-400 dark:text-gray-500">Past Experiences</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {events.length === 0 ? (
+              <div className="col-span-full py-20 text-center bg-white dark:bg-gray-800 rounded-[2.5rem] border border-dashed border-gray-200 dark:border-gray-700">
+                <p className="text-gray-400 font-medium">No events found matching your search.</p>
+              </div>
+            ) : (
+              events.map((event) => (
+                <Link
+                  key={event._id}
+                  to={`/event/${event._id}`}
+                  className="group bg-white dark:bg-gray-800 rounded-[2rem] overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-2xl hover:scale-[1.02] transition-all duration-300"
+                >
+                  <div className="aspect-[16/10] overflow-hidden relative">
+                    <img
+                      src={event.image && event.image.startsWith('/uploads') ? backendUrl + event.image : event.image}
+                      alt={event.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600">
+                        {event.category}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-bold text-lg mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">{event.title}</h3>
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs font-medium mb-4">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {new Date(event.date).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-700">
+                      <span className="text-xl font-black text-gray-900 dark:text-white">
+                        {currency}{event.price || 0}
+                      </span>
+                      <span className="text-[10px] font-black uppercase text-blue-600 tracking-tighter group-hover:translate-x-1 transition-transform">
+                        View Details →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
-          {pastBookings.length === 0 ? (
-            <p className="text-gray-400 italic text-sm">No past bookings found.</p>
-          ) : (
-            <div className="grid gap-6 opacity-75">
-              {pastBookings.map((booking) => (
-                <BookingCard key={booking._id} booking={booking} />
-              ))}
+        </div>
+      ) : (
+        /* Bookings View */
+        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Upcoming */}
+          <section>
+            <div className="flex items-center gap-3 mb-8">
+              <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Upcoming Events</h2>
+              <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                {upcomingBookings.length}
+              </span>
             </div>
-          )}
-        </section>
-      </div>
+
+            {upcomingBookings.length === 0 ? (
+              <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-[2.5rem] border border-dashed border-gray-200 dark:border-gray-700">
+                <Ticket className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
+                <p className="text-gray-400 font-medium italic">No upcoming bookings. Start exploring!</p>
+              </div>
+            ) : (
+              <div className="grid gap-6">
+                {upcomingBookings.map((booking) => (
+                  <BookingCard key={booking._id} booking={booking} />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Past */}
+          <section>
+            <div className="flex items-center gap-3 mb-8">
+              <h2 className="text-2xl font-bold text-gray-400 dark:text-gray-600 tracking-tight">Past Experiences</h2>
+            </div>
+            {pastBookings.length === 0 ? (
+              <p className="text-gray-400 italic text-sm font-medium">No past bookings found.</p>
+            ) : (
+              <div className="grid gap-6 opacity-75 grayscale hover:grayscale-0 transition-all duration-500">
+                {pastBookings.map((booking) => (
+                  <BookingCard key={booking._id} booking={booking} />
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
     </div>
   )
 }
@@ -114,7 +195,7 @@ const AttendeeDashboard = () => {
 const BookingCard = ({ booking }) => {
   const { backendUrl, currency } = useContext(AppContent);
   const [showMap, setShowMap] = useState(false);
-  const { eventId, tickets, totalAmount, createdAt } = booking;
+  const { eventId, tickets, totalAmount } = booking;
   if (!eventId) return null;
 
   return (
