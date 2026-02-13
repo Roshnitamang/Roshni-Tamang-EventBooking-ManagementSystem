@@ -13,6 +13,11 @@ export const register = async (req, res) => {
         return res.json({ success: false, message: 'Missing Details' })
     }
 
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(email)) {
+        return res.json({ success: false, message: 'Invalid Email Format' });
+    }
+
     try {
 
         const existingUser = await userModal.findOne({ email })

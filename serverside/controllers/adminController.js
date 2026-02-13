@@ -214,6 +214,22 @@ export const demoteOrganizer = async (req, res) => {
     }
 };
 
+export const rejectOrganizer = async (req, res) => {
+    try {
+        await User.findByIdAndUpdate(req.params.id, {
+            isOrganizerRequested: false,
+            isApproved: false
+        });
+
+        res.json({
+            success: true,
+            message: 'Organizer request rejected'
+        });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
 export const updateUserRole = async (req, res) => {
     try {
         const { role } = req.body;
