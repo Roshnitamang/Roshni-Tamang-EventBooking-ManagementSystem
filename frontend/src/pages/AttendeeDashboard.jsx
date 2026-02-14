@@ -94,10 +94,13 @@ const AttendeeDashboard = () => {
               className="px-6 py-3.5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 outline-none shadow-sm focus:ring-2 focus:ring-blue-500/20 transition-all font-bold text-sm"
             >
               <option value="">All Categories</option>
-              <option value="Concert">Concert</option>
-              <option value="Conference">Conference</option>
-              <option value="Workshop">Workshop</option>
-              <option value="Meetup">Meetup</option>
+              <option value="Music">Music</option>
+              <option value="Nightlife">Nightlife</option>
+              <option value="Health">Health</option>
+              <option value="Holidays">Holidays</option>
+              <option value="Hobbies">Hobbies</option>
+              <option value="Business">Business</option>
+              <option value="Food">Food</option>
             </select>
           </div>
 

@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react'
 import axios from 'axios'
 import { AppContent } from '../context/AppContext'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Music, Moon, Heart, Calendar, Briefcase, ShoppingCart, Palette } from 'lucide-react'
 
 function Home() {
   const { backendUrl, searchQuery, currency } = useContext(AppContent)
+  const location = useLocation()
   const [heroData, setHeroData] = useState({
     heroTitle: 'Discover Amazing Events',
     heroSubtitle: 'Find and book the best local events happening around you.',
@@ -15,6 +16,12 @@ function Home() {
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [filteredEvents, setFilteredEvents] = useState([])
+
+  useEffect(() => {
+    if (location.pathname === '/all-events') {
+      setSelectedCategory(null)
+    }
+  }, [location.pathname])
 
   useEffect(() => {
     fetchEvents()

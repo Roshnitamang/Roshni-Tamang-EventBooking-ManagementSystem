@@ -76,6 +76,9 @@ const Navbar = () => {
 
           {/* PRIMARY NAV LINKS */}
           <ul className="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <NavLink to="/" className="hover:text-black dark:hover:text-white">
+              Home
+            </NavLink>
             <NavLink to="/all-events" className="hover:text-black dark:hover:text-white">
               Find Events
             </NavLink>

@@ -19,6 +19,7 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard'
 import AttendeeDashboard from './pages/AttendeeDashboard'
 import RequestOrganizer from './pages/RequestOrganizer'
 import Profile from './pages/Profile'
+import Help from './pages/Help'
 
 const App = () => {
   const { theme } = useTheme()
@@ -35,6 +36,7 @@ const App = () => {
             <Route path="/all-events" element={<Home />} />
             <Route path="/event/:id" element={<EventDetails />} />
             <Route path="/checkout/:id" element={<Checkout />} />
+            <Route path="/help" element={<Help />} />
 
             <Route path="/email-verify" element={<EmailVerify />} />
             <Route path="/reset-password" element={<ResetPassword />} />
