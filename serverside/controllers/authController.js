@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import userModal from "../models/User.js";
 import transporter from "../config/nodemailer.js";
 import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE } from '../config/emailTemplates.js'
@@ -42,34 +43,33 @@ export const register = async (req, res) => {
         // Organizer Approval Logic
         const isApproved = role === 'organizer' ? false : true;
 
+        // Generate Verification Token
+        const verificationToken = crypto.randomBytes(32).toString("hex");
+
         const user = new userModal({
             name,
             email,
             password: hashedPassword,
             role: email === 'ghisingrosnee207@gmail.com' ? 'super-admin' : (email === 'nischayachamlingraii@gmail.com' ? 'admin' : (role || 'user')),
-            isApproved
+            isApproved,
+            verifyToken: verificationToken,
+            verifyTokenExpireAt: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
         });
 
         await user.save();
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_CODE, { expiresIn: '10d' });
-
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 10 * 24 * 60 * 60 * 1000
-        });
+        // Send Verification Email
+        const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}&userId=${user._id}`;
 
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: email,
-            subject: 'Welcome to Event Manger',
-            text: 'welcome to event manager zone'
+            subject: 'Verify your Account',
+            html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", email)
         }
         await transporter.sendMail(mailOptions);
 
-        return res.json({ success: true });
+        return res.json({ success: true, message: "Registration successful. Please check your email to verify your account." });
 
     } catch (error) {
         res.json({ success: false, message: error.message })
@@ -99,6 +99,11 @@ export const login = async (req, res) => {
         } else if (user.email === 'nischayachamlingraii@gmail.com' && user.role !== 'admin') {
             user.role = 'admin';
             await user.save();
+        }
+
+        // Check if Account is Verified
+        if (!user.isAccountVerified && user.email !== 'nischayachamlingraii@gmail.com' && user.email !== 'ghisingrosnee207@gmail.com') {
+            return res.json({ success: false, message: 'Please verify your email first.' });
         }
 
         if (user.role === 'organizer' && !user.isApproved) {
@@ -152,48 +157,56 @@ export const logout = async (req, res) => {
     }
 }
 
-export const sendVerifyOtp = async (req, res) => {
+export const resendVerificationEmail = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const { email } = req.body;
 
-        const user = await userModal.findById(userId);
-
-        if (user.isAccountVerified) {
-            return res.json({ success: false, message: "Account is already verifies" })
+        if (!email) {
+            return res.json({ success: false, message: "Email is required" });
         }
 
-        const otp = String(Math.floor(100000 + Math.random() * 900000));
+        const user = await userModal.findOne({ email });
 
-        user.verifyOtp = otp;
+        if (!user) {
+            return res.json({ success: false, message: "User not found" });
+        }
 
-        user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000
+        if (user.isAccountVerified) {
+            return res.json({ success: false, message: "Account is already verified" })
+        }
+
+        // Generate Verification Token
+        const verificationToken = crypto.randomBytes(32).toString("hex");
+
+        user.verifyToken = verificationToken;
+        user.verifyTokenExpireAt = Date.now() + 24 * 60 * 60 * 1000 // 24 hours
 
         await user.save();
+
+        // Send Verification Email
+        const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}&userId=${user._id}`;
 
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: user.email,
-            subject: 'Account verification OTP',
-            html: EMAIL_VERIFY_TEMPLATE.replace("{{otp}}", otp).replace("{{email}}", user.email)
+            subject: 'Verify your Account',
+            html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", user.email)
         }
 
-        console.log("Attempting to send Verify OTP to:", user.email);
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent successfully:", info.response);
+        await transporter.sendMail(mailOptions);
 
-        res.json({ success: true, message: 'verification OTP is send to email' });
+        res.json({ success: true, message: 'Verification email resent.' });
 
     } catch (error) {
-        console.error("Email Verification Error:", error);
         res.json({ success: false, message: error.message });
     }
 }
 
 export const verifyEmail = async (req, res) => {
-    const { userId, otp } = req.body;
+    const { userId, token } = req.body;
 
-    if (!userId || !otp) {
-        return res.json({ success: false, message: 'missing Details' })
+    if (!userId || !token) {
+        return res.json({ success: false, message: 'Missing Details' })
     }
 
     try {
@@ -204,23 +217,27 @@ export const verifyEmail = async (req, res) => {
             return res.json({ success: false, message: 'User not Found' });
         }
 
-        // Backdoor for Admin/Hardcoded User
-        if (user.email === 'nischayachamlingraii@gmail.com') {
-            // Allow verification regardless of OTP provided
-        } else if (user.verifyOtp === '' || user.verifyOtp !== otp) {
-            return res.json({ success: false, message: 'Invalid OTP' });
+        if (user.isAccountVerified) {
+            return res.json({ success: true, message: 'Email already verified' });
         }
 
-        if (user.verifyOtpExpireAt < Date.now()) {
-            return res.json({ success: false, message: 'OTP Expired' });
+        // Backdoor for Admin/Hardcoded User
+        if (user.email === 'nischayachamlingraii@gmail.com') {
+            // Allow verification
+        } else if (user.verifyToken !== token) {
+            return res.json({ success: false, message: 'Invalid Token' });
+        }
+
+        if (user.verifyTokenExpireAt < Date.now()) {
+            return res.json({ success: false, message: 'Token Expired' });
         }
 
         user.isAccountVerified = true;
-        user.verifyOtp = '';
-        user.verifyOtpExpireAt = 0;
+        user.verifyToken = '';
+        user.verifyTokenExpireAt = 0;
 
         await user.save();
-        return res.json({ success: true, message: 'Email verifyed successfully' });
+        return res.json({ success: true, message: 'Email verified successfully' });
 
     } catch (error) {
         return res.json({ success: false, message: error.message });

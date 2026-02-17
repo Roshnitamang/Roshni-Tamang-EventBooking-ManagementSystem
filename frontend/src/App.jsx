@@ -20,6 +20,7 @@ import AttendeeDashboard from './pages/AttendeeDashboard'
 import RequestOrganizer from './pages/RequestOrganizer'
 import Profile from './pages/Profile'
 import Help from './pages/Help'
+import Footer from './components/Footer'
 
 const App = () => {
   const { theme } = useTheme()
@@ -85,6 +86,7 @@ const App = () => {
             } />
           </Routes>
         </div>
+        <Footer />
       </div>
     </div>
   )

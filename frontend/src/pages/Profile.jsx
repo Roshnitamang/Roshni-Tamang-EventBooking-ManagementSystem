@@ -16,8 +16,8 @@ const Profile = () => {
 
     useEffect(() => {
         if (userData) {
-            setName(userData.name);
-            setEmail(userData.email);
+            setName(userData.name || '');
+            setEmail(userData.email || '');
         }
     }, [userData]);
 
