@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -31,12 +31,17 @@ const LocationMarker = ({ position, setPosition, onLocationSelect }) => {
 };
 
 // Component to re-center map when position changes remotely
-import { useMap } from 'react-leaflet';
 const ChangeView = ({ center }) => {
     const map = useMap();
     useEffect(() => {
-        if (center) {
-            map.setView(center, map.getZoom());
+        if (center && Array.isArray(center) && center.length === 2 &&
+            center[0] !== null && center[0] !== undefined &&
+            center[1] !== null && center[1] !== undefined) {
+            console.log("ChangeView: Re-centering/Flying to", center);
+            map.flyTo(center, 13, {
+                animate: true,
+                duration: 1.5
+            });
         }
     }, [center, map]);
     return null;
@@ -44,13 +49,15 @@ const ChangeView = ({ center }) => {
 
 const LeafletLocationPicker = ({ onLocationSelect, initialLat, initialLng }) => {
     // Default to Kathmandu if no coords provided
-    const [position, setPosition] = useState(
-        initialLat && initialLng ? [initialLat, initialLng] : [27.7172, 85.3240]
-    );
+    const [position, setPosition] = useState(() => {
+        const hasCoords = initialLat !== null && initialLat !== undefined && initialLng !== null && initialLng !== undefined;
+        return hasCoords ? [initialLat, initialLng] : [27.7172, 85.3240];
+    });
 
     // Sync state if initial props change
     useEffect(() => {
-        if (initialLat && initialLng) {
+        if (initialLat !== null && initialLat !== undefined && initialLng !== null && initialLng !== undefined) {
+            console.log("LeafletLocationPicker: Prop sync", { initialLat, initialLng });
             setPosition([initialLat, initialLng]);
         }
     }, [initialLat, initialLng]);

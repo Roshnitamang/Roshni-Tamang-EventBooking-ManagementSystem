@@ -10,6 +10,7 @@ const Profile = () => {
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [location, setLocation] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [requestLoading, setRequestLoading] = useState(false);
@@ -18,6 +19,7 @@ const Profile = () => {
         if (userData) {
             setName(userData.name || '');
             setEmail(userData.email || '');
+            setLocation(userData.location || '');
         }
     }, [userData]);
 
@@ -26,7 +28,7 @@ const Profile = () => {
         try {
             setLoading(true);
             const { data } = await axios.put(`${backendUrl}/api/user/update-profile`,
-                { name, email, newPassword },
+                { name, email, newPassword, location },
                 { withCredentials: true }
             );
             if (data.success) {
@@ -107,6 +109,16 @@ const Profile = () => {
                                             className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition outline-none dark:text-white font-semibold"
                                             placeholder="Enter your email"
                                             required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-black uppercase text-gray-400 tracking-widest ml-1">Preferred Location</label>
+                                        <input
+                                            type="text"
+                                            value={location}
+                                            onChange={(e) => setLocation(e.target.value)}
+                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition outline-none dark:text-white font-semibold"
+                                            placeholder="Enter your preferred location"
                                         />
                                     </div>
                                     <div className="space-y-2">

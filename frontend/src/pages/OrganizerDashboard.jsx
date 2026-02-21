@@ -145,39 +145,39 @@ const OrganizerDashboard = () => {
 
     // --- Automatic Geocoding Logic ---
     useEffect(() => {
-        if (!eventData.location || eventData.location.trim().length < 3) {
-            // Optional: Reset coordinates if location is cleared
-            // setEventData(prev => ({ ...prev, coordinates: { latitude: null, longitude: null } }));
-            return;
-        }
+        if (!eventData.location || eventData.location.trim().length < 3) return;
 
         const delayDebounceFn = setTimeout(async () => {
             try {
+                console.log("Fetching coordinates for:", eventData.location);
                 const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
                     params: {
                         q: eventData.location,
                         format: 'json',
                         limit: 1
+                    },
+                    headers: {
+                        'User-Agent': 'Planora-Event-Booking-App'
                     }
                 });
 
                 if (response.data && response.data.length > 0) {
                     const { lat, lon } = response.data[0];
-                    const newCoords = { latitude: parseFloat(lat), longitude: parseFloat(lon) };
-
-                    // Only update if coords actually changed to prevent infinite loops or jitter
-                    if (eventData.coordinates?.latitude !== newCoords.latitude ||
-                        eventData.coordinates?.longitude !== newCoords.longitude) {
-                        setEventData(prev => ({
-                            ...prev,
-                            coordinates: newCoords
-                        }));
-                    }
+                    setEventData(prev => {
+                        const { latitude, longitude } = newCoords;
+                        if (prev.coordinates?.latitude === latitude && prev.coordinates?.longitude === longitude) {
+                            return prev;
+                        }
+                        console.log("Geocoding success, updating coords:", { latitude, longitude });
+                        return { ...prev, coordinates: { latitude, longitude } };
+                    });
+                } else {
+                    console.log("No geocoding results for:", eventData.location);
                 }
             } catch (error) {
                 console.error("Geocoding error:", error);
             }
-        }, 500); // Reduced to 500ms for snappier feel
+        }, 1000); // 1s debounce
 
         return () => clearTimeout(delayDebounceFn);
     }, [eventData.location]);
@@ -594,7 +594,7 @@ const OrganizerDashboard = () => {
                                                     initialLat={eventData.coordinates?.latitude}
                                                     initialLng={eventData.coordinates?.longitude}
                                                     onLocationSelect={(coords) => {
-                                                        setEventData({ ...eventData, coordinates: coords })
+                                                        setEventData(prev => ({ ...prev, coordinates: coords }))
                                                     }}
                                                 />
                                             </div>

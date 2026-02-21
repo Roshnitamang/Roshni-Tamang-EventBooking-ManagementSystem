@@ -43,7 +43,10 @@ const Notifications = () => {
         }
 
         // Handle Navigation
-        if (n.message.toLowerCase().includes('organizer request')) {
+        if (n.link) {
+            navigate(n.link);
+            setShow(false);
+        } else if (n.message.toLowerCase().includes('organizer request')) {
             const targetDashboard = userData.role === 'super-admin' ? '/super-admin-dashboard' : '/admin-dashboard';
             navigate(targetDashboard, { state: { activeStep: 'organizers' } });
             setShow(false);
@@ -69,14 +72,20 @@ const Notifications = () => {
                             <p className="p-4 text-center text-gray-500">No notifications</p>
                         ) : (
                             notifications.map(n => (
-                                <div
+                                <button
                                     key={n._id}
-                                    className={`p-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 ${n.isRead ? 'opacity-50' : 'bg-blue-50 dark:bg-blue-900/10'}`}
-                                    onClick={() => handleNotificationClick(n)}
+                                    className={`w-full text-left p-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${n.isRead ? 'opacity-60' : 'bg-blue-50 dark:bg-blue-900/10'}`}
+                                    onClick={() => {
+                                        console.log("Notification clicked:", n);
+                                        handleNotificationClick(n);
+                                    }}
                                 >
-                                    <p className="text-sm text-gray-800 dark:text-gray-200">{n.message}</p>
-                                    <span className="text-xs text-gray-400">{new Date(n.createdAt).toLocaleTimeString()}</span>
-                                </div>
+                                    <p className="text-sm text-gray-800 dark:text-gray-200 font-medium">{n.message}</p>
+                                    <div className="flex justify-between items-center mt-1">
+                                        <span className="text-[10px] text-gray-400 font-bold uppercase">{new Date(n.createdAt).toLocaleTimeString()}</span>
+                                        {n.link && <span className="text-[10px] text-blue-500 font-black uppercase tracking-tighter">View Event →</span>}
+                                    </div>
+                                </button>
                             ))
                         )}
                     </div>
