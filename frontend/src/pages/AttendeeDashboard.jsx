@@ -11,12 +11,12 @@ const AttendeeDashboard = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [activeTab, setActiveTab] = useState('browse'); // 'browse' or 'bookings'
-  const { backendUrl, userData, currency } = useContext(AppContent);
+  const { backendUrl, userData, currency, locationSearch } = useContext(AppContent);
 
   const fetchEvents = async () => {
     try {
       const { data } = await axios.get(`${backendUrl}/api/events`, {
-        params: { search, category }
+        params: { search, category, location: locationSearch }
       });
       if (data.success) {
         setEvents(data.events);
@@ -42,7 +42,7 @@ const AttendeeDashboard = () => {
   useEffect(() => {
     fetchEvents();
     fetchBookings();
-  }, [backendUrl, search, category]);
+  }, [backendUrl, search, category, locationSearch]);
 
   const upcomingBookings = bookings.filter(b => b.eventId && new Date(b.eventId.date) >= new Date());
   const pastBookings = bookings.filter(b => b.eventId && new Date(b.eventId.date) < new Date());

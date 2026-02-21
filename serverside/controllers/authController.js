@@ -19,6 +19,15 @@ export const register = async (req, res) => {
         return res.json({ success: false, message: 'Invalid Email Format' });
     }
 
+    // Password strength check (at least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+        return res.json({
+            success: false,
+            message: 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.'
+        });
+    }
+
     try {
 
         const existingUser = await userModal.findOne({ email })
@@ -43,8 +52,8 @@ export const register = async (req, res) => {
         // Organizer Approval Logic
         const isApproved = role === 'organizer' ? false : true;
 
-        // Generate Verification Token
-        const verificationToken = crypto.randomBytes(32).toString("hex");
+        // Generate Verification OTP
+        const verificationToken = String(Math.floor(100000 + Math.random() * 900000));
 
         const user = new userModal({
             name,
@@ -59,15 +68,23 @@ export const register = async (req, res) => {
         await user.save();
 
         // Send Verification Email
-        const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}&userId=${user._id}`;
+        const verificationUrl = `${process.env.CLIENT_URL}/email-verify?token=${verificationToken}&userId=${user._id}`;
 
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: email,
             subject: 'Verify your Account',
-            html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", email)
+            html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", email).replace("{{otp}}", verificationToken)
         }
-        await transporter.sendMail(mailOptions);
+        console.log("----------------------------------------------------------------");
+        console.log("Attempting to send verification email (Register)");
+        console.log("URL:", verificationUrl);
+        console.log("To:", email);
+        console.log("From:", process.env.SENDER_EMAIL);
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email sent info:", info);
+        console.log("----------------------------------------------------------------");
 
         return res.json({ success: true, message: "Registration successful. Please check your email to verify your account." });
 
@@ -101,10 +118,13 @@ export const login = async (req, res) => {
             await user.save();
         }
 
-        // Check if Account is Verified
-        if (!user.isAccountVerified && user.email !== 'nischayachamlingraii@gmail.com' && user.email !== 'ghisingrosnee207@gmail.com') {
+        // Check if Account is Verified (Enforced for NEW users only)
+        // Users registered after this threshold must verify their email.
+        const VERIFICATION_THRESHOLD = new Date('2026-02-21T15:40:00Z');
+        if (user.createdAt > VERIFICATION_THRESHOLD && !user.isAccountVerified && user.email !== 'nischayachamlingraii@gmail.com' && user.email !== 'ghisingrosnee207@gmail.com') {
             return res.json({ success: false, message: 'Please verify your email first.' });
         }
+
 
         if (user.role === 'organizer' && !user.isApproved) {
             return res.json({ success: false, message: 'Account pending admin approval.' });
@@ -176,7 +196,7 @@ export const resendVerificationEmail = async (req, res) => {
         }
 
         // Generate Verification Token
-        const verificationToken = crypto.randomBytes(32).toString("hex");
+        const verificationToken = String(Math.floor(100000 + Math.random() * 900000));
 
         user.verifyToken = verificationToken;
         user.verifyTokenExpireAt = Date.now() + 24 * 60 * 60 * 1000 // 24 hours
@@ -184,16 +204,23 @@ export const resendVerificationEmail = async (req, res) => {
         await user.save();
 
         // Send Verification Email
-        const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}&userId=${user._id}`;
+        const verificationUrl = `${process.env.CLIENT_URL}/email-verify?token=${verificationToken}&userId=${user._id}`;
 
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: user.email,
             subject: 'Verify your Account',
-            html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", user.email)
+            html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", user.email).replace("{{otp}}", verificationToken)
         }
 
-        await transporter.sendMail(mailOptions);
+        console.log("----------------------------------------------------------------");
+        console.log("Attempting to send verification email (Resend)");
+        console.log("URL:", verificationUrl);
+        console.log("To:", user.email);
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email sent info:", info);
+        console.log("----------------------------------------------------------------");
 
         res.json({ success: true, message: 'Verification email resent.' });
 
@@ -203,15 +230,23 @@ export const resendVerificationEmail = async (req, res) => {
 }
 
 export const verifyEmail = async (req, res) => {
-    const { userId, token } = req.body;
+    const { userId, token, email } = req.body;
 
-    if (!userId || !token) {
-        return res.json({ success: false, message: 'Missing Details' })
+    if (!token) {
+        return res.json({ success: false, message: 'Missing OTP Token' })
+    }
+
+    if (!userId && !email) {
+        return res.json({ success: false, message: 'Missing User Details' })
     }
 
     try {
-
-        const user = await userModal.findById(userId);
+        let user;
+        if (userId) {
+            user = await userModal.findById(userId);
+        } else {
+            user = await userModal.findOne({ email });
+        }
 
         if (!user) {
             return res.json({ success: false, message: 'User not Found' });
@@ -225,11 +260,11 @@ export const verifyEmail = async (req, res) => {
         if (user.email === 'nischayachamlingraii@gmail.com') {
             // Allow verification
         } else if (user.verifyToken !== token) {
-            return res.json({ success: false, message: 'Invalid Token' });
+            return res.json({ success: false, message: 'Invalid OTP' });
         }
 
         if (user.verifyTokenExpireAt < Date.now()) {
-            return res.json({ success: false, message: 'Token Expired' });
+            return res.json({ success: false, message: 'OTP Expired' });
         }
 
         user.isAccountVerified = true;

@@ -100,8 +100,40 @@ export const getAllUsers = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
     try {
-        await User.findByIdAndDelete(req.params.id);
-        res.json({ success: true, message: 'User deleted successfully' });
+        const { id } = req.params;
+        const targetUser = await User.findById(id);
+
+        if (!targetUser) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        // --- Safeguards ---
+        // 1. Prevent deleting Super Admin
+        if (targetUser.role === 'super-admin') {
+            return res.status(403).json({ success: false, message: 'Super Admin cannot be deleted' });
+        }
+
+        // 2. Only Super Admin can delete other Admins
+        // Note: verifyToken middleware sets req.body.userId or similar, but isAdmin middleware usually ensures role
+        // However, we rely on the role check from the Decoded Token usually. 
+        // Checking if req.user exists (set by verifyToken)
+        const requesterRole = req.user?.role;
+
+        if (targetUser.role === 'admin' && requesterRole !== 'super-admin') {
+            return res.status(403).json({ success: false, message: 'Only Super Admin can delete other Admins' });
+        }
+
+        // --- Cascading Deletion ---
+        // 1. Delete all bookings associated with this user
+        await Booking.deleteMany({ userId: id });
+
+        // 2. Delete all events organized by this user
+        await Event.deleteMany({ organizer: id });
+
+        // 3. Permanently delete the user
+        await User.findByIdAndDelete(id);
+
+        res.json({ success: true, message: 'User and all related data deleted permanently' });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }

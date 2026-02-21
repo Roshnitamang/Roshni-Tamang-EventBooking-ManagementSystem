@@ -143,6 +143,45 @@ const OrganizerDashboard = () => {
         }
     }
 
+    // --- Automatic Geocoding Logic ---
+    useEffect(() => {
+        if (!eventData.location || eventData.location.trim().length < 3) {
+            // Optional: Reset coordinates if location is cleared
+            // setEventData(prev => ({ ...prev, coordinates: { latitude: null, longitude: null } }));
+            return;
+        }
+
+        const delayDebounceFn = setTimeout(async () => {
+            try {
+                const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+                    params: {
+                        q: eventData.location,
+                        format: 'json',
+                        limit: 1
+                    }
+                });
+
+                if (response.data && response.data.length > 0) {
+                    const { lat, lon } = response.data[0];
+                    const newCoords = { latitude: parseFloat(lat), longitude: parseFloat(lon) };
+
+                    // Only update if coords actually changed to prevent infinite loops or jitter
+                    if (eventData.coordinates?.latitude !== newCoords.latitude ||
+                        eventData.coordinates?.longitude !== newCoords.longitude) {
+                        setEventData(prev => ({
+                            ...prev,
+                            coordinates: newCoords
+                        }));
+                    }
+                }
+            } catch (error) {
+                console.error("Geocoding error:", error);
+            }
+        }, 500); // Reduced to 500ms for snappier feel
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [eventData.location]);
+
     // Insights State
     const [selectedEventId, setSelectedEventId] = useState(null)
     const [eventBookings, setEventBookings] = useState([])

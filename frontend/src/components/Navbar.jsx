@@ -11,7 +11,7 @@ const Navbar = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { theme, toggleTheme } = useTheme()
-  const { userData, backendUrl, setUserData, setIsLoggedin, isLoggedin, setSearchQuery } =
+  const { userData, backendUrl, setUserData, setIsLoggedin, isLoggedin, setSearchQuery, locationSearch, setLocationSearch } =
     useContext(AppContent)
 
   useEffect(() => {
@@ -70,6 +70,8 @@ const Navbar = () => {
                 type="text"
                 placeholder="Location"
                 className="bg-transparent flex-1 outline-none text-sm text-gray-700 dark:text-gray-200"
+                value={locationSearch}
+                onChange={(e) => setLocationSearch(e.target.value)}
               />
             </div>
           </div>

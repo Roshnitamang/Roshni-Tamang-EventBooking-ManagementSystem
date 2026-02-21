@@ -68,7 +68,7 @@ export const getRecommendedEvents = async (req, res) => {
 // Get All Events (with filters)
 export const getAllEvents = async (req, res) => {
     try {
-        const { search, category, date } = req.query;
+        const { search, category, date, location } = req.query;
         let query = {};
 
         if (search) {
@@ -79,6 +79,9 @@ export const getAllEvents = async (req, res) => {
         }
         if (date) {
             query.date = { $gte: new Date(date) };
+        }
+        if (location) {
+            query.location = { $regex: location, $options: 'i' };
         }
 
         const events = await Event.find(query)

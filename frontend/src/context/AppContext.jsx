@@ -49,6 +49,7 @@ export const AppContextProvider = (props) => {
     }
 
     const [searchQuery, setSearchQuery] = useState('');
+    const [locationSearch, setLocationSearch] = useState('');
 
     const currency = 'रू';
 
@@ -62,6 +63,8 @@ export const AppContextProvider = (props) => {
         loading,
         searchQuery,
         setSearchQuery,
+        locationSearch,
+        setLocationSearch,
         currency
     }
 

@@ -30,6 +30,18 @@ const LocationMarker = ({ position, setPosition, onLocationSelect }) => {
     );
 };
 
+// Component to re-center map when position changes remotely
+import { useMap } from 'react-leaflet';
+const ChangeView = ({ center }) => {
+    const map = useMap();
+    useEffect(() => {
+        if (center) {
+            map.setView(center, map.getZoom());
+        }
+    }, [center, map]);
+    return null;
+};
+
 const LeafletLocationPicker = ({ onLocationSelect, initialLat, initialLng }) => {
     // Default to Kathmandu if no coords provided
     const [position, setPosition] = useState(
@@ -56,6 +68,7 @@ const LeafletLocationPicker = ({ onLocationSelect, initialLat, initialLng }) => 
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
+                    <ChangeView center={position} />
                     <LocationMarker position={position} setPosition={setPosition} onLocationSelect={onLocationSelect} />
                 </MapContainer>
             </div>
