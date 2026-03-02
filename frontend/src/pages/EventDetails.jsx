@@ -165,9 +165,10 @@ const EventDetails = () => {
 
                                 <button
                                     onClick={() => navigate(`/checkout/${id}`)}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+                                    disabled={event.ticketsAvailable === 0}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98] disabled:opacity-50"
                                 >
-                                    Reserve a spot
+                                    {event.ticketsAvailable === 0 ? 'Sold Out' : 'Reserve a spot'}
                                 </button>
 
                                 <div className="mt-8 space-y-4 pt-8 border-t border-gray-50 dark:border-gray-800">

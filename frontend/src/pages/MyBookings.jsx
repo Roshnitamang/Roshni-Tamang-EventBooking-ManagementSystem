@@ -56,7 +56,8 @@ const MyBookings = () => {
                                     Booked on: {new Date(booking.createdAt).toLocaleDateString()}
                                 </p>
                             </div>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${booking.status === 'booked' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${booking.status === 'booked' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
+                                'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
                                 }`}>
                                 {booking.status}
                             </span>

@@ -4,6 +4,8 @@ import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ShieldCheck, MapPin, User, Shield, Phone, Map, Globe } from 'lucide-react';
+import KYCFormModal from '../components/KYCFormModal';
 
 const Profile = () => {
     const { backendUrl, userData, getUserData } = useContext(AppContent);
@@ -13,7 +15,7 @@ const Profile = () => {
     const [location, setLocation] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [requestLoading, setRequestLoading] = useState(false);
+    const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
 
     useEffect(() => {
         if (userData) {
@@ -28,13 +30,13 @@ const Profile = () => {
         try {
             setLoading(true);
             const { data } = await axios.put(`${backendUrl}/api/user/update-profile`,
-                { name, email, newPassword, location },
+                { name, location, password: newPassword },
                 { withCredentials: true }
             );
             if (data.success) {
                 toast.success(data.message);
-                setNewPassword(''); // Clear password field
-                getUserData(); // Refresh global state
+                setNewPassword('');
+                getUserData();
             } else {
                 toast.error(data.message);
             }
@@ -45,23 +47,8 @@ const Profile = () => {
         }
     };
 
-    const handleOrganizerRequest = async () => {
-        if (!confirm("Start organizer approval process? Your request will be sent to administrators for review.")) return;
-
-        try {
-            setRequestLoading(true);
-            const { data } = await axios.put(`${backendUrl}/api/user/request-organizer`, {}, { withCredentials: true });
-            if (data.success) {
-                toast.success(data.message);
-                getUserData(); // Refresh to show pending status
-            } else {
-                toast.error(data.message);
-            }
-        } catch (error) {
-            toast.error(error.response?.data?.message || error.message);
-        } finally {
-            setRequestLoading(false);
-        }
+    const handleOrganizerRequest = () => {
+        setIsKYCModalOpen(true);
     };
 
     if (!userData) return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
@@ -80,12 +67,10 @@ const Profile = () => {
                     </header>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                        {/* PROFILE INFO CARD */}
                         <div className="lg:col-span-2 space-y-6">
                             <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
                                 <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                    <span className="text-2xl">👤</span> General Information
+                                    <User className="w-6 h-6 text-blue-500" /> General Information
                                 </h2>
 
                                 <form onSubmit={handleUpdateProfile} className="space-y-6">
@@ -105,10 +90,8 @@ const Profile = () => {
                                         <input
                                             type="email"
                                             value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition outline-none dark:text-white font-semibold"
-                                            placeholder="Enter your email"
-                                            required
+                                            disabled
+                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition outline-none dark:text-white font-semibold opacity-60 cursor-not-allowed"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -131,6 +114,7 @@ const Profile = () => {
                                             placeholder="Enter new password"
                                         />
                                     </div>
+
                                     <button
                                         type="submit"
                                         disabled={loading}
@@ -141,41 +125,95 @@ const Profile = () => {
                                 </form>
                             </div>
 
-                            {/* ACCOUNT STATUS CARD */}
+                            {/* VERIFIED KYC INFORMATION */}
+                            {userData.kycDetails && (
+                                <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors overflow-hidden">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <h2 className="text-xl font-bold flex items-center gap-2">
+                                            <User className="w-6 h-6 text-indigo-500" /> Verified Identity
+                                        </h2>
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${userData.kycDetails.status === 'approved' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
+                                            KYC {userData.kycDetails.status}
+                                        </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                                                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Full Identity Name</p>
+                                                <p className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                                    {userData.kycDetails.fullName}
+                                                    {userData.kycDetails.status === 'approved' && <ShieldCheck className="w-4 h-4 text-blue-500" />}
+                                                </p>
+                                            </div>
+                                            <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                                                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">{userData.kycDetails.idType} Number</p>
+                                                <p className="font-bold text-gray-900 dark:text-white">•••• •••• {userData.kycDetails.idNumber.slice(-4)}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-center md:justify-end">
+                                            <div className="relative w-32 h-32 rounded-3xl overflow-hidden border-4 border-white dark:border-gray-800 shadow-xl">
+                                                {userData.kycDetails.profilePhoto ? (
+                                                    <img
+                                                        src={backendUrl + userData.kycDetails.profilePhoto}
+                                                        alt="Verified Profile"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                                        <User className="w-10 h-10 text-gray-300" />
+                                                    </div>
+                                                )}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+                                        <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest mb-4 flex items-center gap-2">
+                                            <MapPin className="w-3 h-3" /> Permanent Address
+                                        </h3>
+                                        <p className="text-sm font-bold text-gray-700 dark:text-gray-300 leading-relaxed">
+                                            {userData.kycDetails.permanentAddress.villageStreet}, Ward {userData.kycDetails.permanentAddress.ward}<br />
+                                            {userData.kycDetails.permanentAddress.municipality}, {userData.kycDetails.permanentAddress.district}, {userData.kycDetails.country}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* SIDEBAR */}
+                        <div className="space-y-6">
                             <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
                                 <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                    <span className="text-2xl">🛡️</span> Account Status
+                                    <ShieldCheck className="w-6 h-6 text-blue-500" /> Account Status
                                 </h2>
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
                                         <div>
-                                            <p className="font-bold text-gray-900 dark:text-white">Email Verification</p>
-                                            <p className="text-xs text-gray-500">Enhanced account security</p>
+                                            <p className="font-bold text-gray-900 dark:text-white">Email</p>
                                         </div>
                                         {userData.isAccountVerified ? (
-                                            <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-black uppercase">Verified</span>
+                                            <span className="text-green-600 font-bold text-xs uppercase">Verified</span>
                                         ) : (
-                                            <button onClick={() => navigate('/email-verify')} className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-black uppercase hover:bg-yellow-200 transition">Action Required</button>
+                                            <button onClick={() => navigate('/email-verify')} className="text-yellow-600 font-bold text-xs uppercase underline">Verify Now</button>
                                         )}
                                     </div>
                                     <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
                                         <div>
-                                            <p className="font-bold text-gray-900 dark:text-white">Account Role</p>
-                                            <p className="text-xs text-gray-500">Current system permissions</p>
+                                            <p className="font-bold text-gray-900 dark:text-white">Role</p>
                                         </div>
-                                        <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-black uppercase italic">{userData.role}</span>
+                                        <span className="text-blue-600 font-bold text-xs uppercase italic">{userData.role}</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* SIDEBAR: ORGANIZER REQUEST */}
-                        <div className="space-y-6">
                             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 text-white shadow-xl shadow-blue-500/20">
                                 <span className="text-4xl mb-4 block">🎟️</span>
                                 <h3 className="text-2xl font-black mb-3 leading-tight">Host Your Own Events</h3>
                                 <p className="text-blue-100 text-sm mb-6 font-medium leading-relaxed">
-                                    Join our community of organizers. Create experiences, sell tickets, and manage attendees with Planora Studio.
+                                    Join our community of organizers. Create experiences, sell tickets, and manage attendees.
                                 </p>
 
                                 {userData.role === 'organizer' || userData.role === 'admin' || userData.role === 'super-admin' ? (
@@ -183,34 +221,29 @@ const Profile = () => {
                                         <p className="text-xs font-black uppercase tracking-widest mb-1">Status</p>
                                         <p className="text-lg font-bold">Active Professional Account</p>
                                     </div>
-                                ) : userData.isOrganizerRequested ? (
+                                ) : userData.organizerStatus === 'pending' || userData.isOrganizerRequested ? (
                                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-center">
                                         <p className="text-xs font-black uppercase tracking-widest mb-1">Status</p>
                                         <p className="text-lg font-bold">Request Pending Review</p>
-                                        <p className="text-[10px] mt-2 opacity-70">Admin will verify your profile shortly.</p>
                                     </div>
                                 ) : (
                                     <button
                                         onClick={handleOrganizerRequest}
-                                        disabled={requestLoading}
-                                        className="w-full bg-white text-blue-600 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-50 transition-colors shadow-lg disabled:opacity-50"
+                                        className="w-full bg-white text-blue-600 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-50 transition-colors shadow-lg"
                                     >
-                                        {requestLoading ? 'Submitting...' : 'Apply as Organizer'}
+                                        Become an Organizer
                                     </button>
                                 )}
                             </div>
-
-                            <div className="bg-gray-100 dark:bg-gray-900 rounded-[2.5rem] p-8 border border-gray-200 dark:border-gray-800 transition-colors">
-                                <h4 className="font-bold mb-4 text-gray-900 dark:text-white">Pro Tip</h4>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed font-medium italic">
-                                    "Keep your name updated so organizers can recognize you at check-in points. Verified accounts usually get tickets 20% faster!"
-                                </p>
-                            </div>
                         </div>
-
                     </div>
                 </motion.div>
             </div>
+
+            <KYCFormModal
+                isOpen={isKYCModalOpen}
+                onClose={() => setIsKYCModalOpen(false)}
+            />
         </div>
     );
 };

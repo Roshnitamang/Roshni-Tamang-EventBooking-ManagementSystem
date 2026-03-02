@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { AppContent } from '../context/AppContext'
 import OpenSourceMap from '../components/OpenSourceMap'
-import { MapPin, Calendar, Ticket, CreditCard, ChevronDown, ChevronUp } from 'lucide-react'
+import { MapPin, Calendar, Ticket, ChevronDown, ChevronUp } from 'lucide-react'
 
 const AttendeeDashboard = () => {
   const [events, setEvents] = useState([]);
@@ -159,6 +159,7 @@ const AttendeeDashboard = () => {
                 {upcomingBookings.length}
               </span>
             </div>
+
 
             {upcomingBookings.length === 0 ? (
               <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-[2.5rem] border border-dashed border-gray-200 dark:border-gray-700">

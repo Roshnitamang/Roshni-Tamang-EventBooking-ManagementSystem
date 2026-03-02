@@ -21,7 +21,11 @@ import {
     PieChart as PieIcon,
     LineChart as LineIcon,
     ArrowLeft,
-    CheckCircle
+    CheckCircle,
+    X,
+    User,
+    ShieldCheck,
+    MapPin
 } from 'lucide-react';
 import {
     LineChart,
@@ -64,7 +68,9 @@ const SuperAdminDashboard = () => {
     // Insights State
     const [selectedEventId, setSelectedEventId] = useState(null);
     const [eventBookings, setEventBookings] = useState([]);
-    const [viewingEventStats, setViewingEventStats] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [viewingKYC, setViewingKYC] = useState(null);
+    const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -378,8 +384,15 @@ const SuperAdminDashboard = () => {
                                                 {users.map(user => (
                                                     <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                                         <td className="py-4 px-6">
-                                                            <p className="font-bold text-sm">{user.name}</p>
-                                                            <p className="text-xs text-gray-400">{user.email}</p>
+                                                            <div className="flex items-center gap-3">
+                                                                <div>
+                                                                    <p className="font-bold text-sm">{user.name}</p>
+                                                                    <p className="text-xs text-gray-400">{user.email}</p>
+                                                                </div>
+                                                                {user.kycDetails && (
+                                                                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-black uppercase rounded scale-90 origin-left">KYC Attached</span>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                         <td className="py-4 px-6">
                                                             <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest 
@@ -404,11 +417,22 @@ const SuperAdminDashboard = () => {
                                                             )}
                                                         </td>
                                                         <td className="py-4 px-6 text-right">
-                                                            {user.role !== 'super-admin' && (
-                                                                <button onClick={() => deleteUser(user._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all">
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </button>
-                                                            )}
+                                                            <div className="flex justify-end gap-2">
+                                                                {user.kycDetails && (
+                                                                    <button
+                                                                        onClick={() => { setViewingKYC(user.kycDetails); setIsKYCModalOpen(true); }}
+                                                                        className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
+                                                                        title="View KYC"
+                                                                    >
+                                                                        <ShieldCheck className="w-4 h-4" />
+                                                                    </button>
+                                                                )}
+                                                                {user.role !== 'super-admin' && (
+                                                                    <button onClick={() => deleteUser(user._id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -480,12 +504,23 @@ const SuperAdminDashboard = () => {
                                                     <tr><td colSpan="3" className="py-12 text-center text-gray-400">No pending requests.</td></tr>
                                                 ) : pendingOrganizers.map(org => (
                                                     <tr key={org._id}>
-                                                        <td className="py-4 px-6 font-bold text-sm">{org.name}</td>
+                                                        <td className="py-4 px-6 font-bold text-sm">
+                                                            {org.name}
+                                                            {org.kycDetails && <span className="ml-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-black uppercase rounded">KYC Attached</span>}
+                                                        </td>
                                                         <td className="py-4 px-6 text-sm text-gray-500">{org.email}</td>
                                                         <td className="py-4 px-6 text-right">
-                                                            <div className="flex justify-end gap-3">
-                                                                <button onClick={() => approveOrganizer(org._id)} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 hover:scale-105 transition-all">Approve</button>
-                                                                <button onClick={() => rejectOrganizer(org._id)} className="px-5 py-2.5 border border-red-500 text-red-500 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-50 hover:scale-105 transition-all">Reject</button>
+                                                            <div className="flex justify-end gap-2">
+                                                                {org.kycDetails && (
+                                                                    <button
+                                                                        onClick={() => { setViewingKYC(org.kycDetails); setIsKYCModalOpen(true); }}
+                                                                        className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-lg text-xs font-bold uppercase hover:bg-gray-200 transition-all"
+                                                                    >
+                                                                        Review KYC
+                                                                    </button>
+                                                                )}
+                                                                <button onClick={() => approveOrganizer(org._id)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all">Approve</button>
+                                                                <button onClick={() => rejectOrganizer(org._id)} className="px-4 py-2 border border-red-500 text-red-500 rounded-lg text-xs font-bold uppercase hover:bg-red-50 transition-all">Reject</button>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -569,9 +604,134 @@ const SuperAdminDashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {/* KYC Viewer Modal */}
+            <AdminKYCModal
+                isOpen={isKYCModalOpen}
+                kyc={viewingKYC}
+                onClose={() => setIsKYCModalOpen(false)}
+                onApprove={() => { approveOrganizer(viewingKYC.userId); setIsKYCModalOpen(false); }}
+                onReject={() => { rejectOrganizer(viewingKYC.userId); setIsKYCModalOpen(false); }}
+            />
         </div>
     );
 };
+
+const AdminKYCModal = ({ isOpen, kyc, onClose, onApprove, onReject }) => {
+    const { backendUrl } = useContext(AppContent);
+    if (!isOpen || !kyc) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white dark:bg-gray-900 w-full max-w-5xl rounded-[3rem] overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800"
+            >
+                <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex justify-between items-center bg-blue-600 text-white">
+                    <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-white/20">
+                            <img src={backendUrl + kyc.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-black tracking-tight">{kyc.fullName}</h2>
+                            <p className="text-blue-100 text-[10px] font-black uppercase tracking-widest mt-1">KYC Identity Review</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors font-bold"><X /></button>
+                </div>
+
+                <div className="p-8 grid grid-cols-1 lg:grid-cols-12 gap-10 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                    {/* Data column */}
+                    <div className="lg:col-span-7 space-y-10">
+                        <section>
+                            <h3 className="text-xs font-black uppercase text-blue-600 tracking-widest mb-4 flex items-center gap-2">
+                                <User className="w-4 h-4" /> Personal & Family Details
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <InfoItem label="Date of Birth" value={new Date(kyc.dob).toLocaleDateString()} />
+                                <InfoItem label="Gender" value={kyc.gender} />
+                                <InfoItem label="Father's Name" value={kyc.fatherName} />
+                                <InfoItem label="Mother's Name" value={kyc.motherName} />
+                                <InfoItem label="Grandfather's Name" value={kyc.grandfatherName} />
+                                <InfoItem label="Occupation" value={kyc.occupation} />
+                                <InfoItem label="Phone" value={kyc.phoneNumber} />
+                                <InfoItem label="Country" value={kyc.country} />
+                            </div>
+                        </section>
+
+                        <section>
+                            <h3 className="text-xs font-black uppercase text-indigo-600 tracking-widest mb-4 flex items-center gap-2">
+                                <MapPin className="w-4 h-4" /> Address Information
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase text-gray-400">Permanent Address</h4>
+                                    <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl space-y-2">
+                                        <p className="text-xs font-bold">{kyc.permanentAddress.district} District</p>
+                                        <p className="text-xs font-bold">{kyc.permanentAddress.municipality}, Ward {kyc.permanentAddress.ward}</p>
+                                        <p className="text-xs font-medium text-gray-500">{kyc.permanentAddress.villageStreet}</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase text-gray-400">Current Address</h4>
+                                    <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl space-y-2">
+                                        <p className="text-xs font-bold">{kyc.currentAddress.district} District</p>
+                                        <p className="text-xs font-bold">{kyc.currentAddress.municipality}, Ward {kyc.currentAddress.ward}</p>
+                                        <p className="text-xs font-medium text-gray-500">{kyc.currentAddress.villageStreet}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h3 className="text-xs font-black uppercase text-emerald-600 tracking-widest mb-4 flex items-center gap-2">
+                                <ShieldCheck className="w-4 h-4" /> Identity Document
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <InfoItem label="ID Type" value={kyc.idType} />
+                                <InfoItem label="ID Number" value={kyc.idNumber} />
+                                <InfoItem label="Issue Date" value={new Date(kyc.issueDate).toLocaleDateString()} />
+                                <InfoItem label="Issue District" value={kyc.issueDistrict} />
+                            </div>
+                        </section>
+
+                        {kyc.status === 'pending' && (
+                            <div className="pt-6 flex gap-4 sticky bottom-0 bg-white dark:bg-gray-900 py-4 border-t border-gray-50 dark:border-gray-800">
+                                <button onClick={onApprove} className="flex-1 py-4 bg-green-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-lg shadow-green-500/20 active:scale-95">Approve Organizer</button>
+                                <button onClick={onReject} className="flex-1 py-4 border-2 border-red-500 text-red-500 rounded-2xl font-black uppercase tracking-widest hover:bg-red-50 transition-all active:scale-95">Reject Request</button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Images column */}
+                    <div className="lg:col-span-5 space-y-8">
+                        <section className="sticky top-0 space-y-6">
+                            <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest mb-4">Original Documents</h3>
+                            <div className="space-y-4">
+                                <div className="rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
+                                    <p className="text-[10px] font-black bg-gray-50 dark:bg-gray-800 p-3 text-center uppercase tracking-widest text-gray-400">ID Front View</p>
+                                    <img src={backendUrl + kyc.idFront} alt="ID Front" className="w-full h-auto object-contain bg-gray-100 dark:bg-gray-800 max-h-[300px]" />
+                                </div>
+                                <div className="rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
+                                    <p className="text-[10px] font-black bg-gray-50 dark:bg-gray-800 p-3 text-center uppercase tracking-widest text-gray-400">ID Back View</p>
+                                    <img src={backendUrl + kyc.idBack} alt="ID Back" className="w-full h-auto object-contain bg-gray-100 dark:bg-gray-800 max-h-[300px]" />
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+const InfoItem = ({ label, value }) => (
+    <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30 transition-all">
+        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</p>
+        <p className="font-bold text-gray-900 dark:text-white">{value || 'N/A'}</p>
+    </div>
+);
 
 export default SuperAdminDashboard;
 
