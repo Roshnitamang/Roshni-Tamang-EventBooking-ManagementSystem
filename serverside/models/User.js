@@ -32,7 +32,30 @@ const userSchema = new mongoose.Schema({
     isOrganizerRequested: {
         type: Boolean,
         default: false
-    }
+    },
+    organizerStatus: {
+        type: String,
+        enum: ['none', 'pending', 'approved', 'rejected'],
+        default: 'none'
+    },
+    location: {
+        type: String,
+        default: ''
+    },
+
+    // eSewa Integration Fields
+    esewaMerchantId: {
+        type: String,
+        default: ''
+    },
+    esewaSecretKey: {
+        type: String,
+        default: ''
+    },
+    esewaProductCode: {
+        type: String,
+        default: 'EPAYTEST'
+    },
 
 }, { timestamps: true });
 

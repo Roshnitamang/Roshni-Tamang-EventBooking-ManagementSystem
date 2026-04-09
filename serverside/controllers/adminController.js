@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import Event from '../models/Event.js';
 import Booking from '../models/Booking.js';
+import KYC from '../models/KYC.js';
 
 // ===============================
 // System Stats
@@ -91,8 +92,21 @@ export const getSystemStats = async (req, res) => {
 // ===============================
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().select('-password');
-        res.json({ success: true, users });
+        const users = await User.find().select('-password').lean();
+        const userIds = users.map(u => u._id);
+
+        const kycs = await KYC.find({ userId: { $in: userIds } });
+        const kycMap = kycs.reduce((acc, kyc) => {
+            acc[kyc.userId.toString()] = kyc;
+            return acc;
+        }, {});
+
+        const usersWithKYC = users.map(user => ({
+            ...user,
+            kycDetails: kycMap[user._id.toString()] || null
+        }));
+
+        res.json({ success: true, users: usersWithKYC });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -201,12 +215,19 @@ export const getPendingOrganizers = async (req, res) => {
     try {
         const organizers = await User.find({
             $or: [
+                { organizerStatus: 'pending' },
                 { isOrganizerRequested: true, isApproved: false },
                 { role: 'organizer', isApproved: false }
             ]
-        }).select('-password');
+        }).select('-password').lean();
 
-        res.json({ success: true, organizers });
+        // Populate KYC details manually if not using .populate() with a ref in User model
+        const organizersWithKYC = await Promise.all(organizers.map(async (org) => {
+            const kyc = await KYC.findOne({ userId: org._id });
+            return { ...org, kycDetails: kyc };
+        }));
+
+        res.json({ success: true, organizers: organizersWithKYC });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -214,11 +235,15 @@ export const getPendingOrganizers = async (req, res) => {
 
 export const approveOrganizer = async (req, res) => {
     try {
-        await User.findByIdAndUpdate(req.params.id, {
+        const userId = req.params.id;
+        await User.findByIdAndUpdate(userId, {
             role: 'organizer',
             isApproved: true,
-            isOrganizerRequested: false
+            isOrganizerRequested: false,
+            organizerStatus: 'approved'
         });
+
+        await KYC.findOneAndUpdate({ userId }, { status: 'approved' });
 
         res.json({
             success: true,
@@ -231,10 +256,12 @@ export const approveOrganizer = async (req, res) => {
 
 export const demoteOrganizer = async (req, res) => {
     try {
-        await User.findByIdAndUpdate(req.params.id, {
+        const userId = req.params.id;
+        await User.findByIdAndUpdate(userId, {
             role: 'user',
             isApproved: false,
-            isOrganizerRequested: false
+            isOrganizerRequested: false,
+            organizerStatus: 'none'
         });
 
         res.json({
@@ -248,10 +275,14 @@ export const demoteOrganizer = async (req, res) => {
 
 export const rejectOrganizer = async (req, res) => {
     try {
-        await User.findByIdAndUpdate(req.params.id, {
+        const userId = req.params.id;
+        await User.findByIdAndUpdate(userId, {
             isOrganizerRequested: false,
-            isApproved: false
+            isApproved: false,
+            organizerStatus: 'rejected'
         });
+
+        await KYC.findOneAndUpdate({ userId }, { status: 'rejected' });
 
         res.json({
             success: true,

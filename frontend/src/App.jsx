@@ -21,6 +21,7 @@ import RequestOrganizer from './pages/RequestOrganizer'
 import Profile from './pages/Profile'
 import Help from './pages/Help'
 import Footer from './components/Footer'
+import EsewaSuccess from './pages/EsewaSuccess'
 
 const App = () => {
   const { theme } = useTheme()
@@ -37,6 +38,7 @@ const App = () => {
             <Route path="/all-events" element={<Home />} />
             <Route path="/event/:id" element={<EventDetails />} />
             <Route path="/checkout/:eventId" element={<Checkout />} />
+            <Route path="/payment-success" element={<EsewaSuccess />} />
             <Route path="/help" element={<Help />} />
 
             <Route path="/email-verify" element={<EmailVerify />} />

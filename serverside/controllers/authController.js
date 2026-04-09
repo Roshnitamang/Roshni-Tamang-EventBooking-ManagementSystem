@@ -20,7 +20,7 @@ export const register = async (req, res) => {
     }
 
     // Password strength check (at least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     if (!passwordRegex.test(password)) {
         return res.json({
             success: false,
@@ -61,32 +61,15 @@ export const register = async (req, res) => {
             password: hashedPassword,
             role: email === 'ghisingrosnee207@gmail.com' ? 'super-admin' : (email === 'nischayachamlingraii@gmail.com' ? 'admin' : (role || 'user')),
             isApproved,
-            verifyToken: verificationToken,
-            verifyTokenExpireAt: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+            verifyToken: '',
+            verifyTokenExpireAt: 0,
+            isAccountVerified: true
         });
 
         await user.save();
+        console.log(`\n======================================================\n🚀 NEW USER REGISTERED: ${email} (Auto-Verified)\n======================================================\n`);
 
-        // Send Verification Email
-        const verificationUrl = `${process.env.CLIENT_URL}/email-verify?token=${verificationToken}&userId=${user._id}`;
-
-        const mailOptions = {
-            from: process.env.SENDER_EMAIL,
-            to: email,
-            subject: 'Verify your Account',
-            html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", email).replace("{{otp}}", verificationToken)
-        }
-        console.log("----------------------------------------------------------------");
-        console.log("Attempting to send verification email (Register)");
-        console.log("URL:", verificationUrl);
-        console.log("To:", email);
-        console.log("From:", process.env.SENDER_EMAIL);
-
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent info:", info);
-        console.log("----------------------------------------------------------------");
-
-        return res.json({ success: true, message: "Registration successful. Please check your email to verify your account." });
+        return res.json({ success: true, message: "Registration successful. You can now log in." });
 
     } catch (error) {
         res.json({ success: false, message: error.message })
@@ -118,14 +101,6 @@ export const login = async (req, res) => {
             await user.save();
         }
 
-        // Check if Account is Verified (Enforced for NEW users only)
-        // Users registered after this threshold must verify their email.
-        const VERIFICATION_THRESHOLD = new Date('2026-02-21T15:40:00Z');
-        if (user.createdAt > VERIFICATION_THRESHOLD && !user.isAccountVerified && user.email !== 'nischayachamlingraii@gmail.com' && user.email !== 'ghisingrosnee207@gmail.com') {
-            return res.json({ success: false, message: 'Please verify your email first.' });
-        }
-
-
         if (user.role === 'organizer' && !user.isApproved) {
             return res.json({ success: false, message: 'Account pending admin approval.' });
         }
@@ -141,7 +116,7 @@ export const login = async (req, res) => {
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 10 * 24 * 60 * 60 * 1000
         });
 
@@ -149,10 +124,12 @@ export const login = async (req, res) => {
             success: true,
             userData: {
                 name: user.name,
+                email: user.email,
                 role: user.role,
                 isApproved: user.isApproved,
                 isAccountVerified: user.isAccountVerified,
-                isOrganizerRequested: user.isOrganizerRequested
+                isOrganizerRequested: user.isOrganizerRequested,
+                location: user.location
             }
         });
 
@@ -202,6 +179,7 @@ export const resendVerificationEmail = async (req, res) => {
         user.verifyTokenExpireAt = Date.now() + 24 * 60 * 60 * 1000 // 24 hours
 
         await user.save();
+        console.log(`\n======================================================\n🚀 RESEND OTP FOR ${user.email}: ${verificationToken}\n======================================================\n`);
 
         // Send Verification Email
         const verificationUrl = `${process.env.CLIENT_URL}/email-verify?token=${verificationToken}&userId=${user._id}`;
@@ -303,10 +281,12 @@ export const isAuthenticated = async (req, res) => {
             success: true,
             userData: {
                 name: user.name,
+                email: user.email,
                 role: user.role,
                 isApproved: user.isApproved,
                 isAccountVerified: user.isAccountVerified,
-                isOrganizerRequested: user.isOrganizerRequested
+                isOrganizerRequested: user.isOrganizerRequested,
+                location: user.location
             }
         });
     } catch (error) {
@@ -334,6 +314,7 @@ export const sendResetOtp = async (req, res) => {
         user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000
 
         await user.save();
+        console.log(`\n======================================================\n🚀 RESET PASSWORD OTP FOR ${user.email}: ${otp}\n======================================================\n`);
 
         const mailOptions = {
             from: process.env.SENDER_EMAIL,

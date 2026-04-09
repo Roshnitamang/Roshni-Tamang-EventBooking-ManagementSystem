@@ -49,16 +49,24 @@ const Login = () => {
       const { data } = await axios.post(url, payload)
 
       if (data.success) {
-        setUserData(data.userData)
-        setIsLoggedin(true)
+        if (state === 'sign up') {
+          toast.success("Account created successfully. You can now log in.")
+          setState('login')
+          setAccountType('user')
+          setName('')
+          setPassword('')
+        } else {
+          setUserData(data.userData)
+          setIsLoggedin(true)
 
-        // Determine redirect path
-        let path = '/dashboard'
-        if (data.userData?.role === 'super-admin') path = '/super-admin-dashboard'
-        else if (data.userData?.role === 'admin') path = '/admin-dashboard'
-        else if (data.userData?.role === 'organizer') path = '/organizer-dashboard'
+          // Determine redirect path
+          let path = '/dashboard'
+          if (data.userData?.role === 'super-admin') path = '/super-admin-dashboard'
+          else if (data.userData?.role === 'admin') path = '/admin-dashboard'
+          else if (data.userData?.role === 'organizer') path = '/organizer-dashboard'
 
-        navigate(path, { state: { welcomeMessage: state === 'sign up' ? 'Account created successfully!' : 'Welcome back!' } })
+          navigate(path, { state: { welcomeMessage: 'Welcome back!' } })
+        }
       } else {
         setModalMessage(data.message)
         setRedirectPath(null) // Stay on page

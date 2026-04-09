@@ -4,7 +4,7 @@ import axios from 'axios';
 import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ticket, Users, Camera, ChevronRight, ChevronLeft, ShieldCheck, Info, Scan, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Ticket, Users, Camera, ChevronRight, ChevronLeft, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
 import Webcam from 'react-webcam';
 import * as faceapi from 'face-api.js';
 
@@ -30,21 +30,20 @@ const Checkout = () => {
     const [faceDetected, setFaceDetected] = useState(false);
     const [scanning, setScanning] = useState(false);
     const [captured, setCaptured] = useState(false);
+    const isCapturing = useRef(false);
 
     useEffect(() => {
         const loadModels = async () => {
             try {
-                // Loading models from a reliable CDN since local ones are missing
-                const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+                const MODEL_URL = '/models';
                 await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
                     faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
                     faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
                 ]);
                 setIsModelsLoaded(true);
             } catch (error) {
                 console.error("Face-api models failed to load", error);
-                // Fallback: still show the UI even if AI check fails
             }
         };
         loadModels();
@@ -70,6 +69,46 @@ const Checkout = () => {
         fetchEvent();
     }, [eventId, backendUrl, navigate]);
 
+    const capturePhoto = () => {
+        if (!webcamRef.current || isCapturing.current) return;
+        isCapturing.current = true;
+
+        const imageSrc = webcamRef.current.getScreenshot();
+        if (!imageSrc) {
+            isCapturing.current = false;
+            return;
+        }
+
+        setPreview(imageSrc);
+        setCaptured(true);
+        setScanning(false);
+
+        try {
+            const arr = imageSrc.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            const file = new File([u8arr], "face_verification.jpg", { type: mime });
+            setImage(file);
+            
+            // Auto-proceed to step 3 after a brief success display
+            setTimeout(() => {
+                setStep(3);
+                isCapturing.current = false;
+            }, 1000);
+        } catch (e) {
+            console.error("Failed to process image capture:", e);
+            toast.error("Failed to capture image. Try again.");
+            isCapturing.current = false;
+            setCaptured(false);
+            setPreview(null);
+        }
+    };
+
     // Live Face Detection
     useEffect(() => {
         let interval;
@@ -77,15 +116,22 @@ const Checkout = () => {
             interval = setInterval(async () => {
                 const video = webcamRef.current.video;
                 if (video && video.readyState === 4) {
-                    const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions());
-                    if (detections) {
-                        setFaceDetected(true);
-                        // Auto-capture after detection
-                        setTimeout(() => {
-                            capturePhoto();
-                        }, 500); // 500ms delay for stability
-                    } else {
-                        setFaceDetected(false);
+                    if (video.videoWidth > 0 && video.videoHeight > 0) {
+                        video.width = video.videoWidth;
+                        video.height = video.videoHeight;
+                    }
+                    try {
+                        const detections = await faceapi.detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }));
+                        if (detections) {
+                            setFaceDetected(true);
+                            if (!isCapturing.current) {
+                                capturePhoto();
+                            }
+                        } else {
+                            setFaceDetected(false);
+                        }
+                    } catch (err) {
+                        console.error("Face detection error:", err);
                     }
                 }
             }, 800);
@@ -93,34 +139,33 @@ const Checkout = () => {
         return () => clearInterval(interval);
     }, [scanning, isModelsLoaded, captured]);
 
-    const capturePhoto = () => {
-        if (!webcamRef.current) return;
-
-        const imageSrc = webcamRef.current.getScreenshot();
-        if (!imageSrc) return;
-
-        setPreview(imageSrc);
-        setCaptured(true);
-        setScanning(false);
-
-        // Convert base64 to File
-        fetch(imageSrc)
-            .then(res => res.blob())
-            .then(blob => {
-                const file = new File([blob], "face_verification.jpg", { type: "image/jpeg" });
-                setImage(file);
-                // Auto-proceed to step 3 after a brief success display
-                setTimeout(() => {
-                    setStep(3);
-                }, 1500);
-            });
-    };
-
-    const handleFileUpload = (e) => {
+    const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            setImage(file);
-            setPreview(URL.createObjectURL(file));
+            const imgUrl = URL.createObjectURL(file);
+            const img = new Image();
+            img.src = imgUrl;
+            img.onload = async () => {
+                try {
+                    const detections = await faceapi.detectAllFaces(img, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }));
+                    if (detections.length === 0) {
+                        toast.error("No faces detected! Please upload a clearer image.");
+                        setImage(null);
+                        setPreview(null);
+                    } else if (detections.length < tickets) {
+                        toast.error(`Only ${detections.length} face(s) detected, but you selected ${tickets} tickets. Please upload a photo with everyone.`);
+                        setImage(null);
+                        setPreview(null);
+                    } else {
+                        toast.success(`${detections.length} face(s) detected successfully!`);
+                        setImage(file);
+                        setPreview(imgUrl);
+                    }
+                } catch (error) {
+                    console.error("Face validation error:", error);
+                    toast.error("Failed to validate image. Please try again.");
+                }
+            };
         }
     };
 
@@ -138,21 +183,31 @@ const Checkout = () => {
             formData.append('bookingType', bookingType);
             if (image) formData.append('image', image);
 
-            const { data } = await axios.post(`${backendUrl}/api/bookings/book`, formData, {
+            const { data } = await axios.post(`${backendUrl}/api/bookings/initiate-esewa`, formData, {
                 withCredentials: true,
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            if (data.success) {
-                toast.success("Booking successful!");
-                getUserData();
-                navigate('/my-bookings', { state: { message: "Your tickets are ready!" } });
+            if (data.success && data.esewaData) {
+                toast.success("Redirecting to payment gateway...");
+                const form = document.createElement('form');
+                form.setAttribute('method', 'POST');
+                form.setAttribute('action', 'https://rc-epay.esewa.com.np/api/epay/main/v2/form');
+                for (const key in data.esewaData) {
+                    const hiddenField = document.createElement('input');
+                    hiddenField.setAttribute('type', 'hidden');
+                    hiddenField.setAttribute('name', key);
+                    hiddenField.setAttribute('value', data.esewaData[key]);
+                    form.appendChild(hiddenField);
+                }
+                document.body.appendChild(form);
+                form.submit();
             } else {
-                toast.error(data.message);
+                toast.error(data.message || "Booking initialization failed");
+                setSubmitting(false);
             }
         } catch (error) {
             toast.error(error.response?.data?.message || "Booking failed");
-        } finally {
             setSubmitting(false);
         }
     };
@@ -245,18 +300,13 @@ const Checkout = () => {
                                                         className="w-full h-full object-cover"
                                                         onUserMedia={() => setScanning(true)}
                                                     />
-                                                    {/* Scanning Animation */}
                                                     <div className="absolute inset-x-0 top-0 h-1 bg-blue-500/50 animate-scan z-20" />
-
-                                                    {/* UI Overlays */}
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                                         <div className={`w-48 h-64 border-2 rounded-[3rem] transition-colors duration-500 ${faceDetected ? 'border-green-500' : 'border-white/30 border-dashed'}`} />
                                                         <p className={`mt-4 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${faceDetected ? 'bg-green-500 text-white' : 'bg-black/60 text-white animate-pulse'}`}>
-                                                            {faceDetected ? 'Target Locked' : 'Searching for Face...'}
+                                                            {faceDetected ? 'Verifying...' : 'Searching for Face...'}
                                                         </p>
                                                     </div>
-
-                                                    {/* No button needed for auto-capture */}
                                                 </>
                                             ) : (
                                                 <div className="relative w-full h-full">
@@ -356,7 +406,7 @@ const Checkout = () => {
                                         disabled={submitting}
                                         className="flex-[2] py-5 rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-black uppercase tracking-[0.2em] text-sm shadow-2xl hover:shadow-blue-500/40 active:scale-[0.98] transition-all disabled:opacity-50"
                                     >
-                                        {submitting ? 'Authenticating...' : 'Book My Spot Now'}
+                                        {submitting ? 'Authenticating...' : 'Book with eSewa'}
                                     </button>
                                 </div>
                             </motion.div>

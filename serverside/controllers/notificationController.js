@@ -21,9 +21,9 @@ export const markRead = async (req, res) => {
 };
 
 // Create Notification (Internal Helper)
-export const createNotification = async (userId, message, type = 'info') => {
+export const createNotification = async (userId, message, type = 'info', link = '') => {
     try {
-        await Notification.create({ userId, message, type });
+        await Notification.create({ userId, message, type, link });
     } catch (error) {
         console.error("Notification Error:", error);
     }

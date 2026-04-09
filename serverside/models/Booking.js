@@ -8,7 +8,9 @@ const bookingSchema = new mongoose.Schema({
     bookingType: { type: String, enum: ['single', 'group'], default: 'single' },
     groupPhoto: { type: String },
     status: { type: String, enum: ['booked', 'cancelled'], default: 'booked' },
-    paymentId: { type: String, default: 'pending' } // Placeholder for payment integration
+    paymentMethod: { type: String, enum: ['esewa', 'cash'], default: 'esewa' },
+    paymentStatus: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
+    transactionId: { type: String }
 }, { timestamps: true });
 
 const Booking = mongoose.models.booking || mongoose.model('booking', bookingSchema);
