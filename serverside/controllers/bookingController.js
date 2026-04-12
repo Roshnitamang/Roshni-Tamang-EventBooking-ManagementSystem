@@ -38,7 +38,7 @@ export const initiateEsewaPayment = async (req, res) => {
 
         // Calculate Amount
         const totalAmount = event.price * tickets;
-        const transactionUuid = uuidv4();
+        const transactionUuid = uuidv4().replace(/-/g, '');
 
         // eSewa Config from ENV
         const merchantId = process.env.ESEWA_PRODUCT_CODE || 'EPAYTEST';
@@ -75,6 +75,8 @@ export const initiateEsewaPayment = async (req, res) => {
 
         const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 
+        const paymentUrl = process.env.ESEWA_URL || 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
+
         const esewaData = {
             amount: totalAmount,
             tax_amount: 0,
@@ -84,13 +86,12 @@ export const initiateEsewaPayment = async (req, res) => {
             product_service_charge: 0,
             product_delivery_charge: 0,
             success_url: `${frontendUrl}/payment-success`,
-            failure_url: `${frontendUrl}/checkout/${eventId}?status=failure`,
+            failure_url: `${frontendUrl}/payment-failure/${eventId}`,
             signed_field_names: 'total_amount,transaction_uuid,product_code',
-            signature: signature,
-            payment_url: process.env.ESEWA_URL || 'https://rc-epay.esewa.com.np/api/epay/main/v2/form'
+            signature: signature
         };
 
-        res.json({ success: true, message: 'Payment initiated', esewaData, bookingId: booking._id });
+        res.json({ success: true, message: 'Payment initiated', esewaData, paymentUrl, bookingId: booking._id });
 
     } catch (error) {
         res.json({ success: false, message: error.message });
@@ -122,7 +123,7 @@ export const verifyEsewaPayment = async (req, res) => {
         }
 
         // Find booking
-        const booking = await Booking.findOne({ transactionId: transaction_uuid });
+        const booking = await Booking.findOne({ transactionId: transaction_uuid }).populate('eventId', 'title date location');
         if (!booking) {
             return res.json({ success: false, message: 'Booking not found' });
         }

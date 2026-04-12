@@ -4,7 +4,7 @@ import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShieldCheck, MapPin, User, Shield, Phone, Map, Globe } from 'lucide-react';
+import { ShieldCheck, MapPin, User, Shield, Phone, Map, Globe, Camera, Mail, Briefcase } from 'lucide-react';
 import KYCFormModal from '../components/KYCFormModal';
 
 const Profile = () => {
@@ -51,132 +51,184 @@ const Profile = () => {
         setIsKYCModalOpen(true);
     };
 
-    if (!userData) return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
+    if (!userData) return <div className="min-h-screen bg-transparent flex items-center justify-center text-zinc-500">Loading profile...</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 px-6 transition-colors duration-300">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-transparent py-20 px-6 transition-colors duration-300">
+            <div className="max-w-6xl mx-auto">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="space-y-8"
+                    className="space-y-12"
                 >
-                    <header>
-                        <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Account Settings</h1>
-                        <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium">Manage your profile information and account preferences.</p>
+                    <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-zinc-100 dark:border-zinc-900 pb-12">
+                        <div>
+                            <div className="flex items-center gap-3 mb-4">
+                               <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-900/20 rotate-3">
+                                  <User className="text-white w-6 h-6" />
+                               </div>
+                               <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-500 bg-clip-text text-transparent tracking-tighter">Profile Settings</h1>
+                            </div>
+                            <p className="text-zinc-500 font-bold text-lg">Personalize your Planora experience and account details.</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${userData.isAccountVerified ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-amber-500'}`}></div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                                    {userData.isAccountVerified ? 'Verified Account' : 'Pending Verification'}
+                                </span>
+                            </div>
+                        </div>
                     </header>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 space-y-6">
-                            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
-                                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                    <User className="w-6 h-6 text-blue-500" /> General Information
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                        {/* MAIN CONTENT */}
+                        <div className="lg:col-span-8 space-y-10">
+                            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 border border-zinc-200 dark:border-zinc-800 shadow-2xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+                                
+                                <h2 className="text-2xl font-black text-zinc-900 dark:text-white mb-10 flex items-center gap-3">
+                                    <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg"><User className="w-5 h-5 text-emerald-500" /></div>
+                                    General Information
                                 </h2>
 
-                                <form onSubmit={handleUpdateProfile} className="space-y-6">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase text-gray-400 tracking-widest ml-1">Full Name</label>
-                                        <input
-                                            type="text"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition outline-none dark:text-white font-semibold"
-                                            placeholder="Enter your full name"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase text-gray-400 tracking-widest ml-1">Email Address</label>
-                                        <input
-                                            type="email"
-                                            value={email}
-                                            disabled
-                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition outline-none dark:text-white font-semibold opacity-60 cursor-not-allowed"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase text-gray-400 tracking-widest ml-1">Preferred Location</label>
-                                        <input
-                                            type="text"
-                                            value={location}
-                                            onChange={(e) => setLocation(e.target.value)}
-                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition outline-none dark:text-white font-semibold"
-                                            placeholder="Enter your preferred location"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase text-gray-400 tracking-widest ml-1">New Password (leave blank to keep current)</label>
-                                        <input
-                                            type="password"
-                                            value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
-                                            className="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-2xl p-4 focus:ring-2 focus:ring-blue-500 transition outline-none dark:text-white font-semibold"
-                                            placeholder="Enter new password"
-                                        />
+                                <form onSubmit={handleUpdateProfile} className="space-y-8 relative z-10">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] ml-2">Display Name</label>
+                                            <div className="group relative">
+                                                <input
+                                                    type="text"
+                                                    value={name}
+                                                    onChange={(e) => setName(e.target.value)}
+                                                    className="w-full bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 focus:border-emerald-500 transition-all outline-none text-zinc-900 dark:text-white font-bold placeholder:text-zinc-700"
+                                                    placeholder="Your name"
+                                                    required
+                                                />
+                                                <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] ml-2">Email Identity (Locked)</label>
+                                            <div className="relative">
+                                                <input
+                                                    type="email"
+                                                    value={email}
+                                                    disabled
+                                                    className="w-full bg-transparent/50 border border-zinc-900 rounded-2xl p-5 text-zinc-600 font-bold cursor-not-allowed opacity-60"
+                                                />
+                                                <Mail className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-800" />
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition shadow-lg shadow-blue-500/20 disabled:opacity-50"
-                                    >
-                                        {loading ? 'Saving...' : 'Save Changes'}
-                                    </button>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] ml-2">Current Location</label>
+                                        <div className="relative group">
+                                            <input
+                                                type="text"
+                                                value={location}
+                                                onChange={(e) => setLocation(e.target.value)}
+                                                className="w-full bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 focus:border-emerald-500 transition-all outline-none text-zinc-900 dark:text-white font-bold placeholder:text-zinc-700"
+                                                placeholder="e.g. Kathmandu, Nepal"
+                                            />
+                                            <MapPin className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-800 group-focus-within:text-emerald-500 transition-colors" />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] ml-2">Security Upgrade (Password)</label>
+                                            <input
+                                                type="password"
+                                                value={newPassword}
+                                                onChange={(e) => setNewPassword(e.target.value)}
+                                                className="w-full bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 focus:border-emerald-500 transition-all outline-none text-zinc-900 dark:text-white font-bold placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+                                                placeholder="••••••••••••"
+                                            />
+                                    </div>
+
+                                    <div className="pt-4 flex justify-end">
+                                        <button
+                                            type="submit"
+                                            disabled={loading}
+                                            className="btn-primary !px-12 !py-5 shadow-2xl shadow-emerald-900/20 active:scale-95 disabled:opacity-50"
+                                        >
+                                            {loading ? 'Processing...' : 'Sync Profile'}
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
 
                             {/* VERIFIED KYC INFORMATION */}
                             {userData.kycDetails && (
-                                <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors overflow-hidden">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <h2 className="text-xl font-bold flex items-center gap-2">
-                                            <User className="w-6 h-6 text-indigo-500" /> Verified Identity
+                                <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 border border-zinc-200 dark:border-zinc-800 shadow-2xl relative overflow-hidden group">
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+                                    
+                                    <div className="flex items-center justify-between mb-12">
+                                        <h2 className="text-2xl font-black text-zinc-900 dark:text-white flex items-center gap-3">
+                                            <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg rotate-3 group-hover:rotate-0 transition-transform"><ShieldCheck className="w-5 h-5 text-emerald-500" /></div>
+                                            Verified Identity Record
                                         </h2>
-                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${userData.kycDetails.status === 'approved' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
-                                            KYC {userData.kycDetails.status}
-                                        </span>
+                                        <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 px-4 py-2 rounded-full border border-emerald-500/20">
+                                            <span className="text-[10px] font-black uppercase tracking-widest">
+                                                Status: {userData.kycDetails.status}
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-4">
-                                            <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
-                                                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Full Identity Name</p>
-                                                <p className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-10">
+                                        <div className="md:col-span-3 space-y-6">
+                                            <div className="bg-transparent/50 p-6 rounded-[2rem] border border-zinc-200 dark:border-zinc-800">
+                                                <p className="text-[9px] font-black uppercase text-zinc-500 tracking-[0.3em] mb-2">Legal Identity Name</p>
+                                                <p className="text-xl font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">
                                                     {userData.kycDetails.fullName}
-                                                    {userData.kycDetails.status === 'approved' && <ShieldCheck className="w-4 h-4 text-blue-500" />}
                                                 </p>
                                             </div>
-                                            <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
-                                                <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">{userData.kycDetails.idType} Number</p>
-                                                <p className="font-bold text-gray-900 dark:text-white">•••• •••• {userData.kycDetails.idNumber.slice(-4)}</p>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="bg-transparent/50 p-5 rounded-[2rem] border border-zinc-200 dark:border-zinc-800">
+                                                    <p className="text-[9px] font-black uppercase text-zinc-500 tracking-[0.3em] mb-1">Document Type</p>
+                                                    <p className="font-bold text-zinc-600 dark:text-zinc-300">{userData.kycDetails.idType}</p>
+                                                </div>
+                                                <div className="bg-transparent/50 p-5 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 transition-all hover:bg-emerald-500/5 cursor-help group/id">
+                                                    <p className="text-[9px] font-black uppercase text-zinc-500 tracking-[0.3em] mb-1">ID Serial</p>
+                                                    <p className="font-bold text-zinc-600 dark:text-zinc-300">•••• •••• {userData.kycDetails.idNumber.slice(-4)}</p>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div className="flex justify-center md:justify-end">
-                                            <div className="relative w-32 h-32 rounded-3xl overflow-hidden border-4 border-white dark:border-gray-800 shadow-xl">
-                                                {userData.kycDetails.profilePhoto ? (
-                                                    <img
-                                                        src={backendUrl + userData.kycDetails.profilePhoto}
-                                                        alt="Verified Profile"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                                        <User className="w-10 h-10 text-gray-300" />
-                                                    </div>
-                                                )}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                                        <div className="md:col-span-2 flex flex-col items-center justify-center">
+                                            <div className="relative group/photo">
+                                                <div className="absolute inset-0 bg-emerald-500 blur-2xl opacity-0 group-hover/photo:opacity-20 transition-opacity rounded-full"></div>
+                                                <div className="relative w-40 h-40 rounded-[2.5rem] overflow-hidden border-4 border-zinc-200 dark:border-zinc-800 shadow-2xl shadow-black transform group-hover/photo:scale-105 transition-transform duration-500">
+                                                    {userData.kycDetails.profilePhoto ? (
+                                                        <img
+                                                            src={backendUrl + userData.kycDetails.profilePhoto}
+                                                            alt="Verified Profile"
+                                                            className="w-full h-full object-cover grayscale-[20%] group-hover/photo:grayscale-0 transition-all duration-700"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+                                                            <User className="w-12 h-12 text-zinc-700" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center border-4 border-zinc-900 shadow-xl group-hover/photo:rotate-12 transition-transform">
+                                                    <ShieldCheck className="w-5 h-5 text-zinc-900 dark:text-white" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
-                                        <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest mb-4 flex items-center gap-2">
-                                            <MapPin className="w-3 h-3" /> Permanent Address
-                                        </h3>
-                                        <p className="text-sm font-bold text-gray-700 dark:text-gray-300 leading-relaxed">
-                                            {userData.kycDetails.permanentAddress.villageStreet}, Ward {userData.kycDetails.permanentAddress.ward}<br />
-                                            {userData.kycDetails.permanentAddress.municipality}, {userData.kycDetails.permanentAddress.district}, {userData.kycDetails.country}
+                                    <div className="mt-12 pt-10 border-t border-zinc-200 dark:border-zinc-800/50">
+                                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-800 rounded-lg mb-4">
+                                            <MapPin className="w-3.5 h-3.5 text-emerald-500" />
+                                            <span className="text-[10px] font-black uppercase text-zinc-500 dark:text-zinc-400 tracking-widest">Permanent Registered Address</span>
+                                        </div>
+                                        <p className="text-zinc-500 font-bold leading-loose tracking-wide">
+                                            {userData.kycDetails.currentAddress.villageStreet}, Ward {userData.kycDetails.currentAddress.ward}<br />
+                                            {userData.kycDetails.currentAddress.municipality}, {userData.kycDetails.currentAddress.district}, {userData.kycDetails.country}
                                         </p>
                                     </div>
                                 </div>
@@ -184,56 +236,73 @@ const Profile = () => {
                         </div>
 
                         {/* SIDEBAR */}
-                        <div className="space-y-6">
-                            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-gray-100 dark:border-gray-800 shadow-sm transition-colors">
-                                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                    <ShieldCheck className="w-6 h-6 text-blue-500" /> Account Status
-                                </h2>
+                        <div className="lg:col-span-4 space-y-10">
+                            {/* Membership Status */}
+                            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 border border-zinc-200 dark:border-zinc-800 shadow-2xl">
+                                <h3 className="text-[11px] font-black uppercase text-zinc-500 tracking-[0.3em] mb-8">Access Level</h3>
+                                
                                 <div className="space-y-4">
-                                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-                                        <div>
-                                            <p className="font-bold text-gray-900 dark:text-white">Email</p>
+                                    <div className="flex items-center justify-between p-6 bg-transparent rounded-[2rem] border border-zinc-200 dark:border-zinc-800">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                                            <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">Member Role</span>
+                                        </div>
+                                        <span className="text-xs font-black text-emerald-500 uppercase italic px-3 py-1 bg-emerald-500/5 rounded-full border border-emerald-500/10">
+                                            {userData.role}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="flex items-center justify-between p-6 bg-transparent rounded-[2rem] border border-zinc-200 dark:border-zinc-800">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-1.5 h-1.5 rounded-full ${userData.isAccountVerified ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></div>
+                                            <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">Activation</span>
                                         </div>
                                         {userData.isAccountVerified ? (
-                                            <span className="text-green-600 font-bold text-xs uppercase">Verified</span>
+                                            <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Active</span>
                                         ) : (
-                                            <button onClick={() => navigate('/email-verify')} className="text-yellow-600 font-bold text-xs uppercase underline">Verify Now</button>
+                                            <button 
+                                              onClick={() => navigate('/email-verify')} 
+                                              className="text-[10px] font-black text-amber-500 uppercase tracking-widest underline decoration-amber-500/30 hover:decoration-amber-500 transition-all"
+                                            >
+                                                Verify Email
+                                            </button>
                                         )}
-                                    </div>
-                                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-                                        <div>
-                                            <p className="font-bold text-gray-900 dark:text-white">Role</p>
-                                        </div>
-                                        <span className="text-blue-600 font-bold text-xs uppercase italic">{userData.role}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 text-white shadow-xl shadow-blue-500/20">
-                                <span className="text-4xl mb-4 block">🎟️</span>
-                                <h3 className="text-2xl font-black mb-3 leading-tight">Host Your Own Events</h3>
-                                <p className="text-blue-100 text-sm mb-6 font-medium leading-relaxed">
-                                    Join our community of organizers. Create experiences, sell tickets, and manage attendees.
-                                </p>
+                            {/* Organizer Upgrade Card */}
+                            <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-[2.5rem] p-10 text-zinc-900 dark:text-white shadow-2xl shadow-emerald-900/40 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-[40px] -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700"></div>
+                                
+                                <div className="relative z-10">
+                                    <div className="w-14 h-14 bg-white/20 dark:bg-transparent rounded-2xl flex items-center justify-center mb-8 shadow-2xl">
+                                       <Briefcase className="w-6 h-6 text-white" />
+                                    </div>
+                                    <h3 className="text-3xl font-black mb-4 tracking-tighter leading-[0.9]">Elevate as Organizer</h3>
+                                    <p className="text-emerald-50/70 text-sm mb-10 font-medium leading-relaxed">
+                                        Transform from an attendee to a host. Launch your own events and manage a digital box office.
+                                    </p>
 
-                                {userData.role === 'organizer' || userData.role === 'admin' || userData.role === 'super-admin' ? (
-                                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-center">
-                                        <p className="text-xs font-black uppercase tracking-widest mb-1">Status</p>
-                                        <p className="text-lg font-bold">Active Professional Account</p>
-                                    </div>
-                                ) : userData.organizerStatus === 'pending' || userData.isOrganizerRequested ? (
-                                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-center">
-                                        <p className="text-xs font-black uppercase tracking-widest mb-1">Status</p>
-                                        <p className="text-lg font-bold">Request Pending Review</p>
-                                    </div>
-                                ) : (
-                                    <button
-                                        onClick={handleOrganizerRequest}
-                                        className="w-full bg-white text-blue-600 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-50 transition-colors shadow-lg"
-                                    >
-                                        Become an Organizer
-                                    </button>
-                                )}
+                                    {userData.role === 'organizer' || userData.role === 'admin' || userData.role === 'super-admin' ? (
+                                        <div className="bg-emerald-400/20 backdrop-blur-md rounded-2xl p-5 border border-white/20 text-center">
+                                            <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-emerald-200">Current Status</p>
+                                            <p className="text-lg font-black tracking-tight">Organizer Privileges Active</p>
+                                        </div>
+                                    ) : userData.organizerStatus === 'pending' || userData.isOrganizerRequested ? (
+                                        <div className="bg-emerald-400/20 backdrop-blur-md rounded-2xl p-5 border border-white/20 text-center">
+                                            <p className="text-[10px] font-black uppercase tracking-widest mb-1 text-emerald-200">Current Status</p>
+                                            <p className="text-lg font-black tracking-tight underline decoration-white/20">Application Pending Review</p>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={handleOrganizerRequest}
+                                            className="w-full bg-white text-emerald-900 py-5 rounded-[2rem] font-black uppercase tracking-widest hover:bg-emerald-50 transition-all shadow-xl active:scale-95"
+                                        >
+                                            Get Professional Access
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -249,3 +318,4 @@ const Profile = () => {
 };
 
 export default Profile;
+

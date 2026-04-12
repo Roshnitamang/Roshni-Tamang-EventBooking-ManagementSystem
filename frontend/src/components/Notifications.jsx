@@ -55,7 +55,7 @@ const Notifications = () => {
 
     return (
         <div className="relative">
-            <button onClick={() => setShow(!show)} className="relative p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
+            <button onClick={() => setShow(!show)} className="relative p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full">
                 🔔
                 {unreadCount > 0 && (
                     <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full">
@@ -65,25 +65,28 @@ const Notifications = () => {
             </button>
 
             {show && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-900 shadow-xl rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 z-50">
-                    <div className="p-3 border-b border-gray-200 dark:border-gray-700 font-semibold">Notifications</div>
+                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-zinc-900 shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-xl rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 z-50">
+                    <div className="p-3 border-b border-zinc-200 dark:border-zinc-700 font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
+                        <span>Notifications</span>
+                        {unreadCount > 0 && <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider">{unreadCount} New</span>}
+                    </div>
                     <div className="max-h-64 overflow-y-auto">
                         {notifications.length === 0 ? (
-                            <p className="p-4 text-center text-gray-500">No notifications</p>
+                            <p className="p-4 text-center text-zinc-500 text-sm font-medium">No notifications</p>
                         ) : (
                             notifications.map(n => (
                                 <button
                                     key={n._id}
-                                    className={`w-full text-left p-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${n.isRead ? 'opacity-60' : 'bg-blue-50 dark:bg-blue-900/10'}`}
+                                    className={`w-full text-left p-3 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors ${n.isRead ? 'opacity-60' : 'bg-green-50 dark:bg-green-900/10'}`}
                                     onClick={() => {
                                         console.log("Notification clicked:", n);
                                         handleNotificationClick(n);
                                     }}
                                 >
-                                    <p className="text-sm text-gray-800 dark:text-gray-200 font-medium">{n.message}</p>
+                                    <p className="text-sm text-zinc-800 dark:text-zinc-200 font-medium">{n.message}</p>
                                     <div className="flex justify-between items-center mt-1">
-                                        <span className="text-[10px] text-gray-400 font-bold uppercase">{new Date(n.createdAt).toLocaleTimeString()}</span>
-                                        {n.link && <span className="text-[10px] text-blue-500 font-black uppercase tracking-tighter">View Event →</span>}
+                                        <span className="text-[10px] text-zinc-400 font-bold uppercase">{new Date(n.createdAt).toLocaleTimeString()}</span>
+                                        {n.link && <span className="text-[10px] text-green-500 font-black uppercase tracking-tighter">View Event →</span>}
                                     </div>
                                 </button>
                             ))

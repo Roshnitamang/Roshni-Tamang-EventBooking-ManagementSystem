@@ -64,7 +64,7 @@ const LeafletLocationPicker = ({ onLocationSelect, initialLat, initialLng }) => 
 
     return (
         <div className="space-y-3">
-            <div style={{ height: '400px', width: '100%', borderRadius: '1.5rem', overflow: 'hidden' }} className="border-2 border-gray-100 dark:border-gray-800 shadow-inner">
+            <div style={{ height: '400px', width: '100%', borderRadius: '1.5rem', overflow: 'hidden' }} className="border-2 border-zinc-100 dark:border-zinc-800 shadow-inner">
                 <MapContainer
                     center={position}
                     zoom={13}
@@ -80,12 +80,12 @@ const LeafletLocationPicker = ({ onLocationSelect, initialLat, initialLng }) => 
                 </MapContainer>
             </div>
             <div className="flex items-center justify-between px-2">
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-600 animate-pulse"></span>
                     Click Map to Pin Event Location
                 </p>
                 {position && (
-                    <p className="text-[10px] text-gray-400 font-mono bg-gray-50 dark:bg-gray-900 px-3 py-1 rounded-full border border-gray-100 dark:border-gray-800">
+                    <p className="text-[10px] text-zinc-400 font-mono bg-zinc-50 dark:bg-zinc-900 px-3 py-1 rounded-full border border-zinc-100 dark:border-zinc-800">
                         {position[0].toFixed(6)}, {position[1].toFixed(6)}
                     </p>
                 )}

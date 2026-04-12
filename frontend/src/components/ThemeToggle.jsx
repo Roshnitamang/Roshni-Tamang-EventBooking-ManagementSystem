@@ -1,24 +1,22 @@
 import React from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { motion } from 'framer-motion';
+import { Sun, Moon } from 'lucide-react';
 
 const ThemeToggle = () => {
     const { theme, toggleTheme } = useTheme();
 
     return (
-        <div
+        <button
             onClick={toggleTheme}
-            className={`relative flex items-center w-14 h-7 rounded-full cursor-pointer transition-colors duration-300 p-1 
-                ${theme === 'light' ? 'bg-blue-100' : 'bg-gray-700'}`}
+            className="p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-all duration-300 transform active:scale-95 flex items-center justify-center group"
+            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
-            <motion.div
-                animate={{ x: theme === 'light' ? 0 : 28 }}
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                className={`w-5 h-5 rounded-full bg-white shadow-md flex items-center justify-center`}
-            >
-                {theme === 'light' ? '☀️' : '🌙'}
-            </motion.div>
-        </div>
+            {theme === 'light' ? (
+                <Moon className="w-5 h-5 group-hover:text-amber-500 transition-colors" />
+            ) : (
+                <Sun className="w-5 h-5 group-hover:text-amber-400 transition-colors" />
+            )}
+        </button>
     );
 };
 

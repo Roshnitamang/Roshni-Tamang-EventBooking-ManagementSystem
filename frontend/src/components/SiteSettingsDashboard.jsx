@@ -98,7 +98,7 @@ const SiteSettingsDashboard = () => {
     }
 
     return (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div className="bg-zinc-950 dark:bg-zinc-900 rounded-xl border border-zinc-800 dark:border-zinc-800 shadow-sm overflow-hidden">
             {showCropper && previewUrl && (
                 <ImageCropper
                     image={previewUrl}
@@ -107,23 +107,23 @@ const SiteSettingsDashboard = () => {
                 />
             )}
 
-            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
-                    <ImageIcon className="w-5 h-5 text-blue-500" />
+            <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
+                <h2 className="text-lg font-semibold text-zinc-800 dark:text-white flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-green-500" />
                     Site Appearance
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Customize the home page hero section</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">Customize the home page hero section</p>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
 
                 {/* Image Preview & Upload */}
                 <div className="space-y-4">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                         Hero Image
                     </label>
 
-                    <div className="relative aspect-[16/9] w-full max-w-2xl bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center group">
+                    <div className="relative aspect-[16/9] w-full max-w-2xl bg-zinc-100 dark:bg-zinc-800 rounded-xl overflow-hidden border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center group">
                         {(croppedImageBlob || settings.heroImage) ? (
                             <img
                                 src={croppedImageBlob ? URL.createObjectURL(croppedImageBlob) : (settings.heroImage?.startsWith('/uploads') ? backendUrl + settings.heroImage : settings.heroImage)}
@@ -132,8 +132,8 @@ const SiteSettingsDashboard = () => {
                             />
                         ) : (
                             <div className="text-center p-6">
-                                <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                                <p className="text-gray-500 text-sm">No image set</p>
+                                <ImageIcon className="w-12 h-12 text-zinc-400 mx-auto mb-2" />
+                                <p className="text-zinc-500 text-sm">No image set</p>
                             </div>
                         )}
 
@@ -142,7 +142,7 @@ const SiteSettingsDashboard = () => {
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition"
+                                className="bg-zinc-950/20 backdrop-blur-sm hover:bg-zinc-950/30 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition"
                             >
                                 <Upload className="w-4 h-4" />
                                 Change Image
@@ -157,7 +157,7 @@ const SiteSettingsDashboard = () => {
                         accept="image/*"
                         onChange={handleFileSelect}
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
                         Recommended size: 1920x1080 (16:9 ratio). You will be able to crop the image after selecting.
                     </p>
                 </div>
@@ -165,37 +165,37 @@ const SiteSettingsDashboard = () => {
                 {/* Text Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                             Hero Title
                         </label>
                         <input
                             type="text"
                             value={settings.heroTitle}
                             onChange={(e) => setSettings({ ...settings, heroTitle: e.target.value })}
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-950 dark:bg-zinc-800 text-zinc-100 dark:text-white outline-none focus:ring-2 focus:ring-green-500"
                             placeholder="e.g. Discover Amazing Events"
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                             Hero Subtitle
                         </label>
                         <input
                             type="text"
                             value={settings.heroSubtitle}
                             onChange={(e) => setSettings({ ...settings, heroSubtitle: e.target.value })}
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-950 dark:bg-zinc-800 text-zinc-100 dark:text-white outline-none focus:ring-2 focus:ring-green-500"
                             placeholder="e.g. Find and book..."
                         />
                     </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-800">
+                <div className="flex justify-end pt-4 border-t border-zinc-100 dark:border-zinc-800">
                     <button
                         type="submit"
                         disabled={loading}
-                        className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-500/30 disabled:opacity-50 flex items-center gap-2"
+                        className="px-6 py-2.5 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition shadow-lg shadow-green-500/30 disabled:opacity-50 flex items-center gap-2"
                     >
                         {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>}
                         Save Changes

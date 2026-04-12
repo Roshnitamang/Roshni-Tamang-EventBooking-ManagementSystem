@@ -31,10 +31,10 @@ const RequestOrganizer = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-6">
-            <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
-                <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-white">Become an Organizer</h1>
-                <p className="text-gray-600 dark:text-gray-300 mb-8">
+        <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-white dark:bg-zinc-900 p-6">
+            <div className="max-w-md w-full bg-transparent dark:bg-zinc-800 rounded-xl shadow-lg p-8 text-center">
+                <h1 className="text-3xl font-bold mb-4 text-zinc-800 dark:text-zinc-900 dark:text-white">Become an Organizer</h1>
+                <p className="text-zinc-600 dark:text-zinc-600 dark:text-zinc-300 mb-8">
                     Organizers can create and manage events.
                     <br /><br />
                     <strong>Note:</strong> Your account will be locked for <strong>Admin Approval</strong> immediately after request.
@@ -42,14 +42,15 @@ const RequestOrganizer = () => {
                 <button
                     onClick={handleRequest}
                     disabled={loading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50"
+                    className="w-full bg-green-600 hover:bg-green-700 text-zinc-900 dark:text-white font-bold py-3 rounded-lg transition disabled:opacity-50"
                 >
                     {loading ? 'Processing...' : 'Request Organizer Access'}
                 </button>
-                <button onClick={() => navigate(-1)} className="mt-4 text-gray-500 hover:underline">Cancel</button>
+                <button onClick={() => navigate(-1)} className="mt-4 text-zinc-500 hover:underline">Cancel</button>
             </div>
         </div>
     );
 };
 
 export default RequestOrganizer;
+

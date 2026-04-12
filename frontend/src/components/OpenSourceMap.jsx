@@ -32,7 +32,7 @@ const OpenSourceMap = ({ latitude, longitude, height = '300px', address = '' }) 
     const position = [latitude || 27.7172, longitude || 85.3240];
 
     return (
-        <div style={{ height, width: '100%', borderRadius: '12px', overflow: 'hidden' }} className="border border-gray-100 dark:border-gray-800 shadow-inner">
+        <div style={{ height, width: '100%', borderRadius: '12px', overflow: 'hidden' }} className="border border-zinc-100 dark:border-zinc-800 shadow-inner">
             <MapContainer
                 center={position}
                 zoom={15}

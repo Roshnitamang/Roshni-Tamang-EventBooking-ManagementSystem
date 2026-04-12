@@ -152,10 +152,10 @@ const ImageCropper = ({ image, onCropComplete, onCancel }) => {
                     />
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl space-y-4 max-w-xl mx-auto w-full">
+                <div className="bg-zinc-950 dark:bg-zinc-800 p-6 rounded-xl shadow-xl space-y-4 max-w-xl mx-auto w-full">
                     <div className="space-y-4">
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase">Zoom</label>
+                            <label className="text-xs font-bold text-zinc-500 uppercase">Zoom</label>
                             <input
                                 type="range"
                                 value={zoom}
@@ -164,12 +164,12 @@ const ImageCropper = ({ image, onCropComplete, onCancel }) => {
                                 step={0.1}
                                 aria-labelledby="Zoom"
                                 onChange={(e) => setZoom(e.target.value)}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-blue-600"
+                                className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-700 accent-green-600"
                             />
                         </div>
                         {/* Rotation - optional
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase">Rotation</label>
+                            <label className="text-xs font-bold text-zinc-500 uppercase">Rotation</label>
                              <input
                                 type="range"
                                 value={rotation}
@@ -178,7 +178,7 @@ const ImageCropper = ({ image, onCropComplete, onCancel }) => {
                                 step={1}
                                 aria-labelledby="Rotation"
                                 onChange={(e) => setRotation(e.target.value)}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-blue-600"
+                                className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer dark:bg-zinc-700 accent-green-600"
                             />
                         </div>
                         */}
@@ -187,14 +187,14 @@ const ImageCropper = ({ image, onCropComplete, onCancel }) => {
                     <div className="flex gap-4">
                         <button
                             onClick={onCancel}
-                            className="flex-1 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-center gap-2"
+                            className="flex-1 py-3 border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 font-bold rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-700 transition flex items-center justify-center gap-2"
                         >
                             <X className="w-5 h-5" />
                             Cancel
                         </button>
                         <button
                             onClick={handleSave}
-                            className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2"
+                            className="flex-1 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition flex items-center justify-center gap-2"
                         >
                             <Check className="w-5 h-5" />
                             Use Image

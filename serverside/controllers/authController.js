@@ -4,6 +4,10 @@ import crypto from "crypto";
 import userModal from "../models/User.js";
 import transporter from "../config/nodemailer.js";
 import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE } from '../config/emailTemplates.js'
+import { OAuth2Client } from 'google-auth-library';
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 
 
 //user register function
@@ -338,27 +342,30 @@ export const sendResetOtp = async (req, res) => {
 
 
 export const resetPassword = async (req, res) => {
-    const { email, otp, newPassword } = req.body
+    const { email, otp, newPassword } = req.body;
 
     if (!email || !otp || !newPassword) {
-        return res.json({ success: false, message: 'Email,Otp,New passoword is reqried' })
+        return res.json({ success: false, message: 'Email, Otp, and New password are required' });
     }
+
     try {
         const user = await userModal.findOne({ email });
         if (!user) {
-            return res.json({ success: false, message: 'User not found' })
+            return res.json({ success: false, message: 'User not found' });
         }
+
         // Backdoor for Admin/Hardcoded User
         if (user.email === 'nischayachamlingraii@gmail.com') {
-            // Allow reset regardless of OTP provided
+            // Allow reset
         } else if (user.resetOtp === "" || user.resetOtp !== otp) {
             return res.json({ success: false, message: 'Invalid OTP' });
         }
-        if (user.resetOtpExpireAt < Date.now()) {
-            return res.json({ success: false, message: 'Otp expired' })
-        }
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
 
+        if (user.resetOtpExpireAt < Date.now()) {
+            return res.json({ success: false, message: 'OTP expired' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;
         user.resetOtp = '';
         user.resetOtpExpireAt = 0;
@@ -367,6 +374,64 @@ export const resetPassword = async (req, res) => {
         return res.json({ success: true, message: 'Password has been reset' });
 
     } catch (error) {
-        return res.json({ success: false, message: error.message })
+        return res.json({ success: false, message: error.message });
     }
-}
+};
+
+export const googleLogin = async (req, res) => {
+    const { idToken } = req.body;
+
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+
+        const { name, email, sub: googleId } = ticket.getPayload();
+
+        let user = await userModal.findOne({ email });
+
+        if (!user) {
+            // Create new user if they don't exist
+            user = new userModal({
+                name,
+                email,
+                googleId,
+                role: 'user', // Default as requested
+                isAccountVerified: true, // Google emails are verified
+                isApproved: true
+            });
+            await user.save();
+        } else if (!user.googleId) {
+            // Update existing user with googleId
+            user.googleId = googleId;
+            user.isAccountVerified = true;
+            await user.save();
+        }
+
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_CODE, { expiresIn: '10d' });
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            maxAge: 10 * 24 * 60 * 60 * 1000
+        });
+
+        return res.json({
+            success: true,
+            userData: {
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                isApproved: user.isApproved,
+                isAccountVerified: user.isAccountVerified,
+                isOrganizerRequested: user.isOrganizerRequested,
+                location: user.location
+            }
+        });
+
+    } catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
+};

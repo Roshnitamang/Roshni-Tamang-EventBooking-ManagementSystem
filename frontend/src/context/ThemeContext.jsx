@@ -4,19 +4,35 @@ const ThemeContext = createContext()
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem('theme')
-    return savedTheme || 'light'
+    try {
+      const savedTheme = localStorage.getItem('theme')
+      return savedTheme || 'dark'
+    } catch (e) {
+      console.warn("Theme storage restricted by browser:", e)
+      return 'dark'
+    }
   })
 
-  useEffect(() => {
-    localStorage.setItem('theme', theme)
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-  }, [theme])
+  // Function to apply theme to document element
+  const applyTheme = (currentTheme) => {
+    const root = window.document.documentElement;
+    if (currentTheme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    }
+  }
 
-  // Apply theme on mount
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-  }, [])
+    try {
+      localStorage.setItem('theme', theme)
+    } catch (e) {
+      // Ignore storage errors caused by privacy settings
+    }
+    applyTheme(theme)
+  }, [theme])
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light')

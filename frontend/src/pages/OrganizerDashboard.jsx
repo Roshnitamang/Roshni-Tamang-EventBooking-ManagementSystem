@@ -22,7 +22,8 @@ import {
     Sparkles,
     Plus,
     X,
-    Edit2
+    Edit2,
+    ArrowLeft
 } from 'lucide-react'
 
 const OrganizerDashboard = () => {
@@ -30,10 +31,8 @@ const OrganizerDashboard = () => {
     const { backendUrl, userData, currency } = context || {};
     const navigate = useNavigate();
 
-    console.log("OrganizerDashboard rendering, userData:", userData);
-
     // Step Management
-    const [activeStep, setActiveStep] = useState('build'); // build, tickets, publish, list
+    const [activeStep, setActiveStep] = useState('list'); // build, tickets, publish, list, insights
 
     // Event Data State
     const [eventData, setEventData] = useState({
@@ -81,18 +80,16 @@ const OrganizerDashboard = () => {
             setLoading(true)
 
             const formData = new FormData()
-            // Append all eventData fields to formData
             Object.keys(eventData).forEach(key => {
                 if (key === 'highlights' || key === 'faqs' || key === 'ticketTypes' || key === 'coordinates') {
                     formData.append(key, JSON.stringify(eventData[key]))
                 } else if (key === 'image' && imageFile) {
-                    // Skip 'image' URL if we have a file - it will be appended separately
+                    // Skip
                 } else {
                     formData.append(key, eventData[key])
                 }
             })
 
-            // Append the image file if it exists
             if (imageFile) {
                 formData.append('image', imageFile)
             }
@@ -128,8 +125,6 @@ const OrganizerDashboard = () => {
         setImageFile(null)
     }
 
-
-
     const deleteEvent = async (id) => {
         if (!confirm('Are you sure you want to delete this event?')) return
         try {
@@ -143,45 +138,6 @@ const OrganizerDashboard = () => {
         }
     }
 
-    // --- Automatic Geocoding Logic ---
-    useEffect(() => {
-        if (!eventData.location || eventData.location.trim().length < 3) return;
-
-        const delayDebounceFn = setTimeout(async () => {
-            try {
-                console.log("Fetching coordinates for:", eventData.location);
-                const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
-                    params: {
-                        q: eventData.location,
-                        format: 'json',
-                        limit: 1
-                    },
-                    headers: {
-                        'User-Agent': 'Planora-Event-Booking-App'
-                    }
-                });
-
-                if (response.data && response.data.length > 0) {
-                    const { lat, lon } = response.data[0];
-                    setEventData(prev => {
-                        const { latitude, longitude } = newCoords;
-                        if (prev.coordinates?.latitude === latitude && prev.coordinates?.longitude === longitude) {
-                            return prev;
-                        }
-                        console.log("Geocoding success, updating coords:", { latitude, longitude });
-                        return { ...prev, coordinates: { latitude, longitude } };
-                    });
-                } else {
-                    console.log("No geocoding results for:", eventData.location);
-                }
-            } catch (error) {
-                console.error("Geocoding error:", error);
-            }
-        }, 1000); // 1s debounce
-
-        return () => clearTimeout(delayDebounceFn);
-    }, [eventData.location]);
-
     // Insights State
     const [selectedEventId, setSelectedEventId] = useState(null)
     const [eventBookings, setEventBookings] = useState([])
@@ -194,11 +150,8 @@ const OrganizerDashboard = () => {
             const { data } = await axios.get(`${backendUrl}/api/organizer/event-bookings/${id}`, { withCredentials: true })
             if (data.success) {
                 setEventBookings(data.bookings)
-
-                // Calculate specific stats for this event
                 const totalRevenue = data.bookings.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0)
                 const ticketsSold = data.bookings.reduce((acc, curr) => acc + (curr.tickets || 0), 0)
-
                 setViewingEventStats({
                     revenue: totalRevenue,
                     ticketsSold: ticketsSold,
@@ -217,145 +170,146 @@ const OrganizerDashboard = () => {
     const StepLink = ({ id, label, icon: Icon }) => (
         <button
             onClick={() => setActiveStep(id)}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-300 group ${activeStep === id
-                ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 scale-[1.02]'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400'
+            className={`flex items-center gap-4 w-full px-5 py-4 rounded-2xl transition-all duration-300 group ${activeStep === id
+                ? 'bg-emerald-600 text-zinc-900 dark:text-white shadow-xl shadow-emerald-900/40 translate-x-1'
+                : 'text-zinc-500 hover:bg-white dark:bg-zinc-900 hover:text-emerald-400'
                 }`}
         >
-            <div className={`p-2 rounded-lg transition-all duration-300 ${activeStep === id
+            <div className={`p-2 rounded-xl transition-all duration-300 ${activeStep === id
                 ? 'bg-white/20'
-                : 'bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20'
+                : 'bg-zinc-800/50 group-hover:bg-emerald-500/10'
                 }`}>
                 <Icon className={`w-5 h-5 transition-transform duration-300 ${activeStep === id ? 'scale-110' : 'group-hover:scale-110'}`} />
             </div>
-            <span className="font-semibold text-sm">{label}</span>
+            <span className="font-black text-xs uppercase tracking-widest">{label}</span>
             {activeStep === id && <ChevronRight className="w-4 h-4 ml-auto" />}
         </button>
     )
 
     return (
-        <div className="bg-white dark:bg-gray-950 min-h-screen text-gray-900 dark:text-gray-100">
-            <div className="max-w-7xl mx-auto px-6 py-10">
-
-                <div className="flex flex-col md:flex-row gap-10">
-
+        <div className="bg-transparent min-h-screen text-zinc-900 dark:text-zinc-100 font-sans selection:bg-emerald-500/30 overflow-x-hidden">
+            <div className="max-w-7xl mx-auto px-6 py-12 md:py-20">
+                <div className="flex flex-col lg:flex-row gap-16">
                     {/* Sidebar Nav */}
-                    <div className="md:w-64 space-y-2">
-                        <div className="mb-8 px-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Sparkles className="w-6 h-6 text-blue-600" />
-                                <h1 className="text-2xl font-black tracking-tight text-blue-600">Planora Studio</h1>
+                    <aside className="lg:w-72 space-y-2 shrink-0">
+                        <div className="mb-12 px-5">
+                            <div className="flex items-center gap-3 mb-4 group cursor-pointer" onClick={() => setActiveStep('list')}>
+                                <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center transform group-hover:rotate-12 transition-transform shadow-lg shadow-emerald-900/20">
+                                    <Sparkles className="w-6 h-6 text-zinc-900 dark:text-white" />
+                                </div>
+                                <h1 className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-white uppercase">Planora <span className="text-emerald-500">Studio</span></h1>
                             </div>
-                            <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Organizer Workspace</p>
+                            <div className="flex items-center gap-2">
+                               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></div>
+                               <p className="text-[10px] uppercase tracking-widest font-black text-zinc-500">Professional Console</p>
+                            </div>
                         </div>
 
-                        <StepLink id="list" label="My Events" icon={LayoutDashboard} />
-                        <div className="h-px bg-gray-100 dark:bg-gray-800 my-4 mx-4"></div>
-                        <p className="px-4 text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Create Event</p>
-                        <StepLink id="build" label="1. Build" icon={Hammer} />
-                        <StepLink id="tickets" label="2. Tickets" icon={Ticket} />
-                        <StepLink id="publish" label="3. Publish" icon={Rocket} />
-                    </div>
+                        <div className="space-y-1">
+                            <StepLink id="list" label="Portfolio" icon={LayoutDashboard} />
+                        </div>
+                        
+                        <div className="pt-10 pb-4">
+                            <h3 className="px-5 text-[9px] font-black text-zinc-600 uppercase mb-4 tracking-[0.3em]">Pipeline Management</h3>
+                            <div className="space-y-1">
+                                <StepLink id="build" label="1. Engineering" icon={Hammer} />
+                                <StepLink id="tickets" label="2. Inventory" icon={Ticket} />
+                                <StepLink id="publish" label="3. Deployment" icon={Rocket} />
+                            </div>
+                        </div>
+                    </aside>
 
                     {/* Main Content Area */}
-                    <div className="flex-1">
-
+                    <main className="flex-1 min-w-0">
                         <AnimatePresence mode="wait">
                             {/* LIST VIEW */}
                             {activeStep === 'list' && (
                                 <motion.div
                                     key="list"
-                                    initial={{ opacity: 0, y: 10 }}
+                                    initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-8"
+                                    exit={{ opacity: 0, y: -20 }}
+                                    className="space-y-12"
                                 >
                                     <header>
-                                        <h2 className="text-3xl font-bold">Event Management</h2>
-                                        <p className="text-gray-500 mt-1">Track and manage your scheduled experiences.</p>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Studio Hub</h2>
+                                        <p className="text-zinc-500 font-medium text-lg">Cross-portfolio performance and asset management.</p>
                                     </header>
 
                                     {/* Stats Grid */}
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                         {[
-                                            { label: 'Active Events', value: stats?.totalEvents || 0, icon: Calendar, color: 'blue' },
-                                            { label: 'Tickets Sold', value: stats?.totalTicketsSold || 0, icon: Ticket, color: 'purple' },
-                                            { label: 'Revenue', value: `${currency}${stats?.totalRevenue || 0}`, icon: DollarSign, color: 'green' }
+                                            { label: 'Live Inventory', value: stats?.totalEvents || 0, icon: Calendar, color: 'emerald' },
+                                            { label: 'Circulation', value: stats?.totalTicketsSold || 0, icon: Ticket, color: 'emerald' },
+                                            { label: 'Gross Yield', value: `${currency}${stats?.totalRevenue || 0}`, icon: DollarSign, color: 'emerald' }
                                         ].map((s, i) => (
-                                            <div key={i} className="group bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-900/50 dark:to-gray-900/30 p-6 rounded-3xl border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer">
-                                                <div className="flex justify-between items-start">
+                                            <div key={i} className="group bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/30 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+                                                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl -mr-12 -mt-12"></div>
+                                                <div className="relative z-10 flex flex-col gap-6">
+                                                    <div className="p-3 rounded-2xl w-fit bg-emerald-500/10 text-emerald-500 group-hover:scale-110 transition-transform duration-300">
+                                                        <s.icon className="w-6 h-6" />
+                                                    </div>
                                                     <div>
-                                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{s.label}</p>
-                                                        <h3 className="text-3xl font-black bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{s.value}</h3>
+                                                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2">{s.label}</p>
+                                                        <h3 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">{s.value}</h3>
                                                     </div>
-                                                    <div className={`p-3 rounded-2xl bg-gradient-to-br ${s.color === 'blue' ? 'from-blue-500 to-blue-600' :
-                                                        s.color === 'purple' ? 'from-purple-500 to-purple-600' :
-                                                            'from-green-500 to-green-600'
-                                                        } shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                                                        <s.icon className="w-6 h-6 text-white" />
-                                                    </div>
-                                                </div>
-                                                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-gray-500">
-                                                    <TrendingUp className="w-3 h-3" />
-                                                    <span>View details</span>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
 
-                                    <div className="space-y-4">
+                                    <div className="space-y-6">
                                         {events.length === 0 ? (
-                                            <div className="py-20 text-center border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-3xl bg-gray-50/50 dark:bg-gray-900/20">
-                                                <Rocket className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-700" />
-                                                <p className="text-gray-400 font-semibold mb-4">No events yet. Ready to launch something epic?</p>
+                                            <div className="py-24 text-center border-2 border-dashed border-zinc-900 rounded-[3rem] bg-white dark:bg-zinc-900/20 group">
+                                                <Rocket className="w-16 h-16 mx-auto mb-6 text-zinc-800 group-hover:text-emerald-500 transition-colors group-hover:-translate-y-2 duration-700" />
+                                                <p className="text-zinc-500 font-black uppercase tracking-[0.3em] mb-8 text-sm">No Active Deployments Found</p>
                                                 <button
                                                     onClick={() => setActiveStep('build')}
-                                                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 hover:scale-105 transition-all duration-300 shadow-lg shadow-blue-500/30"
+                                                    className="btn-primary flex items-center gap-3 mx-auto shadow-2xl shadow-emerald-900/40"
                                                 >
                                                     <Plus className="w-5 h-5" />
-                                                    Start Building
+                                                    Initialize Project
                                                 </button>
                                             </div>
                                         ) : (
                                             events.map(event => (
-                                                <div key={event._id} className="group bg-white dark:bg-gray-900 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 hover:shadow-2xl hover:border-blue-200 dark:hover:border-blue-900 transition-all duration-300 flex flex-col md:flex-row gap-6 items-center">
-                                                    <div className="w-full md:w-32 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-2xl overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                                                        {event.image && <img src={event.image.startsWith('/uploads') ? backendUrl + event.image : event.image} className="w-full h-full object-cover" />}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <span className="text-[10px] font-bold uppercase bg-blue-50 dark:bg-blue-900/20 text-blue-600 px-3 py-1 rounded-full">
-                                                                {event.category}
-                                                            </span>
-                                                            <span className="flex items-center gap-1 text-xs text-gray-400">
-                                                                <Calendar className="w-3 h-3" />
-                                                                {new Date(event.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
-                                                            </span>
-                                                        </div>
-                                                        <h4 className="text-lg font-bold group-hover:text-blue-600 transition-colors duration-300">{event.title}</h4>
-                                                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                                                            <span className="flex items-center gap-1">
-                                                                <MapPin className="w-4 h-4" />
-                                                                {event.location}
-                                                            </span>
-                                                            <span className="flex items-center gap-1">
-                                                                <Users className="w-4 h-4" />
-                                                                {event.ticketsAvailable} capacity
-                                                            </span>
+                                                <div key={event._id} className="group bg-white dark:bg-zinc-900 p-6 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/30 transition-all duration-300 flex flex-col md:flex-row gap-8 items-center">
+                                                    <div className="w-full md:w-48 aspect-[16/10] bg-transparent rounded-2xl overflow-hidden shrink-0 border border-zinc-200 dark:border-zinc-800 relative shadow-2xl">
+                                                        {event.image ? (
+                                                           <img src={event.image.startsWith('/uploads') ? backendUrl + event.image : event.image} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-700" />
+                                                        ) : (
+                                                           <div className="w-full h-full flex items-center justify-center text-zinc-800"><Calendar className="w-10 h-10" /></div>
+                                                        )}
+                                                        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
+                                                           <div className="text-[8px] font-black uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full w-fit backdrop-blur-md">
+                                                              {event.category}
+                                                           </div>
                                                         </div>
                                                     </div>
-                                                    <div className="flex gap-2 w-full md:w-auto">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-3 mb-4">
+                                                            <Calendar className="w-3.5 h-3.5 text-emerald-500" />
+                                                            <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">
+                                                                Execution Date: {new Date(event.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                            </span>
+                                                        </div>
+                                                        <h4 className="text-2xl font-black text-zinc-900 dark:text-white group-hover:text-emerald-400 transition-colors duration-300 uppercase tracking-tight truncate leading-none mb-6">{event.title}</h4>
+                                                        <div className="flex flex-wrap items-center gap-6 text-[11px] text-zinc-500 font-bold uppercase tracking-widest">
+                                                            <span className="flex items-center gap-2"><MapPin className="w-4 h-4 text-emerald-500" /> {event.location}</span>
+                                                            <span className="flex items-center gap-2"><Users className="w-4 h-4 text-emerald-500" /> {event.ticketsAvailable} Capacity</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex md:flex-col gap-3 w-full md:w-auto shrink-0">
                                                         <button
                                                             onClick={() => fetchEventDetails(event._id)}
-                                                            className="flex-1 md:flex-none px-5 py-2.5 bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm font-bold rounded-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                                                            className="px-8 py-3.5 bg-transparent hover:bg-emerald-600 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white rounded-2xl transition-all border border-zinc-200 dark:border-zinc-800 flex items-center justify-center gap-3 shadow-lg"
                                                         >
                                                             <TrendingUp className="w-4 h-4" />
-                                                            Insights
+                                                            Audit
                                                         </button>
-
                                                         <button
                                                             onClick={() => deleteEvent(event._id)}
-                                                            className="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-all duration-300 hover:scale-110"
+                                                            className="p-3.5 text-red-500 bg-red-500/5 hover:bg-red-500 hover:text-zinc-900 dark:text-white border border-red-500/10 rounded-2xl transition-all shadow-lg"
                                                         >
                                                             <Trash2 className="w-5 h-5" />
                                                         </button>
@@ -374,80 +328,71 @@ const OrganizerDashboard = () => {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
-                                    className="space-y-8"
+                                    className="space-y-12"
                                 >
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex flex-col md:flex-row md:items-center gap-8 border-b border-zinc-900 pb-12">
                                         <button
                                             onClick={() => setActiveStep('list')}
-                                            className="p-3 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-all font-bold"
+                                            className="w-14 h-14 bg-white dark:bg-zinc-900 rounded-2xl flex items-center justify-center hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition-all shadow-xl"
                                         >
-                                            <ChevronRight className="w-5 h-5 rotate-180" />
+                                            <ArrowLeft className="w-6 h-6 text-zinc-900 dark:text-white" />
                                         </button>
                                         <div>
-                                            <h2 className="text-3xl font-black tracking-tight">Event Insights</h2>
-                                            <p className="text-gray-500">Detailed analytics and booking history.</p>
+                                            <h2 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter leading-none mb-4 uppercase">Project Audit</h2>
+                                            <p className="text-emerald-500 font-black text-[10px] uppercase tracking-[0.4em]">{events.find(e => e._id === selectedEventId)?.title}</p>
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Total Revenue</p>
-                                            <h3 className="text-4xl font-black text-green-500">{currency}{viewingEventStats?.revenue || 0}</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group">
+                                            <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Capital Yield</p>
+                                            <h3 className="text-4xl font-black text-emerald-500 tracking-tighter">{currency}{viewingEventStats?.revenue || 0}</h3>
                                         </div>
-                                        <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Tickets Sold</p>
-                                            <h3 className="text-4xl font-black text-blue-500">{viewingEventStats?.ticketsSold || 0}</h3>
+                                        <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group">
+                                            <div className="absolute inset-0 bg-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Booking Volume</p>
+                                            <h3 className="text-4xl font-black text-teal-500 tracking-tighter">{viewingEventStats?.ticketsSold || 0}</h3>
                                         </div>
-                                        <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Remaining</p>
-                                            <h3 className="text-4xl font-black text-purple-500">
+                                        <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group">
+                                            <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Available Inventory</p>
+                                            <h3 className="text-4xl font-black text-zinc-900 dark:text-zinc-100 tracking-tighter">
                                                 {events.find(e => e._id === selectedEventId)?.ticketsAvailable - (viewingEventStats?.ticketsSold || 0)}
                                             </h3>
                                         </div>
                                     </div>
 
-                                    <div className="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
-                                        <div className="p-6 border-b border-gray-100 dark:border-gray-800">
-                                            <h3 className="text-xl font-bold">Booking History</h3>
+                                    <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-2xl">
+                                        <div className="p-10 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-transparent/20">
+                                            <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-widest hover:text-emerald-400 transition-colors">Constituent Ledger</h3>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
                                         </div>
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left">
-                                                <thead className="bg-gray-50 dark:bg-gray-800/50 text-xs uppercase tracking-wider text-gray-500 font-bold">
+                                                <thead className="bg-transparent/50 text-[10px] uppercase font-black text-zinc-600 tracking-[0.3em]">
                                                     <tr>
-                                                        <th className="py-4 px-6">Customer</th>
-                                                        <th className="py-4 px-6">Tickets</th>
-                                                        <th className="py-4 px-6">Amount</th>
-                                                        <th className="py-4 px-6">Date</th>
-                                                        <th className="py-4 px-6">Status</th>
+                                                        <th className="py-6 px-10">Constituent Name</th>
+                                                        <th className="py-6 px-10 text-center">Volume</th>
+                                                        <th className="py-6 px-10 text-center">Value</th>
+                                                        <th className="py-6 px-10 text-right">Registry Timestamp</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                                <tbody className="divide-y divide-zinc-800/50">
                                                     {eventBookings.length === 0 ? (
                                                         <tr>
-                                                            <td colSpan="5" className="py-12 text-center text-gray-400 font-medium">No bookings yet for this event.</td>
+                                                            <td colSpan="4" className="py-24 text-center text-zinc-700 font-black uppercase tracking-[0.4em] text-sm">No Registry Data Available</td>
                                                         </tr>
                                                     ) : (
                                                         eventBookings.map(booking => (
-                                                            <tr key={booking._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                                                <td className="py-4 px-6">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 font-bold text-xs">
-                                                                            {booking.userId?.name?.charAt(0) || 'U'}
-                                                                        </div>
-                                                                        <div>
-                                                                            <p className="font-bold text-sm">{booking.userId?.name || 'Unknown User'}</p>
-                                                                            <p className="text-xs text-gray-400">{booking.userId?.email}</p>
-                                                                        </div>
-                                                                    </div>
+                                                            <tr key={booking._id} className="hover:bg-transparent/30 transition-colors group">
+                                                                <td className="py-6 px-10">
+                                                                    <p className="font-black text-zinc-900 dark:text-white group-hover:text-emerald-400 Transition-colors uppercase tracking-tight">{booking.userId?.name || 'Anonymous Constituent'}</p>
+                                                                    <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">{booking.userId?.email}</p>
                                                                 </td>
-                                                                <td className="py-4 px-6 text-sm font-bold">{booking.tickets}</td>
-                                                                <td className="py-4 px-6 text-sm font-black text-green-500">{currency}{booking.totalAmount}</td>
-                                                                <td className="py-4 px-6 text-sm text-gray-500 font-medium">{new Date(booking.createdAt).toLocaleDateString()}</td>
-                                                                <td className="py-4 px-6">
-                                                                    <span className="px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-full">
-                                                                        Confirmed
-                                                                    </span>
-                                                                </td>
+                                                                <td className="py-6 px-10 text-center font-black text-zinc-500 dark:text-zinc-400">{booking.tickets} Units</td>
+                                                                <td className="py-6 px-10 text-center font-black text-emerald-500">{currency}{booking.totalAmount}</td>
+                                                                <td className="py-6 px-10 text-right text-zinc-700 font-black text-[10px] uppercase tracking-widest">{new Date(booking.createdAt).toLocaleDateString()}</td>
                                                             </tr>
                                                         ))
                                                     )}
@@ -465,28 +410,28 @@ const OrganizerDashboard = () => {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
-                                    className="max-w-3xl space-y-10"
+                                    className="max-w-3xl space-y-12"
                                 >
                                     <header>
-                                        <h2 className="text-3xl font-black tracking-tight">Build your event page</h2>
-                                        <p className="text-gray-500">First, lets get the basics right. Professional titles and images get more bookings.</p>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Project Engineering</h2>
+                                        <p className="text-zinc-500 font-medium text-lg">Define the primary parameters of your experience.</p>
                                     </header>
 
-                                    <div className="space-y-8">
+                                    <div className="space-y-10">
                                         {/* Image Upload Placeholder */}
                                         <div
-                                            className="relative group overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-[2.5rem] border-2 border-dashed border-gray-300 dark:border-gray-700 aspect-video flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-all duration-300 hover:scale-[1.01]"
+                                            className="relative group overflow-hidden bg-white dark:bg-zinc-900 rounded-[3rem] border-2 border-dashed border-zinc-200 dark:border-zinc-800 aspect-video flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 transition-all duration-500 shadow-2xl"
                                             onClick={() => document.getElementById('imageInput').click()}
                                         >
                                             {eventData.image ? (
-                                                <img src={eventData.image.startsWith('/uploads') ? backendUrl + eventData.image : eventData.image} className="absolute inset-0 w-full h-full object-cover" />
+                                                <img src={eventData.image.startsWith('/uploads') ? backendUrl + eventData.image : eventData.image} className="absolute inset-0 w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-1000" />
                                             ) : (
                                                 <>
-                                                    <div className="p-4 bg-white dark:bg-gray-800 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                                                        <ImagePlus className="w-12 h-12 text-gray-400" />
+                                                    <div className="p-6 bg-zinc-800 rounded-3xl mb-6 group-hover:scale-110 transition-transform duration-500 shadow-xl">
+                                                        <ImagePlus className="w-12 h-12 text-zinc-600 group-hover:text-emerald-500 transition-colors" />
                                                     </div>
-                                                    <p className="font-bold text-gray-600 dark:text-gray-400">Click to upload Image or Paste URL below</p>
-                                                    <p className="text-[10px] text-gray-400 uppercase font-black mt-2">Recommended: 16:9 Aspect Ratio</p>
+                                                    <p className="font-black text-zinc-600 uppercase tracking-widest text-xs group-hover:text-zinc-500 dark:text-zinc-400 transition-colors">Select Visual Artifact</p>
+                                                    <p className="text-[9px] text-zinc-700 uppercase font-black mt-2 tracking-[0.2em]">Format: 16:9 Optimized</p>
                                                 </>
                                             )}
                                             <input
@@ -502,15 +447,6 @@ const OrganizerDashboard = () => {
                                                     }
                                                 }}
                                             />
-                                            <input
-                                                type="text"
-                                                placeholder="Or paste image URL here..."
-                                                className="absolute bottom-6 mx-10 left-0 right-0 py-3 px-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl border-none shadow-2xl text-sm outline-none focus:ring-2 ring-blue-500 transition-all duration-300"
-                                                value={imageFile ? "Image selected from device" : eventData.image}
-                                                readOnly={!!imageFile}
-                                                onChange={e => setEventData({ ...eventData, image: e.target.value })}
-                                                onClick={(e) => e.stopPropagation()}
-                                            />
                                             {imageFile && (
                                                 <button
                                                     onClick={(e) => {
@@ -518,78 +454,83 @@ const OrganizerDashboard = () => {
                                                         setImageFile(null)
                                                         setEventData({ ...eventData, image: '' })
                                                     }}
-                                                    className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full text-xs transition-all duration-300 hover:scale-110 shadow-lg"
+                                                    className="absolute top-6 right-6 bg-red-600 hover:bg-red-500 text-zinc-900 dark:text-white p-3 rounded-2xl transition-all shadow-xl active:scale-90"
                                                 >
-                                                    <X className="w-4 h-4" />
+                                                    <X className="w-5 h-5" />
                                                 </button>
                                             )}
                                         </div>
 
-                                        <div className="grid gap-6">
-                                            <div className="relative border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-6 focus-within:border-blue-500 focus-within:shadow-lg transition-all duration-300">
-                                                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest absolute top-4 left-6">Event Title</label>
+                                        <div className="grid gap-8">
+                                            <div className="relative bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 group transition-all duration-300">
+                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Designation / Title</label>
                                                 <input
                                                     type="text"
-                                                    placeholder="e.g. Neon Nights Summer Jam"
-                                                    className="w-full mt-4 bg-transparent text-xl font-bold outline-none"
+                                                    placeholder="PROJECT CODE NAME..."
+                                                    className="w-full bg-transparent text-2xl font-black outline-none placeholder:text-zinc-800 text-zinc-900 dark:text-white uppercase tracking-tight"
                                                     value={eventData.title}
                                                     onChange={e => setEventData({ ...eventData, title: e.target.value })}
                                                 />
                                             </div>
 
-                                            <div className="relative border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-6 focus-within:border-blue-500 focus-within:shadow-lg transition-all duration-300">
-                                                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest absolute top-4 left-6">Summary</label>
+                                            <div className="relative bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 group transition-all duration-300">
+                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Executive Summary</label>
                                                 <input
                                                     type="text"
-                                                    placeholder="One sentence that hooks people..."
-                                                    className="w-full mt-4 bg-transparent font-medium text-gray-600 dark:text-gray-300 outline-none"
+                                                    placeholder="Brief objective summary..."
+                                                    className="w-full bg-transparent font-bold text-zinc-600 dark:text-zinc-300 outline-none placeholder:text-zinc-800"
                                                     value={eventData.summary}
                                                     onChange={e => setEventData({ ...eventData, summary: e.target.value })}
                                                 />
                                             </div>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="relative border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-6 focus-within:border-blue-500 focus-within:shadow-lg transition-all duration-300">
-                                                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-2">Category</label>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 group transition-all duration-300">
+                                                    <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Classification</label>
                                                     <select
-                                                        className="w-full bg-transparent font-bold outline-none cursor-pointer"
+                                                        className="w-full bg-transparent font-black text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer uppercase tracking-widest text-sm"
                                                         value={eventData.category}
                                                         onChange={e => setEventData({ ...eventData, category: e.target.value })}
                                                     >
-                                                        <option>Music</option>
-                                                        <option>Nightlife</option>
-                                                        <option>Health</option>
-                                                        <option>Holidays</option>
-                                                        <option>Hobbies</option>
-                                                        <option>Business</option>
-                                                        <option>Food</option>
+                                                        <option className="bg-transparent">Music</option>
+                                                        <option className="bg-transparent">Nightlife</option>
+                                                        <option className="bg-transparent">Health</option>
+                                                        <option className="bg-transparent">Holidays</option>
+                                                        <option className="bg-transparent">Hobbies</option>
+                                                        <option className="bg-transparent">Business</option>
+                                                        <option className="bg-transparent">Food</option>
                                                     </select>
                                                 </div>
-                                                <div className="relative border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-6 focus-within:border-blue-500 focus-within:shadow-lg transition-all duration-300">
-                                                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-2">Date & Time</label>
+                                                <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 group transition-all duration-300">
+                                                    <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Deployment Timestamp</label>
                                                     <input
                                                         type="datetime-local"
-                                                        className="w-full bg-transparent font-bold outline-none"
+                                                        className="w-full bg-transparent font-black text-zinc-900 dark:text-zinc-100 outline-none uppercase tracking-widest text-sm"
                                                         value={eventData.date}
                                                         onChange={e => setEventData({ ...eventData, date: e.target.value })}
                                                     />
                                                 </div>
                                             </div>
 
-                                            <div className="relative border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-6 focus-within:border-blue-500 focus-within:shadow-lg transition-all duration-300">
-                                                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest absolute top-4 left-6">Location</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Search for a venue or address..."
-                                                    className="w-full mt-4 bg-transparent font-bold outline-none"
-                                                    value={eventData.location}
-                                                    onChange={e => setEventData({ ...eventData, location: e.target.value })}
-                                                />
+                                            <div className="relative bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 group transition-all duration-300">
+                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Operation Zone (Location)</label>
+                                                <div className="relative">
+                                                   <input
+                                                       type="text"
+                                                       placeholder="STATION COORDINATES OR ADDRESS..."
+                                                       className="w-full bg-transparent font-black text-zinc-900 dark:text-white outline-none placeholder:text-zinc-800 uppercase tracking-tight"
+                                                       value={eventData.location}
+                                                       onChange={e => setEventData({ ...eventData, location: e.target.value })}
+                                                   />
+                                                   <MapPin className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-800 group-focus-within:text-emerald-500 transition-colors" />
+                                                </div>
                                             </div>
 
                                             {/* Map Location Picker */}
-                                            <div className="border-2 border-gray-100 dark:border-gray-800 rounded-2xl p-6 hover:border-blue-200 dark:hover:border-blue-900 transition-all duration-300">
-                                                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-4">Pin Location on Map</label>
+                                            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-4 border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-2xl">
+                                                <div className="p-6">
+                                                   <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.4em] block mb-4">Precision Targeting (Map)</label>
+                                                </div>
                                                 <LeafletLocationPicker
                                                     initialLat={eventData.coordinates?.latitude}
                                                     initialLng={eventData.coordinates?.longitude}
@@ -602,10 +543,10 @@ const OrganizerDashboard = () => {
 
                                         <button
                                             onClick={() => setActiveStep('tickets')}
-                                            className="w-full py-5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-3xl font-black text-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 flex items-center justify-center gap-3 shadow-xl shadow-blue-500/30 hover:scale-[1.02] hover:shadow-2xl"
+                                            className="w-full py-6 bg-emerald-600 text-zinc-900 dark:text-white rounded-[2rem] font-black uppercase tracking-[0.4em] text-sm hover:bg-emerald-500 transition-all shadow-2xl shadow-emerald-900/30 flex items-center justify-center gap-4 active:scale-95"
                                         >
-                                            Next: Add Tickets
-                                            <Ticket className="w-6 h-6" />
+                                            Next: Inventory Setup
+                                            <Ticket className="w-5 h-5" />
                                         </button>
                                     </div>
                                 </motion.div>
@@ -618,67 +559,69 @@ const OrganizerDashboard = () => {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
-                                    className="max-w-xl space-y-10"
+                                    className="max-w-xl space-y-12"
                                 >
                                     <header>
-                                        <h2 className="text-3xl font-black tracking-tight">Configure Tickets</h2>
-                                        <p className="text-gray-500">How much are people paying? How many spots are available?</p>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Inventory Flow</h2>
+                                        <p className="text-zinc-500 font-medium text-lg">Calibrate the monetary and volume constraints.</p>
                                     </header>
 
-                                    <div className="space-y-6">
-                                        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-900/10 p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-900/40 hover:shadow-xl transition-all duration-300">
-                                            <div className="flex gap-10">
-                                                <div className="flex-1">
-                                                    <label className="text-[10px] font-black uppercase text-blue-600 tracking-widest block mb-1 flex items-center gap-2">
-                                                        <DollarSign className="w-4 h-4" />
-                                                        Base Price
-                                                    </label>
-                                                    <div className="flex items-center">
-                                                        <span className="text-4xl font-black text-blue-600 mr-2">{currency}</span>
-                                                        <input
-                                                            type="number"
-                                                            placeholder="0.00"
-                                                            className="w-full bg-transparent text-5xl font-black text-blue-600 outline-none placeholder:text-blue-200"
-                                                            value={eventData.price}
-                                                            onChange={e => setEventData({ ...eventData, price: e.target.value })}
-                                                        />
-                                                    </div>
+                                    <div className="space-y-10">
+                                        <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-12 rounded-[3.5rem] text-zinc-900 dark:text-white shadow-2xl shadow-emerald-900/40 relative overflow-hidden group">
+                                            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-[60px] -mr-24 -mt-24 group-hover:scale-125 transition-transform duration-1000"></div>
+                                            
+                                            <div className="relative z-10">
+                                                <label className="text-[10px] font-black uppercase text-emerald-200 tracking-[0.4em] block mb-6 flex items-center gap-2">
+                                                    <DollarSign className="w-4 h-4" />
+                                                    Protocol Yield (Price)
+                                                </label>
+                                                <div className="flex items-center">
+                                                    <span className="text-5xl font-black text-zinc-900 dark:text-white mr-4 opacity-50">{currency}</span>
+                                                    <input
+                                                        type="number"
+                                                        placeholder="0.00"
+                                                        className="w-full bg-transparent text-7xl font-black text-zinc-900 dark:text-white outline-none placeholder:text-zinc-900 dark:text-white/20 tracking-tighter"
+                                                        value={eventData.price}
+                                                        onChange={e => setEventData({ ...eventData, price: e.target.value })}
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="relative border-2 border-gray-100 dark:border-gray-800 rounded-3xl p-8 hover:border-blue-200 dark:hover:border-blue-900 hover:shadow-lg transition-all duration-300">
-                                            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-4 flex items-center gap-2">
-                                                <Users className="w-4 h-4" />
-                                                Venue Capacity
-                                            </label>
-                                            <div className="flex items-center justify-between gap-6">
-                                                <input
-                                                    type="range"
-                                                    min="1"
-                                                    max="5000"
-                                                    className="flex-1 accent-blue-600"
-                                                    value={eventData.ticketsAvailable}
-                                                    onChange={e => setEventData({ ...eventData, ticketsAvailable: e.target.value })}
-                                                />
-                                                <span className="text-2xl font-black min-w-[80px] text-right">{eventData.ticketsAvailable}</span>
+                                        <div className="bg-white dark:bg-zinc-900 rounded-[3rem] p-10 border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/30 transition-all shadow-2xl">
+                                            <div className="flex justify-between items-center mb-8">
+                                                <label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.4em] flex items-center gap-3">
+                                                    <Users className="w-4 h-4 text-emerald-500" />
+                                                    Quota Capacity
+                                                </label>
+                                                <span className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">{eventData.ticketsAvailable}</span>
                                             </div>
-                                            <p className="text-xs text-gray-400 mt-4 italic font-medium">Tip: Keeping tickets limited creates demand! 🔥</p>
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="5000"
+                                                className="w-full h-2 bg-zinc-800 rounded-full appearance-none cursor-pointer accent-emerald-500"
+                                                value={eventData.ticketsAvailable}
+                                                onChange={e => setEventData({ ...eventData, ticketsAvailable: e.target.value })}
+                                            />
+                                            <div className="mt-8 flex items-center gap-3 p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
+                                                <Sparkles className="w-4 h-4 text-emerald-500" />
+                                                <p className="text-[10px] font-black text-emerald-500/80 uppercase tracking-widest">Limited allocation strategy increases yield velocity.</p>
+                                            </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <button
                                                 onClick={() => setActiveStep('build')}
-                                                className="py-5 bg-gray-100 dark:bg-gray-900 rounded-3xl font-bold transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-800 hover:scale-105"
+                                                className="py-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-900 dark:text-white hover:bg-zinc-800 rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] transition-all"
                                             >
-                                                Back to Build
+                                                Return to Design
                                             </button>
                                             <button
                                                 onClick={() => setActiveStep('publish')}
-                                                className="py-5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-3xl font-black hover:from-blue-700 hover:to-blue-600 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:scale-105"
+                                                className="py-6 bg-emerald-600 text-zinc-900 dark:text-white rounded-[2rem] font-black uppercase tracking-[0.4em] text-[10px] hover:bg-emerald-500 transition-all shadow-2xl active:scale-95"
                                             >
-                                                Final Steps
-                                                <Rocket className="w-5 h-5" />
+                                                Finalize Protocol
                                             </button>
                                         </div>
                                     </div>
@@ -692,145 +635,140 @@ const OrganizerDashboard = () => {
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
-                                    className="max-w-3xl space-y-10"
+                                    className="max-w-3xl space-y-12"
                                 >
                                     <header>
-                                        <h2 className="text-3xl font-black tracking-tight">Ready to launch?</h2>
-                                        <p className="text-gray-500">Provide final highlights to improve your organic traffic.</p>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Final Deployment</h2>
+                                        <p className="text-zinc-500 font-medium text-lg">Configure metadata and technical specifications.</p>
                                     </header>
 
-                                    <div className="bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 p-8 rounded-[2.5rem] space-y-8 hover:shadow-xl transition-all duration-300">
-                                        <div>
-                                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                                                <Sparkles className="w-5 h-5 text-blue-600" />
-                                                Highlights
-                                            </h3>
-                                            <div className="grid md:grid-cols-2 gap-6">
-                                                <div>
-                                                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Age Restriction</label>
-                                                    <select
-                                                        className="w-full bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl outline-none font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
-                                                        value={eventData.highlights.ageRestriction}
-                                                        onChange={e => setEventData({ ...eventData, highlights: { ...eventData.highlights, ageRestriction: e.target.value } })}
-                                                    >
-                                                        <option>All ages allowed</option>
-                                                        <option>18+ Events</option>
-                                                        <option>21+ Strict</option>
-                                                    </select>
-                                                </div>
-                                                <div>
-                                                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Parking</label>
-                                                    <select
-                                                        className="w-full bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl outline-none font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
-                                                        value={eventData.highlights.parking}
-                                                        onChange={e => setEventData({ ...eventData, highlights: { ...eventData.highlights, parking: e.target.value } })}
-                                                    >
-                                                        <option>Free parking</option>
-                                                        <option>Paid parking</option>
-                                                        <option>Valet Service</option>
-                                                        <option>No parking available</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <div className="flex justify-between items-center mb-4">
-                                                <h3 className="text-lg font-bold">Frequently Asked Questions</h3>
-                                                <button
-                                                    onClick={() => setEventData({
-                                                        ...eventData,
-                                                        faqs: [...eventData.faqs, { question: '', answer: '' }]
-                                                    })}
-                                                    className="flex items-center gap-2 text-blue-600 text-sm font-bold hover:underline hover:scale-105 transition-all duration-300"
-                                                >
-                                                    <Plus className="w-4 h-4" />
-                                                    Add Question
-                                                </button>
-                                            </div>
-                                            <div className="space-y-4">
-                                                {eventData.faqs.map((faq, index) => (
-                                                    <div key={index} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl relative hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300">
-                                                        <input
-                                                            placeholder="Question"
-                                                            className="w-full bg-transparent font-bold mb-2 outline-none"
-                                                            value={faq.question}
-                                                            onChange={e => {
-                                                                const newFaqs = [...eventData.faqs];
-                                                                newFaqs[index].question = e.target.value;
-                                                                setEventData({ ...eventData, faqs: newFaqs });
-                                                            }}
-                                                        />
-                                                        <textarea
-                                                            placeholder="Answer"
-                                                            className="w-full bg-transparent text-sm outline-none"
-                                                            value={faq.answer}
-                                                            onChange={e => {
-                                                                const newFaqs = [...eventData.faqs];
-                                                                newFaqs[index].answer = e.target.value;
-                                                                setEventData({ ...eventData, faqs: newFaqs });
-                                                            }}
-                                                        />
-                                                        <button
-                                                            onClick={() => {
-                                                                const newFaqs = eventData.faqs.filter((_, i) => i !== index);
-                                                                setEventData({ ...eventData, faqs: newFaqs });
-                                                            }}
-                                                            className="absolute top-4 right-4 text-gray-400 hover:text-red-500 hover:scale-110 transition-all duration-300"
+                                    <div className="space-y-10">
+                                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-10 rounded-[3rem] space-y-12 shadow-2xl">
+                                            <section>
+                                                <h3 className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.4em] mb-8 border-l-4 border-emerald-500 pl-4">Operation Highlights</h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                    <div className="space-y-3">
+                                                        <label className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] ml-2">Access Control (Age)</label>
+                                                        <select
+                                                            className="w-full bg-transparent border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl outline-none font-black uppercase tracking-widest text-[10px] text-zinc-600 dark:text-zinc-300 hover:border-emerald-500 transition-all"
+                                                            value={eventData.highlights.ageRestriction}
+                                                            onChange={e => setEventData({ ...eventData, highlights: { ...eventData.highlights, ageRestriction: e.target.value } })}
                                                         >
-                                                            <X className="w-5 h-5" />
-                                                        </button>
+                                                            <option className="bg-transparent">All ages allowed</option>
+                                                            <option className="bg-transparent">18+ Protocol</option>
+                                                            <option className="bg-transparent">21+ Restricted</option>
+                                                        </select>
                                                     </div>
-                                                ))}
-                                            </div>
+                                                    <div className="space-y-3">
+                                                        <label className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] ml-2">Logistic Support (Parking)</label>
+                                                        <select
+                                                            className="w-full bg-transparent border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl outline-none font-black uppercase tracking-widest text-[10px] text-zinc-600 dark:text-zinc-300 hover:border-emerald-500 transition-all"
+                                                            value={eventData.highlights.parking}
+                                                            onChange={e => setEventData({ ...eventData, highlights: { ...eventData.highlights, parking: e.target.value } })}
+                                                        >
+                                                            <option className="bg-transparent">Free logistics</option>
+                                                            <option className="bg-transparent">Premium logistics</option>
+                                                            <option className="bg-transparent">Valet Support</option>
+                                                            <option className="bg-transparent">Self-Manage Only</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </section>
+
+                                            <section>
+                                                <div className="flex justify-between items-center mb-8">
+                                                    <h3 className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.4em] border-l-4 border-zinc-200 dark:border-zinc-800 pl-4">Knowledge Base (FAQ)</h3>
+                                                    <button
+                                                        onClick={() => setEventData({
+                                                            ...eventData,
+                                                            faqs: [...eventData.faqs, { question: '', answer: '' }]
+                                                        })}
+                                                        className="flex items-center gap-2 text-emerald-500 text-[9px] font-black uppercase tracking-widest hover:text-emerald-400 p-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10 transition-all"
+                                                    >
+                                                        <Plus className="w-4 h-4" />
+                                                        Add Entry
+                                                    </button>
+                                                </div>
+                                                <div className="space-y-4">
+                                                    {eventData.faqs.map((faq, index) => (
+                                                        <div key={index} className="bg-transparent p-6 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 relative group/faq hover:border-emerald-500/30 transition-all">
+                                                            <input
+                                                                placeholder="Core Question Token..."
+                                                                className="w-full bg-transparent font-black text-zinc-900 dark:text-white mb-3 outline-none uppercase tracking-tight text-sm placeholder:text-zinc-800"
+                                                                value={faq.question}
+                                                                onChange={e => {
+                                                                    const newFaqs = [...eventData.faqs];
+                                                                    newFaqs[index].question = e.target.value;
+                                                                    setEventData({ ...eventData, faqs: newFaqs });
+                                                                }}
+                                                            />
+                                                            <textarea
+                                                                placeholder="Detailed response payload..."
+                                                                className="w-full bg-transparent text-xs font-medium text-zinc-500 outline-none placeholder:text-zinc-800 leading-relaxed"
+                                                                rows="3"
+                                                                value={faq.answer}
+                                                                onChange={e => {
+                                                                    const newFaqs = [...eventData.faqs];
+                                                                    newFaqs[index].answer = e.target.value;
+                                                                    setEventData({ ...eventData, faqs: newFaqs });
+                                                                }}
+                                                            />
+                                                            <button
+                                                                onClick={() => {
+                                                                    const newFaqs = eventData.faqs.filter((_, i) => i !== index);
+                                                                    setEventData({ ...eventData, faqs: newFaqs });
+                                                                }}
+                                                                className="absolute top-6 right-6 text-zinc-800 hover:text-red-500 transition-all active:scale-90"
+                                                            >
+                                                                <X className="w-5 h-5" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </section>
+
+                                            <section>
+                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.4em] block mb-6 border-l-4 border-zinc-200 dark:border-zinc-800 pl-4">Master Narrative</label>
+                                                <textarea
+                                                    rows="8"
+                                                    className="w-full bg-transparent border border-zinc-200 dark:border-zinc-800 p-8 rounded-[2.5rem] outline-none font-medium text-sm leading-relaxed text-zinc-600 dark:text-zinc-300 focus:border-emerald-500 transition-all placeholder:text-zinc-800"
+                                                    placeholder="Synthesize the primary narrative of this experience..."
+                                                    value={eventData.description}
+                                                    onChange={e => setEventData({ ...eventData, description: e.target.value })}
+                                                />
+                                            </section>
                                         </div>
 
-                                        <div>
-                                            <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Full Description</label>
-
-                                            <textarea
-                                                rows="5"
-                                                className="w-full bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl outline-none font-medium text-sm leading-relaxed hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 ring-blue-500 transition-all duration-300"
-                                                placeholder="Write a compelling story about your event..."
-                                                value={eventData.description}
-                                                onChange={e => setEventData({ ...eventData, description: e.target.value })}
-                                            />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                           <button 
+                                                onClick={() => setActiveStep('tickets')}
+                                                className="py-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 rounded-[2rem] font-black uppercase tracking-[0.4em] text-[10px] hover:text-zinc-900 dark:text-white transition-all"
+                                            >
+                                                Adjust Inventory
+                                            </button>
+                                           <button
+                                                onClick={handleSubmitEvent}
+                                                disabled={loading}
+                                                className="py-6 bg-emerald-600 text-zinc-900 dark:text-white rounded-[2rem] font-black uppercase tracking-[0.4em] text-[12px] hover:bg-emerald-500 transition-all shadow-2xl flex items-center justify-center gap-4 active:scale-95 disabled:opacity-50"
+                                            >
+                                                {loading ? 'Initializing...' : (
+                                                    <>
+                                                        Launch Experience
+                                                        <Rocket className="w-5 h-5 shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
+                                                    </>
+                                                )}
+                                            </button>
                                         </div>
-
-                                        <button
-                                            onClick={handleSubmitEvent}
-                                            disabled={loading}
-                                            className="w-full py-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-[2rem] font-black text-xl hover:from-blue-700 hover:to-blue-600 hover:scale-[1.02] transition-all duration-300 shadow-2xl shadow-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                                        >
-                                            {loading ? (
-                                                <>
-                                                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                    Launching Epicness...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Rocket className="w-6 h-6" />
-                                                    Launch Event Now
-                                                </>
-                                            )}
-                                        </button>
                                     </div>
-
-                                    <button
-                                        onClick={() => setActiveStep('tickets')}
-                                        className="text-gray-400 font-bold hover:text-gray-600 hover:scale-105 transition-all duration-300 flex items-center gap-2"
-                                    >
-                                        <ChevronRight className="w-4 h-4 rotate-180" />
-                                        Back to Tickets
-                                    </button>
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                    </div>
+                    </main>
                 </div>
             </div>
         </div>
     )
 }
 
-export default OrganizerDashboard
+export default OrganizerDashboard;
+

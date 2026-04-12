@@ -89,66 +89,80 @@ const ResetPassword = () => {
   const currentStep = !isEmailSent ? 1 : !isOtpSubmitted ? 2 : 3
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f6efe7] dark:bg-gray-950 px-4 transition-colors duration-300">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-transparent px-4 transition-colors duration-300 relative overflow-hidden">
+      
+      {/* Decorative background blobs */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] -mr-48 -mt-48"></div>
+      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-emerald-900/10 rounded-full blur-[80px] -ml-24 -mb-24"></div>
+
+      <div className="relative z-10 w-full max-w-md">
 
         {/* HEADER */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-full bg-[#e6d3b1] flex items-center justify-center text-xl">
+        <div className="text-center mb-10">
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 rounded-[2rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-3xl shadow-2xl shadow-emerald-900/20">
               🔐
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-[#5b3a29] dark:text-white transition-colors">
+          <h2 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter mb-3 leading-none uppercase">
             Reset Password
           </h2>
-          <p className="mt-2 text-[#7a5a45] dark:text-gray-400 transition-colors">
-            Secure your account with a new password
+          <p className="text-zinc-500 font-bold text-sm tracking-tight">
+            Secure your account with a multi-layered verification process
           </p>
         </div>
 
         {/* STEP INDICATOR */}
-        <div className="flex items-center justify-center mb-6">
+        <div className="flex items-center justify-center mb-10 gap-4">
           {[1, 2, 3].map((s) => (
             <React.Fragment key={s}>
               <div
-                className={`w-7 h-7 rounded-full text-xs flex items-center justify-center transition-colors
-                  ${s <= currentStep ? 'bg-[#7a4a2e] dark:bg-blue-600 text-white' : 'bg-[#e6d3b1] dark:bg-gray-800 text-[#5b3a29] dark:text-gray-400'}`}
+                className={`w-10 h-10 rounded-xl font-black flex items-center justify-center transition-all duration-500 border
+                  ${s <= currentStep 
+                    ? 'bg-emerald-600 text-zinc-900 dark:text-white border-emerald-500 shadow-lg shadow-emerald-900/40' 
+                    : 'bg-white dark:bg-zinc-900 text-zinc-600 border-zinc-200 dark:border-zinc-800'}`}
               >
                 {s}
               </div>
-              {s < 3 && <div className="w-10 h-[2px] bg-[#d8c2ae] dark:bg-gray-700" />}
+              {s < 3 && <div className={`w-8 h-[2px] transition-colors duration-500 ${s < currentStep ? 'bg-emerald-600' : 'bg-zinc-800'}`} />}
             </React.Fragment>
           ))}
         </div>
 
         {/* CARD */}
-        <div className="bg-[#fffaf3] dark:bg-gray-900 border border-[#e5d3c1] dark:border-gray-800 rounded-lg p-6 shadow-sm transition-colors">
+        <div className="bg-white dark:bg-zinc-900/50 backdrop-blur-md border border-zinc-200 dark:border-zinc-800/50 rounded-[2.5rem] p-8 md:p-10 shadow-2xl transition-all">
 
           {/* STEP 1 */}
           {currentStep === 1 && (
             <form onSubmit={onSubmitEmail} className="space-y-4">
-              <label className="text-sm font-medium text-[#5b3a29] dark:text-gray-300">
-                Email Address
-              </label>
-              <div className="mb-4 flex items-center gap-3 w-full px-3 py-2 border border-[#d8c2ae] dark:border-gray-700 rounded-md focus-within:ring-2 focus-within:ring-[#c49a6c] dark:focus-within:ring-blue-500">
-                <img src={assets.mail_icon} alt="" className="w-4 h-4 opacity-50 dark:invert" />
-                <input
-                  type="email"
-                  placeholder="Enter registered email"
-                  className="bg-transparent outline-none flex-1 text-[#5b3a29] dark:text-white"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+               <div>
+                  <label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.3em] ml-1 mb-3 block">Registered Identity</label>
+                  <div className="relative group">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
+                    <input
+                      type="email"
+                      placeholder="Enter your email address"
+                      className="w-full pl-12 pr-4 py-3.5 bg-transparent/50 border border-zinc-200 dark:border-zinc-800 focus:border-emerald-500/50 rounded-xl outline-none font-medium transition-all text-zinc-900 dark:text-white placeholder:text-zinc-600"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2 bg-[#7a4a2e] dark:bg-blue-600 text-white rounded-md hover:bg-[#5b3a29] dark:hover:bg-blue-700 transition"
+                className="btn-primary !w-full !py-4 flex items-center justify-center gap-3 transition-all mt-4"
               >
-                {loading ? 'Sending OTP...' : 'Send Verification Code'}
+                {loading ? (
+                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <span>Request Passcode</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           )}
@@ -156,11 +170,9 @@ const ResetPassword = () => {
           {/* STEP 2 */}
           {currentStep === 2 && (
             <form onSubmit={onSubmitOTP} className="space-y-4">
-              <label className="text-sm font-medium text-[#5b3a29] dark:text-gray-300">
-                Verification Code
-              </label>
+              <label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.3em] ml-1 mb-3 block text-center">Security Verification Code</label>
 
-              <div className="flex justify-between" onPaste={handlePaste}>
+              <div className="flex justify-between gap-2" onPaste={handlePaste}>
                 {Array(6).fill(0).map((_, i) => (
                   <input
                     key={i}
@@ -168,16 +180,17 @@ const ResetPassword = () => {
                     ref={(el) => (inputRefs.current[i] = el)}
                     onInput={(e) => handleInput(e, i)}
                     onKeyDown={(e) => handleKeyDown(e, i)}
-                    className="w-10 h-10 text-center border border-[#d8c2ae] dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#c49a6c] dark:focus:ring-blue-500 outline-none transition-all"
+                    className="w-12 h-14 text-center text-xl font-black border border-zinc-200 dark:border-zinc-800 rounded-xl bg-transparent/50 text-zinc-900 dark:text-white focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 outline-none transition-all"
                   />
                 ))}
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2 bg-[#7a4a2e] dark:bg-blue-600 text-white rounded-md hover:bg-[#5b3a29] dark:hover:bg-blue-700 transition"
+                className="btn-primary !w-full !py-4 flex items-center justify-center gap-3 transition-all mt-6"
               >
-                Verify Code
+                <span>Verify Access</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </form>
           )}
@@ -185,34 +198,46 @@ const ResetPassword = () => {
           {/* STEP 3 */}
           {currentStep === 3 && (
             <form onSubmit={onSubmitNewPassword} className="space-y-4">
-              <label className="text-sm font-medium text-[#5b3a29] dark:text-gray-300">
-                New Password
-              </label>
-              <input
-                type="password"
-                required
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-[#d8c2ae] dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#c49a6c] dark:focus:ring-blue-500 outline-none transition-all"
-              />
+              <div>
+                <label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.3em] ml-1 mb-3 block">Define New Password</label>
+                <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 transition-colors" />
+                    <input
+                      type="password"
+                      required
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Minimum 8 characters"
+                      className="w-full pl-12 pr-4 py-3.5 bg-transparent/50 border border-zinc-200 dark:border-zinc-800 focus:border-emerald-500/50 rounded-xl outline-none font-medium transition-all text-zinc-900 dark:text-white placeholder:text-zinc-600"
+                    />
+                  </div>
+              </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2 bg-[#7a4a2e] dark:bg-blue-600 text-white rounded-md hover:bg-[#5b3a29] dark:hover:bg-blue-700 transition"
+                className="btn-primary !w-full !py-4 flex items-center justify-center gap-3 transition-all mt-4"
               >
-                {loading ? 'Updating…' : 'Reset Password'}
+                {loading ? (
+                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <span>Confirm Reset</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           )}
         </div>
 
         {/* BACK */}
-        <div className="mt-6 text-center">
+        <div className="mt-10 text-center">
           <button
             onClick={() => navigate('/login')}
-            className="text-sm text-[#7a5a45] dark:text-gray-400 hover:text-[#5b3a29] dark:hover:text-blue-400 transition-colors"
+            className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-emerald-400 transition-all flex items-center justify-center gap-2 mx-auto decoration-emerald-500/30 underline-offset-8"
           >
-            ← Back to login
+            <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+            <span>Return to Sanctuary</span>
           </button>
         </div>
 
@@ -222,3 +247,4 @@ const ResetPassword = () => {
 }
 
 export default ResetPassword
+

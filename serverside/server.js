@@ -11,6 +11,7 @@ import organizerRouter from "./routes/organizerRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
 import notificationRouter from "./routes/notificationRoutes.js";
 import siteSettingsRouter from "./routes/siteSettingsRoutes.js";
+import aiRouter from "./routes/aiRoutes.js";
 import { debugLog, errorLog } from "./config/debug.js";
 
 
@@ -48,6 +49,7 @@ app.use('/api/organizer', organizerRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/notifications', notificationRouter);
 app.use('/api/settings', siteSettingsRouter);
+app.use('/api/ai', aiRouter);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

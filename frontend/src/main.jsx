@@ -7,16 +7,20 @@ import { AppContextProvider } from './context/AppContext.jsx'
 import { ThemeProvider } from './context/ThemeContext'
 import axios from 'axios'
 
+import { GoogleOAuthProvider } from '@react-oauth/google'
+
 axios.defaults.withCredentials = true;
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <ThemeProvider>
-        <AppContextProvider>
-          <App />
-        </AppContextProvider>
-      </ThemeProvider>
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <ThemeProvider>
+          <AppContextProvider>
+            <App />
+          </AppContextProvider>
+        </ThemeProvider>
+      </GoogleOAuthProvider>
     </BrowserRouter>
   </StrictMode>
 )

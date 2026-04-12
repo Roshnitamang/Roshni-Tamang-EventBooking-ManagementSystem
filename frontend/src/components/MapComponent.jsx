@@ -18,7 +18,7 @@ const MapComponent = ({ latitude, longitude, height = '400px' }) => {
     if (!apiKey || apiKey === 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
         return (
             <div
-                className="w-full bg-gray-100 dark:bg-gray-800 rounded-lg flex flex-col items-center justify-center text-gray-500 dark:text-gray-400"
+                className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-lg flex flex-col items-center justify-center text-zinc-500 dark:text-zinc-400"
                 style={{ height }}
             >
                 <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

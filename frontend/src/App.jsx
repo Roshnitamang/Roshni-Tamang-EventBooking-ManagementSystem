@@ -22,13 +22,14 @@ import Profile from './pages/Profile'
 import Help from './pages/Help'
 import Footer from './components/Footer'
 import EsewaSuccess from './pages/EsewaSuccess'
+import PaymentFailure from './pages/PaymentFailure'
 
 const App = () => {
   const { theme } = useTheme()
 
   return (
-    <div className={`${theme} min-h-screen`}>
-      <div className="bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-white transition-colors duration-300">
+    <div className={`${theme} min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 transition-colors duration-300`}>
+      <div className="min-h-screen transition-colors duration-300">
         <Navbar />
         <ToastContainer theme={theme} />
         <div className="pt-16">
@@ -39,6 +40,8 @@ const App = () => {
             <Route path="/event/:id" element={<EventDetails />} />
             <Route path="/checkout/:eventId" element={<Checkout />} />
             <Route path="/payment-success" element={<EsewaSuccess />} />
+            <Route path="/payment-failure" element={<PaymentFailure />} />
+            <Route path="/payment-failure/:eventId" element={<PaymentFailure />} />
             <Route path="/help" element={<Help />} />
 
             <Route path="/email-verify" element={<EmailVerify />} />

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react'
 import axios from 'axios'
 import { AppContent } from '../context/AppContext'
 import { Link, useLocation } from 'react-router-dom'
-import { Music, Moon, Heart, Calendar, Briefcase, ShoppingCart, Palette } from 'lucide-react'
+import { Music, Moon, Heart, Calendar, Briefcase, ShoppingCart, Palette, ArrowRight } from 'lucide-react'
 
 function Home() {
   const { backendUrl, searchQuery, currency } = useContext(AppContent)
@@ -86,40 +86,56 @@ function Home() {
   ]
 
   return (
-    <div className="w-full min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300 pt-6">
+    <div className="w-full min-h-screen bg-transparent transition-colors duration-300 pt-6">
 
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-6 mb-12">
-        <div className="relative w-full h-[360px] overflow-hidden rounded-2xl">
-          {/* Background Image */}
-          {heroData.heroImage ? (
-            <img
-              src={heroData.heroImage.startsWith('/uploads') ? backendUrl + heroData.heroImage : heroData.heroImage}
-              alt="Hero"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-900 to-purple-900" />
-          )}
-
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
-
+      <section className="max-w-7xl mx-auto px-6 mb-20">
+        <div className="relative w-full h-[450px] overflow-hidden rounded-[3rem] bg-zinc-50 dark:bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-200 dark:border-zinc-800 shadow-2xl">
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] -mr-48 -mt-48"></div>
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-emerald-900/10 rounded-full blur-[80px] -ml-24 -mb-24"></div>
+          
           {/* Content */}
-          <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4 drop-shadow-lg">
-              {heroData.heroTitle}
+          <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6 max-w-4xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/50 dark:bg-zinc-800/50 rounded-full border border-zinc-200 dark:border-zinc-700/50 mb-8 backdrop-blur-md">
+               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+               <span className="text-[10px] font-black uppercase text-zinc-600 dark:text-zinc-600 dark:text-zinc-300 tracking-[0.2em]">New Experiences Available</span>
+            </div>
+            
+            <h1 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-zinc-900 dark:text-white tracking-tighter mb-8 leading-[0.9]">
+              {heroData.heroTitle.split(' ').map((word, i) => (
+                <span key={i} className={word.toLowerCase() === 'amazing' || word.toLowerCase() === 'events' ? 'text-emerald-500' : ''}>
+                  {word}{' '}
+                </span>
+              ))}
             </h1>
-            <p className="text-lg md:text-2xl text-gray-200 font-medium max-w-2xl drop-shadow-md">
+            
+            <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-500 dark:text-zinc-400 font-medium max-w-2xl mb-12">
               {heroData.heroSubtitle}
             </p>
+            
+            <div className="flex flex-wrap items-center justify-center gap-5">
+               <button className="btn-primary !px-10 !py-4 shadow-2xl shadow-emerald-900/20">
+                 Explore Now
+               </button>
+               <button className="btn-secondary !px-10 !py-4">
+                 Our Mission
+               </button>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Categories */}
-      <section className="max-w-7xl mx-auto px-6 mb-12">
-        <div className="flex flex-wrap justify-between items-center gap-8 border-b border-gray-100 dark:border-gray-800 pb-10">
+      <section className="max-w-7xl mx-auto px-6 mb-16">
+        <div className="flex items-center justify-between mb-6 pb-2 border-b border-zinc-200 dark:border-zinc-200 dark:border-zinc-800">
+           <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600">Browse by interest</h3>
+           <div className="flex gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+              <span className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Live Now</span>
+           </div>
+        </div>
+        <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar">
           {categories.map((item, i) => {
             const IconComponent = item.icon
             const isActive = selectedCategory === item.name
@@ -128,21 +144,10 @@ function Home() {
               <button
                 key={i}
                 onClick={() => setSelectedCategory(isActive ? null : item.name)}
-                className={`flex items-center gap-2 group transition-all ${isActive ? 'text-blue-600' : ''
-                  }`}
+                className={`category-pill ${isActive ? 'active' : ''}`}
               >
-                <div className={`transition ${isActive
-                  ? 'text-blue-600'
-                  : 'text-gray-400 group-hover:text-blue-600'
-                  }`}>
-                  <IconComponent className="w-5 h-5" />
-                </div>
-                <p className={`text-sm font-bold transition ${isActive
-                  ? 'text-blue-600'
-                  : 'text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white'
-                  }`}>
-                  {item.name}
-                </p>
+                <IconComponent className="w-4 h-4" />
+                <span>{item.name}</span>
               </button>
             )
           })}
@@ -150,80 +155,89 @@ function Home() {
       </section>
 
       {/* Events section */}
-      <section className="max-w-7xl mx-auto px-6 pb-24">
-        <div className="flex justify-between items-end mb-12">
-          <div>
-            <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-              {searchQuery ? `Search Results for "${searchQuery}"` : (selectedCategory ? `${selectedCategory} Events` : 'Popular in Online Events')}
+      <section className="max-w-7xl mx-auto px-6 pb-32">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
+          <div className="max-w-2xl">
+            <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-zinc-900 dark:text-white tracking-tighter leading-none mb-4">
+              {searchQuery ? `Searching for "${searchQuery}"` : (selectedCategory ? `${selectedCategory} Experiences` : 'Trending in Online Events')}
             </h2>
-            <p className="text-gray-500 mt-2 font-medium">
-              {searchQuery ? `Found ${filteredEvents.length} events` : (selectedCategory ? `Browse all ${selectedCategory.toLowerCase()} events` : 'Curated events picked just for you')}
-            </p>
+            <div className="flex items-center gap-3">
+              <span className="h-0.5 w-12 bg-emerald-500"></span>
+              <p className="text-zinc-500 font-bold uppercase tracking-widest text-[11px]">
+                {searchQuery ? `Found ${filteredEvents.length} matches` : (selectedCategory ? `Hand-picked ${selectedCategory.toLowerCase()} events` : 'Curated experiences for you')}
+              </p>
+            </div>
           </div>
-          <Link to="/all-events" className="text-blue-600 font-bold hover:text-blue-700 transition text-sm underline underline-offset-4">
-            Browse all events
+          <Link to="/all-events" className="group flex items-center gap-2 text-emerald-500 font-black uppercase tracking-widest text-[11px] hover:text-emerald-400 transition-all">
+            <span>Browse all collections</span>
+            <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="animate-pulse">
-                <div className="h-44 bg-gray-100 dark:bg-gray-800 rounded-xl mb-4"></div>
-                <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded-md w-3/4 mb-3"></div>
-                <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded-md w-1/2"></div>
+                <div className="aspect-[16/9] bg-zinc-200 dark:bg-white dark:bg-zinc-900 rounded-2xl mb-4"></div>
+                <div className="h-6 bg-zinc-200 dark:bg-white dark:bg-zinc-900 rounded-md w-3/4 mb-3"></div>
+                <div className="h-4 bg-zinc-200 dark:bg-white dark:bg-zinc-900 rounded-md w-1/2"></div>
               </div>
             ))}
           </div>
         ) : filteredEvents.length === 0 ? (
-          <div className="text-center py-24 bg-gray-50 dark:bg-gray-800/30 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
-            <p className="text-gray-500 dark:text-gray-400 font-bold">
-              {searchQuery ? `No events matching "${searchQuery}"` : (selectedCategory ? `No ${selectedCategory.toLowerCase()} events found` : 'No upcoming events yet')}
+          <div className="text-center py-32 bg-zinc-100 dark:bg-white dark:bg-zinc-900/50 rounded-[3rem] border border-zinc-300 dark:border-zinc-200 dark:border-zinc-800 border-dashed">
+            <p className="text-zinc-500 font-black uppercase tracking-[0.2em] text-sm">
+              {searchQuery ? `No results for "${searchQuery}"` : 'No upcoming events found'}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredEvents.map((event) => (
               <Link
                 to={`/event/${event._id}`}
                 key={event._id}
-                className="group block"
+                className="event-card group"
               >
-                <div className="relative aspect-[16/9] mb-4 overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800">
+                <div className="relative aspect-[16/9] overflow-hidden grayscale-[30%] group-hover:grayscale-0 transition-all duration-700">
                   {event.image ? (
                     <img src={event.image.startsWith('/uploads') ? backendUrl + event.image : event.image} alt={event.title} className="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
                   ) : (
-                    <div className="w-full h-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-                      <svg className="w-10 h-10 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    <div className="w-full h-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
+                       <Palette className="w-12 h-12 text-zinc-500 dark:text-zinc-400 dark:text-zinc-700" />
                     </div>
                   )}
-                  <div className="absolute top-3 right-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-black text-blue-600 shadow-sm uppercase tracking-tighter">
-                    {event.price > 0 ? `${currency}${event.price}` : 'Free'}
+                  {/* Badge */}
+                  <div className="absolute top-4 left-4">
+                     <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-[10px] font-black text-emerald-400 uppercase tracking-widest shadow-2xl">
+                        {event.price > 0 ? `${currency}${event.price}` : 'Complimentary'}
+                     </div>
                   </div>
                 </div>
 
-                <div className="flex gap-4">
-                  {/* Date Block */}
-                  <div className="flex-shrink-0 text-center">
-                    <p className="text-[10px] uppercase font-black text-blue-600 tracking-tighter">
-                      {new Date(event.date).toLocaleDateString(undefined, { month: 'short' })}
-                    </p>
-                    <p className="text-xl font-bold text-gray-900 dark:text-white leading-none mt-1">
-                      {new Date(event.date).toLocaleDateString(undefined, { day: 'numeric' })}
-                    </p>
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                     <span className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.2em]">
+                        {new Date(event.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                     </span>
+                     <span className="w-1 h-1 rounded-full bg-zinc-700"></span>
+                     <span className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.2em] truncate">
+                        {event.location}
+                     </span>
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900 dark:text-white leading-[1.3] text-lg mb-1 group-hover:text-blue-600 transition truncate">
-                      {event.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 font-medium truncate mb-2">
-                      {new Date(event.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                    </p>
-                    <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold uppercase tracking-wider">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                      <span className="truncate">{event.location}</span>
-                    </div>
+                  <h3 className="font-bold text-zinc-900 dark:text-zinc-900 dark:text-zinc-100 text-xl mb-4 leading-tight group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
+                    {event.title}
+                  </h3>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-zinc-200 dark:border-zinc-200 dark:border-zinc-800/50">
+                     <div className="flex items-center gap-2 text-zinc-500">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider">{new Date(event.date).toLocaleDateString(undefined, { weekday: 'short' })}</span>
+                     </div>
+                     <div className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400 group-hover:text-emerald-400 transition-colors">
+                        <span className="text-[10px] font-black uppercase tracking-widest">View Details</span>
+                        <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
+                     </div>
                   </div>
                 </div>
               </Link>
@@ -236,3 +250,4 @@ function Home() {
 }
 
 export default Home
+

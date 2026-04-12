@@ -32,11 +32,11 @@ const ManageBookings = () => {
 
     return (
         <div className="p-6 max-w-5xl mx-auto transition-colors duration-300">
-            <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Event Bookings</h1>
+            <h1 className="text-2xl font-bold mb-6 text-zinc-800 dark:text-zinc-900 dark:text-white">Event Bookings</h1>
 
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow dark:border dark:border-gray-800 overflow-hidden">
+            <div className="bg-transparent dark:bg-white dark:bg-zinc-900 rounded-lg shadow dark:border dark:border-zinc-200 dark:border-zinc-800 overflow-hidden">
                 <table className="w-full text-left">
-                    <thead className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 uppercase text-sm">
+                    <thead className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-500 dark:text-zinc-400 uppercase text-sm">
                         <tr>
                             <th className="py-3 px-4">User</th>
                             <th className="py-3 px-4">Email</th>
@@ -45,19 +45,19 @@ const ManageBookings = () => {
                             <th className="py-3 px-4">Date</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                         {bookings.length === 0 ? (
                             <tr>
-                                <td colSpan="5" className="py-4 px-4 text-center text-gray-500">No bookings yet.</td>
+                                <td colSpan="5" className="py-4 px-4 text-center text-zinc-500">No bookings yet.</td>
                             </tr>
                         ) : (
                             bookings.map(booking => (
-                                <tr key={booking._id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                    <td className="py-3 px-4 dark:text-gray-300">{booking.userId?.name || 'Unknown'}</td>
-                                    <td className="py-3 px-4 dark:text-gray-400">{booking.userId?.email || '-'}</td>
-                                    <td className="py-3 px-4 dark:text-gray-300">{booking.tickets}</td>
-                                    <td className="py-3 px-4 font-bold text-gray-900 dark:text-white">{currency}{booking.totalAmount}</td>
-                                    <td className="py-3 px-4 text-gray-500 dark:text-gray-400">{new Date(booking.createdAt).toLocaleDateString()}</td>
+                                <tr key={booking._id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                                    <td className="py-3 px-4 dark:text-zinc-600 dark:text-zinc-300">{booking.userId?.name || 'Unknown'}</td>
+                                    <td className="py-3 px-4 dark:text-zinc-500 dark:text-zinc-400">{booking.userId?.email || '-'}</td>
+                                    <td className="py-3 px-4 dark:text-zinc-600 dark:text-zinc-300">{booking.tickets}</td>
+                                    <td className="py-3 px-4 font-bold text-zinc-900 dark:text-zinc-100 dark:text-zinc-900 dark:text-white">{currency}{booking.totalAmount}</td>
+                                    <td className="py-3 px-4 text-zinc-500 dark:text-zinc-500 dark:text-zinc-400">{new Date(booking.createdAt).toLocaleDateString()}</td>
                                 </tr>
                             ))
                         )}
@@ -69,3 +69,4 @@ const ManageBookings = () => {
 };
 
 export default ManageBookings;
+
