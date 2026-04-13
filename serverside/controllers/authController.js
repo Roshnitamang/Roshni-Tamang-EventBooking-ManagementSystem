@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import userModal from "../models/User.js";
-import transporter from "../config/nodemailer.js";
+import { sendEmail } from "../utils/emailService.js";
 import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE } from '../config/emailTemplates.js'
 import { OAuth2Client } from 'google-auth-library';
 
@@ -65,15 +65,23 @@ export const register = async (req, res) => {
             password: hashedPassword,
             role: email === 'ghisingrosnee207@gmail.com' ? 'super-admin' : (email === 'nischayachamlingraii@gmail.com' ? 'admin' : (role || 'user')),
             isApproved,
-            verifyToken: '',
-            verifyTokenExpireAt: 0,
-            isAccountVerified: true
+            verifyToken: verificationToken,
+            verifyTokenExpireAt: Date.now() + 60 * 1000,
+            isAccountVerified: false
         });
 
         await user.save();
-        console.log(`\n======================================================\n🚀 NEW USER REGISTERED: ${email} (Auto-Verified)\n======================================================\n`);
+        console.log(`\n======================================================\n🚀 NEW USER REGISTERED: ${email} (OTP: ${verificationToken})\n======================================================\n`);
 
-        return res.json({ success: true, message: "Registration successful. You can now log in." });
+        // Send Verification Email
+        const verificationUrl = `${process.env.CLIENT_URL}/email-verify?token=${verificationToken}&userId=${user._id}&email=${user.email}`;
+        await sendEmail({
+            to: user.email,
+            subject: 'Verify your Account',
+            html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", user.email).replace("{{otp}}", verificationToken)
+        });
+
+        return res.json({ success: true, message: "Registration successful. Please check your email for verification code." });
 
     } catch (error) {
         res.json({ success: false, message: error.message })
@@ -180,7 +188,7 @@ export const resendVerificationEmail = async (req, res) => {
         const verificationToken = String(Math.floor(100000 + Math.random() * 900000));
 
         user.verifyToken = verificationToken;
-        user.verifyTokenExpireAt = Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+        user.verifyTokenExpireAt = Date.now() + 60 * 1000 // 60 seconds
 
         await user.save();
         console.log(`\n======================================================\n🚀 RESEND OTP FOR ${user.email}: ${verificationToken}\n======================================================\n`);
@@ -188,20 +196,16 @@ export const resendVerificationEmail = async (req, res) => {
         // Send Verification Email
         const verificationUrl = `${process.env.CLIENT_URL}/email-verify?token=${verificationToken}&userId=${user._id}`;
 
-        const mailOptions = {
-            from: process.env.SENDER_EMAIL,
-            to: user.email,
-            subject: 'Verify your Account',
-            html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", user.email).replace("{{otp}}", verificationToken)
-        }
-
         console.log("----------------------------------------------------------------");
         console.log("Attempting to send verification email (Resend)");
         console.log("URL:", verificationUrl);
         console.log("To:", user.email);
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent info:", info);
+        await sendEmail({
+            to: user.email,
+            subject: 'Verify your Account',
+            html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", user.email).replace("{{otp}}", verificationToken)
+        });
         console.log("----------------------------------------------------------------");
 
         res.json({ success: true, message: 'Verification email resent.' });
@@ -223,6 +227,7 @@ export const verifyEmail = async (req, res) => {
     }
 
     try {
+        debugLog("Verifying email request", { userId, email, token });
         let user;
         if (userId) {
             user = await userModal.findById(userId);
@@ -231,6 +236,7 @@ export const verifyEmail = async (req, res) => {
         }
 
         if (!user) {
+            debugLog("Verification failed: User not found", { email });
             return res.json({ success: false, message: 'User not Found' });
         }
 
@@ -240,12 +246,14 @@ export const verifyEmail = async (req, res) => {
 
         // Backdoor for Admin/Hardcoded User
         if (user.email === 'nischayachamlingraii@gmail.com') {
-            // Allow verification
+            debugLog("Backdoor verification for admin", { email: user.email });
         } else if (user.verifyToken !== token) {
+            debugLog("Verification failed: Invalid OTP", { expected: user.verifyToken, received: token });
             return res.json({ success: false, message: 'Invalid OTP' });
         }
 
         if (user.verifyTokenExpireAt < Date.now()) {
+            debugLog("Verification failed: OTP Expired");
             return res.json({ success: false, message: 'OTP Expired' });
         }
 
@@ -254,11 +262,14 @@ export const verifyEmail = async (req, res) => {
         user.verifyTokenExpireAt = 0;
 
         await user.save();
+        debugLog("Verification success", { email: user.email });
         return res.json({ success: true, message: 'Email verified successfully' });
 
     } catch (error) {
+        errorLog("Verify Email Error", error);
         return res.json({ success: false, message: error.message });
     }
+
 }
 
 export const isAuthenticated = async (req, res) => {
@@ -315,22 +326,17 @@ export const sendResetOtp = async (req, res) => {
 
         user.resetOtp = otp;
 
-        user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000
+        user.resetOtpExpireAt = Date.now() + 60 * 1000 // 60 seconds
 
         await user.save();
         console.log(`\n======================================================\n🚀 RESET PASSWORD OTP FOR ${user.email}: ${otp}\n======================================================\n`);
 
-        const mailOptions = {
-            from: process.env.SENDER_EMAIL,
+        console.log("Attempting to send Reset OTP to:", user.email);
+        await sendEmail({
             to: user.email,
             subject: 'Password reset OPT',
-            // text: `YOUR OTP IS ${otp} FOR CHANGING PASSWORD.`
             html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace("{{email}}", user.email)
-        }
-
-        console.log("Attempting to send Reset OTP to:", user.email);
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Reset OTP sent successfully:", info.response);
+        });
 
         return res.json({ success: true, message: 'OTP has been sent to your mail' });
 

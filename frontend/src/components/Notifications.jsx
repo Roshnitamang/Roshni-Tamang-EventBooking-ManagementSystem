@@ -43,12 +43,23 @@ const Notifications = () => {
         }
 
         // Handle Navigation
-        if (n.link) {
-            navigate(n.link);
-            setShow(false);
-        } else if (n.message.toLowerCase().includes('organizer request')) {
-            const targetDashboard = userData.role === 'super-admin' ? '/super-admin-dashboard' : '/admin-dashboard';
-            navigate(targetDashboard, { state: { activeStep: 'organizers' } });
+        let targetLink = n.link;
+
+        // Fallback for older notifications or specific message types without links
+        if (!targetLink) {
+            const msg = n.message.toLowerCase();
+            if (msg.includes('payment verified') || msg.includes('booking confirmed')) {
+                targetLink = '/user-dashboard';
+            } else if (msg.includes('organizer request')) {
+                targetLink = userData.role === 'super-admin' ? '/super-admin-dashboard' : '/admin-dashboard';
+            } else if (msg.includes('new event') || msg.includes('found an event')) {
+                // If it's an event notification without a link, we can't do much without the ID
+                // but usually these have links now.
+            }
+        }
+
+        if (targetLink) {
+            navigate(targetLink, { state: { activeStep: n.message.toLowerCase().includes('organizer') ? 'organizers' : undefined } });
             setShow(false);
         }
     };

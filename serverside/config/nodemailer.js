@@ -1,12 +1,25 @@
 import nodemailer from 'nodemailer'
+import { debugLog } from './debug.js';
+
+const smtpUser = (process.env.SMTP_USER || '').trim();
+const smtpPass = (process.env.SMTP_PASS || '').trim();
+
+debugLog("Creating Transporter with user:", { user: smtpUser, passLength: smtpPass.length });
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT || 465,
-    secure: true, // true for 465, false for other ports
+    service: 'gmail',
     auth: {
-        user: process.env.SMTP_USER, // Your Gmail address
-        pass: process.env.SMTP_PASS  // Your Gmail App Password
+        user: smtpUser,
+        pass: smtpPass
+    }
+});
+
+// Verify connection on startup
+transporter.verify((error, success) => {
+    if (error) {
+        debugLog("SMTP Connection Error", error);
+    } else {
+        debugLog("SMTP Server is ready to take our messages");
     }
 });
 

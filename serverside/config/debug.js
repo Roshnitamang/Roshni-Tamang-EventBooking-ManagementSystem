@@ -16,7 +16,9 @@ export const debugLog = (msg, obj = null) => {
 
 export const errorLog = (msg, err) => {
     const timestamp = new Date().toISOString();
-    const logMsg = `${timestamp} - ERROR - ${msg}: ${err.message}\nStack: ${err.stack}`;
+    const errMsg = err?.message || String(err) || 'Unknown Error';
+    const errStack = err?.stack || 'No Stack Trace';
+    const logMsg = `${timestamp} - ERROR - ${msg}: ${errMsg}\nStack: ${errStack}`;
     fs.appendFileSync(logPath, logMsg + '\n');
     console.error(logMsg);
 };

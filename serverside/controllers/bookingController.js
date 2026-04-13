@@ -2,6 +2,8 @@ import Booking from '../models/Booking.js';
 import Event from '../models/Event.js';
 import userModal from '../models/User.js';
 import { createNotification } from './notificationController.js';
+import { sendEmail } from '../utils/emailService.js';
+import { BOOKING_CONFIRMATION_TEMPLATE } from '../config/emailTemplates.js';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -29,6 +31,13 @@ export const initiateEsewaPayment = async (req, res) => {
         const event = await Event.findById(eventId);
         if (!event) {
             return res.json({ success: false, message: 'Event not found' });
+        }
+
+        // Check if event is in the past
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (new Date(event.date) < today) {
+            return res.json({ success: false, message: 'This event has already passed. Booking is only available for current or upcoming events.' });
         }
 
         // Check Availability
@@ -142,10 +151,34 @@ export const verifyEsewaPayment = async (req, res) => {
             await event.save();
 
             // Notify User
-            await createNotification(booking.userId, `Payment verified and booking confirmed for ${event.title}!`, 'success');
+            await createNotification(
+                booking.userId, 
+                `Payment verified and booking confirmed for ${event.title}!`, 
+                'success',
+                '/user-dashboard'
+            );
 
             // Notify Organizer
-            await createNotification(event.organizer, `Payment received for ${booking.tickets} tickets to ${event.title}`, 'info');
+            await createNotification(
+                event.organizer, 
+                `Payment received for ${booking.tickets} tickets to ${event.title}`, 
+                'info',
+                '/organizer-dashboard'
+            );
+
+            // Email Notification to User
+            const user = await userModal.findById(booking.userId);
+            if (user) {
+                sendEmail({
+                    to: user.email,
+                    subject: `Secure Confirmation: ${event.title}`,
+                    html: BOOKING_CONFIRMATION_TEMPLATE
+                        .replace(/{{eventTitle}}/g, event.title)
+                        .replace(/{{location}}/g, event.location)
+                        .replace(/{{date}}/g, new Date(event.date).toLocaleDateString())
+                        .replace(/{{url}}/g, `${process.env.CLIENT_URL || 'http://localhost:5173'}/my-bookings`)
+                });
+            }
         }
 
         await booking.save();

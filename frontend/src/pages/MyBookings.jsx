@@ -58,13 +58,13 @@ const MyBookings = () => {
                 </header>
 
                 <div className="grid gap-6">
-                    {bookings.length === 0 ? (
+                    {bookings.filter(b => b.eventId && new Date(b.eventId.date) >= new Date().setHours(0, 0, 0, 0)).length === 0 ? (
                         <div className="py-32 text-center bg-white dark:bg-zinc-900/30 rounded-[3rem] border border-dashed border-zinc-900 group">
                            <Package className="w-16 h-16 text-zinc-800 mx-auto mb-6 group-hover:text-emerald-500 transition-colors duration-500" />
                            <p className="text-zinc-500 font-black uppercase tracking-[0.4em] text-sm">No Transactional Records Detected</p>
                         </div>
                     ) : (
-                        bookings.map((booking) => (
+                        bookings.filter(b => b.eventId && new Date(b.eventId.date) >= new Date().setHours(0, 0, 0, 0)).map((booking) => (
                             <motion.div 
                                initial={{ opacity: 0, x: -20 }}
                                animate={{ opacity: 1, x: 0 }}

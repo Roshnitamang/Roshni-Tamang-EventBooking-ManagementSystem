@@ -2,6 +2,8 @@ import User from '../models/User.js';
 import Event from '../models/Event.js';
 import Booking from '../models/Booking.js';
 import KYC from '../models/KYC.js';
+import { sendEmail } from '../utils/emailService.js';
+import { ORGANIZER_STATUS_TEMPLATE } from '../config/emailTemplates.js';
 
 // ===============================
 // System Stats
@@ -245,6 +247,19 @@ export const approveOrganizer = async (req, res) => {
 
         await KYC.findOneAndUpdate({ userId }, { status: 'approved' });
 
+        // Email Notification
+        const user = await User.findById(userId);
+        if (user) {
+            sendEmail({
+                to: user.email,
+                subject: 'Planora: Organizer Account Approved',
+                html: ORGANIZER_STATUS_TEMPLATE
+                    .replace('{{status}}', 'Approved')
+                    .replace('{{message}}', 'Welcome to the inner circle! Your organizer application has been formally approved. You now have full access to event initialization tools.')
+                    .replace('{{url}}', `${process.env.CLIENT_URL || 'http://localhost:5173'}/organizer-dashboard`)
+            });
+        }
+
         res.json({
             success: true,
             message: 'Organizer approved successfully'
@@ -283,6 +298,19 @@ export const rejectOrganizer = async (req, res) => {
         });
 
         await KYC.findOneAndUpdate({ userId }, { status: 'rejected' });
+
+        // Email Notification
+        const user = await User.findById(userId);
+        if (user) {
+            sendEmail({
+                to: user.email,
+                subject: 'Planora: Account Status Update',
+                html: ORGANIZER_STATUS_TEMPLATE
+                    .replace('{{status}}', 'Rejected')
+                    .replace('{{message}}', 'Your application to become an organizer could not be approved at this time. Please verify your KYC details and try again.')
+                    .replace('{{url}}', `${process.env.CLIENT_URL || 'http://localhost:5173'}/user-dashboard`)
+            });
+        }
 
         res.json({
             success: true,

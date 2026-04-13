@@ -14,7 +14,6 @@ import siteSettingsRouter from "./routes/siteSettingsRoutes.js";
 import aiRouter from "./routes/aiRoutes.js";
 import { debugLog, errorLog } from "./config/debug.js";
 
-
 const app = express();
 const port = process.env.PORT || 4000
 connectDB();
@@ -60,4 +59,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(port, () => console.log(`server start on PORT:${port}`));
+app.listen(port, () => {
+    debugLog(`Server started on PORT: ${port}`);
+});

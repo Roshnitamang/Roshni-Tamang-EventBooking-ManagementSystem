@@ -80,23 +80,38 @@ const Navbar = () => {
           </div>
 
           {/* PRIMARY NAV LINKS */}
-          <ul className="hidden lg:flex items-center gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">
-            <li>
-              <NavLink to="/" className={({ isActive }) => `hover:text-emerald-400 transition-colors ${isActive ? 'text-emerald-500' : ''}`}>
-                Exploration
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/all-events" className={({ isActive }) => `hover:text-emerald-400 transition-colors ${isActive ? 'text-emerald-500' : ''}`}>
-                Find Events
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/organizer-dashboard" className={({ isActive }) => `hover:text-emerald-400 transition-colors ${isActive ? 'text-emerald-500' : ''}`}>
-                Create
-              </NavLink>
-            </li>
-          </ul>
+          {userData ? (
+            <ul className="hidden lg:flex items-center gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+              <li>
+                <NavLink to="/profile" className={({ isActive }) => `hover:text-emerald-400 transition-colors ${isActive ? 'text-emerald-500' : ''}`}>
+                  Profile
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/dashboard" className={({ isActive }) => `hover:text-emerald-400 transition-colors ${isActive ? 'text-emerald-500' : ''}`}>
+                  Dashboard
+                </NavLink>
+              </li>
+            </ul>
+          ) : (
+            <ul className="hidden lg:flex items-center gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+              <li>
+                <NavLink to="/" className={({ isActive }) => `hover:text-emerald-400 transition-colors ${isActive ? 'text-emerald-500' : ''}`}>
+                  Exploration
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/all-events" className={({ isActive }) => `hover:text-emerald-400 transition-colors ${isActive ? 'text-emerald-500' : ''}`}>
+                  Find Events
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/organizer-dashboard" className={({ isActive }) => `hover:text-emerald-400 transition-colors ${isActive ? 'text-emerald-500' : ''}`}>
+                  Create
+                </NavLink>
+              </li>
+            </ul>
+          )}
 
           {/* RIGHT ACTIONS */}
           <div className="flex items-center gap-6 ml-auto">

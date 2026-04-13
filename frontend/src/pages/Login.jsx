@@ -5,7 +5,7 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Lock, User, ArrowRight, Sparkles } from 'lucide-react'
-import { GoogleLogin } from '@react-oauth/google'
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
 
 
 const Login = () => {
@@ -130,7 +130,8 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-transparent p-4 transition-colors duration-300 relative overflow-hidden">
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-transparent p-4 transition-colors duration-300 relative overflow-hidden">
       
       {/* Decorative background blobs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] -mr-48 -mt-48"></div>
@@ -276,6 +277,7 @@ const Login = () => {
                   theme="filled_black"
                   shape="pill"
                   width="350"
+                  use_fedcm_for_prompt={true}
                 />
               </div>
             </div>
@@ -331,7 +333,8 @@ const Login = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+      </div>
+    </GoogleOAuthProvider>
   )
 }
 

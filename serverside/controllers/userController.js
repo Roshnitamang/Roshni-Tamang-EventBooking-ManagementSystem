@@ -222,7 +222,8 @@ export const requestOrganizerRole = async (req, res) => {
                 await createNotification(
                     admin._id,
                     `New organizer request from ${user.name}`,
-                    'info'
+                    'info',
+                    admin.role === 'super-admin' ? '/super-admin-dashboard' : '/admin-dashboard'
                 );
             } catch (err) {
                 console.error(`Error notifying admin ${admin._id}:`, err);

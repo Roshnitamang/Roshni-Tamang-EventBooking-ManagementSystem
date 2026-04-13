@@ -1,5 +1,5 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import EmailVerify from './pages/EmailVerify'
@@ -26,13 +26,17 @@ import PaymentFailure from './pages/PaymentFailure'
 
 const App = () => {
   const { theme } = useTheme()
+  const location = useLocation()
+
+  const authRoutes = ['/login', '/email-verify', '/reset-password']
+  const isAuthPage = authRoutes.includes(location.pathname)
 
   return (
     <div className={`${theme} min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 transition-colors duration-300`}>
       <div className="min-h-screen transition-colors duration-300">
-        <Navbar />
+        {!isAuthPage && <Navbar />}
         <ToastContainer theme={theme} />
-        <div className="pt-16">
+        <div className={isAuthPage ? "" : "pt-16"}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -91,7 +95,7 @@ const App = () => {
             } />
           </Routes>
         </div>
-        <Footer />
+        {!isAuthPage && <Footer />}
       </div>
     </div>
   )

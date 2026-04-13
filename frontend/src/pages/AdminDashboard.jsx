@@ -315,7 +315,7 @@ const AdminDashboard = () => {
                                                 </div>
                                                 <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/5 px-2 py-1 rounded">30D TREND</span>
                                             </div>
-                                            <div className="h-[300px]">
+                                            <div className="h-[300px] min-w-0">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <AreaChart data={stats?.revenueTrend}>
                                                         <defs>
@@ -342,7 +342,7 @@ const AdminDashboard = () => {
                                                 </div>
                                                 <h3 className="font-black text-sm uppercase tracking-widest text-zinc-600 dark:text-zinc-300">Category Mix</h3>
                                             </div>
-                                            <div className="h-[300px]">
+                                            <div className="h-[300px] min-w-0">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <PieChart>
                                                         <Pie
@@ -371,7 +371,7 @@ const AdminDashboard = () => {
                                                 </div>
                                                 <h3 className="font-black text-sm uppercase tracking-widest text-zinc-600 dark:text-zinc-300">Top Yield Collections</h3>
                                             </div>
-                                            <div className="h-[300px]">
+                                            <div className="h-[300px] min-w-0">
                                                 <ResponsiveContainer width="100%" height="100%">
                                                     <BarChart data={stats?.topEvents} layout="vertical" margin={{ left: 40 }}>
                                                         <XAxis type="number" hide />

@@ -14,13 +14,11 @@ axios.defaults.withCredentials = true;
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-        <ThemeProvider>
-          <AppContextProvider>
-            <App />
-          </AppContextProvider>
-        </ThemeProvider>
-      </GoogleOAuthProvider>
+      <ThemeProvider>
+        <AppContextProvider>
+          <App />
+        </AppContextProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>
 )

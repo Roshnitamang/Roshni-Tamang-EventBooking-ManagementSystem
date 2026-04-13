@@ -163,10 +163,10 @@ const EventDetails = () => {
 
                                 <button
                                     onClick={() => navigate(`/checkout/${id}`)}
-                                    disabled={event.ticketsAvailable === 0}
+                                    disabled={event.ticketsAvailable === 0 || new Date(event.date) < new Date().setHours(0, 0, 0, 0)}
                                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-zinc-900 dark:text-white py-5 rounded-xl font-black uppercase tracking-widest transition-all shadow-2xl shadow-emerald-900/40 active:scale-[0.98] disabled:opacity-50"
                                 >
-                                    {event.ticketsAvailable === 0 ? 'Fully Booked' : 'Reserve experience'}
+                                    {event.ticketsAvailable === 0 ? 'Fully Booked' : (new Date(event.date) < new Date().setHours(0, 0, 0, 0) ? 'Event Passed' : 'Reserve experience')}
                                 </button>
 
                                 <div className="mt-10 space-y-6 pt-10 border-t border-zinc-200 dark:border-zinc-800/50">

@@ -1,5 +1,12 @@
 import Event from '../models/Event.js';
+import User from '../models/User.js';
+import { sendEmail } from '../utils/emailService.js';
+import { createNotification } from './notificationController.js';
+import { NEW_EVENT_TEMPLATE } from '../config/emailTemplates.js';
 import { debugLog, errorLog } from '../config/debug.js';
+import { getAIResponse } from '../utils/geminiService.js';
+import Booking from '../models/Booking.js';
+import jwt from 'jsonwebtoken';
 
 // Create Event
 export const createEvent = async (req, res) => {
@@ -45,6 +52,49 @@ export const createEvent = async (req, res) => {
 
         await newEvent.save();
         debugLog("Event saved successfully", { id: newEvent._id });
+
+        // Push Notifications to all users in background
+        (async () => {
+            try {
+                const users = await User.find({}); // Notify ALL registered accounts
+                debugLog(`Background Notifications - Found ${users.length} users to notify`);
+                const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+                const eventLink = `${frontendUrl}/event/${newEvent._id}`;
+
+                for (const user of users) {
+                    const isNearby = user.location && newEvent.location.toLowerCase().includes(user.location.toLowerCase());
+                    const alertType = isNearby ? "Nearby Alert" : "Global Alert";
+
+                    // 1. Dashboard Notification
+                    await createNotification(
+                        user._id,
+                        `${alertType}: ${newEvent.title} has been listed in ${newEvent.location}!`,
+                        'info',
+                        `/event/${newEvent._id}`
+                    );
+
+                    // 2. Email Notification
+                    debugLog(`Attempting to send new event email to: ${user.email}`);
+                    const emailResult = await sendEmail({
+                        to: user.email,
+                        subject: `${alertType}: ${newEvent.title} Discoveries`,
+                        html: NEW_EVENT_TEMPLATE
+                            .replace(/{{eventTitle}}/g, newEvent.title)
+                            .replace(/{{location}}/g, newEvent.location)
+                            .replace(/{{date}}/g, new Date(newEvent.date).toLocaleDateString())
+                            .replace(/{{summary}}/g, newEvent.summary || 'New professional engagement available.')
+                            .replace(/{{url}}/g, eventLink)
+                    });
+                    
+                    if (!emailResult.success) {
+                        debugLog(`Failed to send email to ${user.email}`, { error: emailResult.error });
+                    }
+                }
+            } catch (err) {
+                errorLog("Background Notification Error", err);
+            }
+        })();
+
         res.json({ success: true, message: 'Event created successfully', event: newEvent });
     } catch (error) {
         errorLog("Create Event Controller Error", error);
@@ -56,12 +106,83 @@ export const createEvent = async (req, res) => {
 // Get Recommended Events (AI Logic)
 export const getRecommendedEvents = async (req, res) => {
     try {
-        // Simple Recommendation: Fetch trending or random events for now
-        // In a real "AI" scenario, we'd analyze req.user's past bookings
-        const events = await Event.find({}).limit(5).sort({ createdAt: -1 });
-        res.json({ success: true, events });
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const upcomingEvents = await Event.find({ date: { $gte: today } }).limit(20);
+        
+        if (upcomingEvents.length === 0) {
+            return res.json({ success: true, events: [], message: "No upcoming events found." });
+        }
+
+        let userId = null;
+        let userBookings = [];
+        const { token } = req.cookies;
+        let userLocation = '';
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_CODE);
+                userId = decoded.id;
+                userBookings = await Booking.find({ userId }).populate('eventId').limit(10);
+                const user = await User.findById(userId);
+                if (user) userLocation = user.location || '';
+            } catch (e) {
+                // Ignore token errors
+            }
+        }
+
+        const eventsContext = upcomingEvents.map(e => ({
+            id: e._id,
+            title: e.title,
+            category: e.category,
+            location: e.location,
+            summary: e.summary
+        }));
+
+        const historyContext = userBookings.map(b => ({
+            title: b.eventId?.title,
+            category: b.eventId?.category
+        })).filter(b => b.title);
+
+        const systemInstruction = `You are a professional event recommendation assistant for Planora. Analyze upcoming events and user history to recommend the TOP 5 IDs. Return ONLY a JSON array.`;
+
+        const userPrompt = `User Location: ${userLocation}\nUpcoming Events: ${JSON.stringify(eventsContext)}\nHistory: ${JSON.stringify(historyContext)}`;
+
+        let recommendedIds = [];
+        try {
+            const aiResponse = await getAIResponse(systemInstruction, userPrompt);
+            const jsonMatch = aiResponse.match(/\[.*\]/s);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                if (Array.isArray(parsed)) {
+                    recommendedIds = parsed.filter(id => id && (typeof id === 'string' || typeof id === 'number'));
+                }
+            }
+        } catch (error) {
+            errorLog("AI Rec Failed", error);
+            recommendedIds = upcomingEvents.slice(0, 5).map(e => e._id.toString());
+        }
+
+        const recommendedEvents = recommendedIds
+            .map(id => upcomingEvents.find(e => e._id.toString() === id.toString()))
+            .filter(e => e)
+            .slice(0, 5);
+
+        // Padding
+        if (recommendedEvents.length < 5) {
+            const currentIds = new Set(recommendedEvents.map(e => e._id.toString()));
+            for (const event of upcomingEvents) {
+                if (recommendedEvents.length >= 5) break;
+                if (!currentIds.has(event._id.toString())) {
+                    recommendedEvents.push(event);
+                }
+            }
+        }
+
+        return res.json({ success: true, events: recommendedEvents });
     } catch (error) {
-        res.json({ success: false, message: error.message });
+        errorLog("getRecommendedEvents Final Fail", error);
+        return res.status(500).json({ success: false, message: "Server Error" });
     }
 };
 
@@ -69,7 +190,12 @@ export const getRecommendedEvents = async (req, res) => {
 export const getAllEvents = async (req, res) => {
     try {
         const { search, category, date, location } = req.query;
-        let query = {};
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // ALWAYS filter by upcoming/today unless a specific date is requested (which must also be >= today)
+        let query = { date: { $gte: today } };
 
         if (search) {
             query.title = { $regex: search, $options: 'i' };
@@ -78,7 +204,11 @@ export const getAllEvents = async (req, res) => {
             query.category = category;
         }
         if (date) {
-            query.date = { $gte: new Date(date) };
+            const requestedDate = new Date(date);
+            // If requested date is in the past, or we just want to honor the requested date
+            // but the requirement says "only upcoming and present should be shown".
+            // So if they search for a past date, we probably should return empty or just >= today.
+            query.date = { $gte: requestedDate < today ? today : requestedDate };
         }
         if (location) {
             query.location = { $regex: location, $options: 'i' };
@@ -141,7 +271,13 @@ export const deleteEvent = async (req, res) => {
 export const getEventsByCategory = async (req, res) => {
     try {
         const { category } = req.params;
-        const events = await Event.find({ category: { $regex: category, $options: 'i' } })
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const events = await Event.find({ 
+            category: { $regex: category, $options: 'i' },
+            date: { $gte: today }
+        })
             .populate('organizer', 'name email')
             .sort({ date: 1 });
 
@@ -164,8 +300,12 @@ export const getEventsByLocation = async (req, res) => {
         const longitude = parseFloat(lng);
         const radiusInKm = parseFloat(radius);
 
-        // Find all events with coordinates
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Find all UPCOMING events with coordinates
         const events = await Event.find({
+            date: { $gte: today },
             'coordinates.latitude': { $exists: true },
             'coordinates.longitude': { $exists: true }
         }).populate('organizer', 'name email');

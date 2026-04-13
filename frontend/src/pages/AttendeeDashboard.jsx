@@ -4,16 +4,22 @@ import axios from 'axios'
 import { AppContent } from '../context/AppContext'
 import OpenSourceMap from '../components/OpenSourceMap'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Calendar, Ticket, ChevronDown, ChevronUp, CreditCard, Sparkles, Download, X, Search, Filter, ArrowRight, Rocket, Clock } from 'lucide-react'
+import { MapPin, Calendar, Ticket, ChevronDown, ChevronUp, CreditCard, Sparkles, Download, X, Search, Filter, ArrowRight, Rocket, Clock, Zap } from 'lucide-react'
 
 const AttendeeDashboard = () => {
   const [events, setEvents] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('browse'); // 'browse' or 'bookings'
-  const { backendUrl, userData, currency, locationSearch } = useContext(AppContent);
+  const { backendUrl, userData, currency, locationSearch, setLocationSearch } = useContext(AppContent);
+  const categoryRef = useRef(null);
   
+  const categories = [
+    "Music", "Nightlife", "Health", "Holidays", "Hobbies", "Business", "Food"
+  ];
+
   const dailyMessages = [
     "Seize the day and build experiences that will define your future.",
     "Your journey to extraordinary moments begins with a single bold step.",
@@ -31,7 +37,6 @@ const AttendeeDashboard = () => {
   };
 
   const [dailyQuote] = useState(getDailyMessage());
-
 
   const fetchEvents = async () => {
     try {
@@ -60,12 +65,27 @@ const AttendeeDashboard = () => {
   };
 
   useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (categoryRef.current && !categoryRef.current.contains(event.target)) {
+        setIsCategoryOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!locationSearch && userData?.location) {
+        setLocationSearch(userData.location);
+    }
+  }, [userData]);
+
+  useEffect(() => {
     fetchEvents();
     fetchBookings();
   }, [backendUrl, search, category, locationSearch]);
 
   const upcomingBookings = bookings.filter(b => b.eventId && new Date(b.eventId.date) >= new Date());
-  const pastBookings = bookings.filter(b => b.eventId && new Date(b.eventId.date) < new Date());
 
   return (
     <div className="min-h-screen bg-transparent py-20 px-6 transition-colors duration-300">
@@ -86,7 +106,6 @@ const AttendeeDashboard = () => {
             </p>
           </div>
 
-          {/* Tab Switcher */}
           <div className="flex p-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] shadow-2xl">
             <button
               onClick={() => setActiveTab('browse')}
@@ -110,42 +129,79 @@ const AttendeeDashboard = () => {
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                exit={{ opacity: 0, y: -20 }}
-               className="space-y-12 hidden-print"
+               className="space-y-16 hidden-print"
             >
-              {/* Search/Filter Bar */}
               <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-1 relative group">
+                <div className="flex-[2] relative group">
                   <input
                     type="text"
                     placeholder="Search global experiences..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2rem] px-12 py-5 outline-none focus:border-emerald-500 transition-all font-bold text-zinc-900 dark:text-white placeholder:text-zinc-700"
+                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] px-14 py-6 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 shadow-xl"
                   />
-                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-700 group-focus-within:text-emerald-500 transition-colors" />
+                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-emerald-500 transition-colors" />
                 </div>
-                <div className="relative group">
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="appearance-none px-12 py-5 rounded-[2rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 outline-none focus:border-emerald-500 transition-all font-black text-[10px] uppercase tracking-widest text-zinc-600 dark:text-zinc-300 w-full md:w-64 cursor-pointer"
+                
+                <div className="flex-1 relative group">
+                  <input
+                    type="text"
+                    placeholder="Location..."
+                    value={locationSearch}
+                    onChange={(e) => setLocationSearch(e.target.value)}
+                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] px-14 py-6 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 shadow-xl"
+                  />
+                  <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-emerald-500 transition-colors" />
+                </div>
+
+                <div className="relative w-full md:w-72" ref={categoryRef}>
+                  <button
+                    onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                    className="w-full h-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] px-8 py-6 flex items-center justify-between shadow-xl group hover:border-emerald-500 transition-all"
                   >
-                    <option value="">All Categories</option>
-                    <option value="Music">Music</option>
-                    <option value="Nightlife">Nightlife</option>
-                    <option value="Health">Health</option>
-                    <option value="Holidays">Holidays</option>
-                    <option value="Hobbies">Hobbies</option>
-                    <option value="Business">Business</option>
-                    <option value="Food">Food</option>
-                  </select>
-                  <Filter className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-700 group-hover:text-emerald-500 transition-colors pointer-events-none" />
+                    <div className="flex items-center gap-3">
+                      <Filter className={`w-4 h-4 ${category ? 'text-emerald-500' : 'text-zinc-400'}`} />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-300">
+                        {category || 'All Categories'}
+                      </span>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-300 ${isCategoryOpen ? 'rotate-180 text-emerald-500' : ''}`} />
+                  </button>
+
+                  <AnimatePresence>
+                    {isCategoryOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute top-full left-0 right-0 mt-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden z-[60]"
+                      >
+                        <div className="py-2">
+                          <button
+                            onClick={() => { setCategory(''); setIsCategoryOpen(false); }}
+                            className={`w-full text-left px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-colors ${!category ? 'bg-zinc-100 dark:bg-zinc-800 text-emerald-500' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-emerald-500'}`}
+                          >
+                            All Categories
+                          </button>
+                          {categories.map((cat) => (
+                            <button
+                              key={cat}
+                              onClick={() => { setCategory(cat); setIsCategoryOpen(false); }}
+                              className={`w-full text-left px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-colors ${category === cat ? 'bg-zinc-100 dark:bg-zinc-800 text-emerald-500' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-emerald-500'}`}
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {events.length === 0 ? (
-                  <div className="col-span-full py-32 text-center bg-white dark:bg-zinc-900/50 rounded-[3rem] border-2 border-dashed border-zinc-900">
+                  <div className="col-span-full py-32 text-center bg-white dark:bg-zinc-900/50 rounded-[3rem] border-2 border-dashed border-zinc-800">
                     <Rocket className="w-16 h-16 text-zinc-800 mx-auto mb-6" />
                     <p className="text-zinc-600 font-black uppercase tracking-[0.3em] text-sm">No Signal Found Matching Parameters</p>
                   </div>
@@ -190,7 +246,6 @@ const AttendeeDashboard = () => {
               </div>
             </motion.div>
           ) : (
-            /* Bookings View */
             <motion.div 
                key="bookings"
                initial={{ opacity: 0, y: 20 }}
@@ -198,7 +253,6 @@ const AttendeeDashboard = () => {
                exit={{ opacity: 0, y: -20 }}
                className="space-y-16"
             >
-              {/* Upcoming */}
               <section className="hidden-print">
                 <div className="flex items-center gap-4 mb-10">
                    <div className="p-3 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
@@ -221,25 +275,6 @@ const AttendeeDashboard = () => {
                 ) : (
                   <div className="grid gap-8">
                     {upcomingBookings.map((booking) => (
-                      <BookingCard key={booking._id} booking={booking} />
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              {/* Past */}
-              <section className="hidden-print">
-                <div className="flex items-center gap-4 mb-10 opacity-50">
-                   <div className="p-3 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-                      <Clock className="w-6 h-6 text-zinc-500" />
-                   </div>
-                   <h2 className="text-2xl font-black text-zinc-500 tracking-tighter uppercase">Historical Archive</h2>
-                </div>
-                {pastBookings.length === 0 ? (
-                  <p className="text-zinc-700 font-black uppercase tracking-[0.4em] text-[10px] italic">No Archived Experience Data</p>
-                ) : (
-                  <div className="grid gap-8 opacity-40 grayscale-[80%] hover:opacity-100 hover:grayscale-0 transition-all duration-700">
-                    {pastBookings.map((booking) => (
                       <BookingCard key={booking._id} booking={booking} />
                     ))}
                   </div>
@@ -270,7 +305,6 @@ const BookingCard = ({ booking }) => {
     <>
       <div className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] overflow-hidden shadow-2xl hover:border-emerald-500/20 transition-all duration-500 hidden-print">
         <div className="p-8 flex flex-col lg:flex-row gap-10 items-center">
-          {/* Event Poster */}
           <div className="w-full lg:w-56 aspect-square relative rounded-[2rem] overflow-hidden shadow-2xl flex-shrink-0 group-hover:scale-105 transition-transform duration-700">
             <img
               src={eventId.image && eventId.image.startsWith('/uploads') ? backendUrl + eventId.image : eventId.image}
@@ -374,7 +408,6 @@ const BookingCard = ({ booking }) => {
         )}
       </div>
 
-      {/* TICKET MODAL - Premium Glass-Morphism */}
       <AnimatePresence>
         {showTicket && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
@@ -454,7 +487,6 @@ const BookingCard = ({ booking }) => {
                             </div>
                         </div>
                         
-                        {/* QR Code */}
                         <div className="mt-10 mb-6 flex flex-col items-center justify-center relative z-10 w-full group/qr">
                             <div className="p-4 bg-white rounded-3xl shadow-2xl transform group-hover/qr:scale-110 transition-transform duration-500">
                                 <img src={qrUrl} alt="Secure QR" className="w-32 h-32" />
@@ -477,4 +509,3 @@ const BookingCard = ({ booking }) => {
 }
 
 export default AttendeeDashboard;
-
