@@ -230,16 +230,16 @@ const SuperAdminDashboard = () => {
                         </div>
 
                         <div className="space-y-1">
-                            <NavLink id="stats" label="Health" icon={LayoutDashboard} />
-                            <NavLink id="analytics" label="System Stats" icon={BarChart3} />
+                            <NavLink id="stats" label="Overview" icon={LayoutDashboard} />
+                            <NavLink id="analytics" label="Analytics" icon={BarChart3} />
                         </div>
                         
                         <div className="pt-10 pb-4">
                             <h3 className="px-5 text-[9px] font-black text-zinc-600 uppercase mb-4 tracking-[0.3em]">Master Infrastructure</h3>
                             <div className="space-y-1">
                                 <NavLink id="users" label="Users" icon={Users} />
-                                <NavLink id="events" label="Archives" icon={Calendar} />
-                                <NavLink id="organizers" label="Queue" icon={Briefcase} badge={pendingOrganizers.length} />
+                                <NavLink id="events" label="All Events" icon={Calendar} />
+                                <NavLink id="organizers" label="Activity Monitor" icon={Briefcase} badge={pendingOrganizers.length} />
                                 <NavLink id="settings" label="Appearance" icon={Settings} />
                             </div>
                         </div>
@@ -258,15 +258,15 @@ const SuperAdminDashboard = () => {
                                     className="space-y-12"
                                 >
                                     <header>
-                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 uppercase">System Vitality</h2>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 uppercase">Dashboard Overview</h2>
                                         <p className="text-zinc-500 font-medium text-lg">Cross-cluster infrastructure metrics and totals.</p>
                                     </header>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {[
-                                            { label: 'Registered Entities', value: stats?.totalUsers || 0, icon: Users, color: 'emerald' },
-                                            { label: 'System Capital', value: `${currency}${stats?.totalRevenue || 0}`, icon: DollarSign, color: 'emerald' },
-                                            { label: 'Traffic Volume', value: stats?.totalBookings || 0, icon: Ticket, color: 'teal' }
+                                            { label: 'Total Users', value: stats?.totalUsers || 0, icon: Users, color: 'emerald' },
+                                            { label: 'Total Revenue', value: `${currency}${stats?.totalRevenue || 0}`, icon: DollarSign, color: 'emerald' },
+                                            { label: 'Total Visits', value: stats?.totalBookings || 0, icon: Ticket, color: 'teal' }
                                         ].map((s, i) => (
                                             <div key={i} className="group bg-white dark:bg-zinc-900 p-8 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 hover:border-teal-500/30 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
                                                 <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-2xl -mr-12 -mt-12"></div>
@@ -297,7 +297,7 @@ const SuperAdminDashboard = () => {
                                     className="space-y-12"
                                 >
                                     <header>
-                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 uppercase">Macro Trends</h2>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 uppercase">Analytics</h2>
                                         <p className="text-zinc-500 font-medium text-lg">Visualizing platform growth trajectories.</p>
                                     </header>
 
@@ -311,7 +311,7 @@ const SuperAdminDashboard = () => {
                                             </div>
                                             <div className="h-[300px]">
                                                 {stats?.revenueTrend && (
-                                                    <ResponsiveContainer width="100%" height="100%">
+                                                    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                                         <AreaChart data={stats.revenueTrend}>
                                                             <defs>
                                                                 <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
@@ -339,7 +339,7 @@ const SuperAdminDashboard = () => {
                                             </div>
                                             <div className="h-[300px]">
                                                 {stats?.categoryStats && (
-                                                    <ResponsiveContainer width="100%" height="100%">
+                                                    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                                         <PieChart>
                                                             <Pie
                                                                 data={stats.categoryStats}
@@ -369,7 +369,7 @@ const SuperAdminDashboard = () => {
                                             </div>
                                             <div className="h-[300px]">
                                                 {stats?.topEvents && (
-                                                    <ResponsiveContainer width="100%" height="100%">
+                                                    <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                                         <BarChart data={stats.topEvents} layout="vertical" margin={{ left: 40 }}>
                                                             <XAxis type="number" hide />
                                                             <YAxis dataKey="name" type="category" width={150} tick={{ fontSize: 10, fontWeight: '900', fill: '#71717a' }} stroke="none" />
@@ -389,20 +389,20 @@ const SuperAdminDashboard = () => {
                                 <motion.div key="users" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-12">
                                     <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                                         <div>
-                                            <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 uppercase">Identity Master</h2>
-                                            <p className="text-zinc-500 font-medium text-lg">Unrestricted authority over all platform constituents.</p>
+                                            <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 uppercase">User Management</h2>
+                                            <p className="text-zinc-500 font-medium text-lg">Manage and oversee all registered platform users.</p>
                                         </div>
                                     </header>
 
                                     <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-2xl">
                                         <div className="overflow-x-auto">
-                                            <table className="w-full text-left font-sans">
+                                            <table className="w-full min-w-max text-left font-sans">
                                                 <thead className="bg-transparent/50 text-[10px] uppercase font-black text-zinc-500 tracking-[0.3em]">
                                                     <tr>
-                                                        <th className="py-6 px-10">Constituent</th>
-                                                        <th className="py-6 px-10 text-center">Protocol Level</th>
-                                                        <th className="py-6 px-10 text-center">Permutation</th>
-                                                        <th className="py-6 px-10 text-right">Sanctions</th>
+                                                        <th className="py-6 px-10">User Info</th>
+                                                        <th className="py-6 px-10 text-center">Current Role</th>
+                                                        <th className="py-6 px-10 text-center">Change Role</th>
+                                                        <th className="py-6 px-10 text-right">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-800/50">
@@ -420,7 +420,7 @@ const SuperAdminDashboard = () => {
                                                                 </div>
                                                             </td>
                                                             <td className="py-6 px-10 text-center">
-                                                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em] 
+                                                                <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap 
                                                                     ${user.role === 'super-admin' ? 'bg-teal-50 text-teal-600 border border-teal-500/20' :
                                                                         user.role === 'admin' ? 'bg-emerald-50 text-emerald-600 border border-emerald-500/20' :
                                                                             user.role === 'organizer' ? 'bg-blue-50 text-blue-600 border border-blue-500/20' :
@@ -441,8 +441,8 @@ const SuperAdminDashboard = () => {
                                                                     </select>
                                                                 )}
                                                             </td>
-                                                            <td className="py-6 px-10 text-right">
-                                                                <div className="flex justify-end gap-3">
+                                                            <td className="py-6 px-10">
+                                                                <div className="flex items-center justify-end gap-3 min-w-[120px]">
                                                                     {user.kycDetails && (
                                                                         <button
                                                                             onClick={() => { setViewingKYC(user.kycDetails); setIsKYCModalOpen(true); }}
@@ -472,7 +472,7 @@ const SuperAdminDashboard = () => {
                             {activeStep === 'events' && (
                                 <motion.div key="events" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-12">
                                     <header>
-                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 uppercase leading-none">Global Archives</h2>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 uppercase leading-none">All Events</h2>
                                         <p className="text-zinc-500 font-medium text-lg">Central repository of all scheduled experiences.</p>
                                     </header>
 
@@ -539,7 +539,7 @@ const SuperAdminDashboard = () => {
                                             <ArrowLeft className="w-6 h-6 text-zinc-900 dark:text-white" />
                                         </button>
                                         <div>
-                                            <h2 className="text-5xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase leading-none mb-4">Elite Audit</h2>
+                                            <h2 className="text-5xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase leading-none mb-4">Event Overview</h2>
                                             <p className="text-teal-500 font-black text-[12px] uppercase tracking-[0.5em]">{events.find(e => e._id === selectedEventId)?.title}</p>
                                         </div>
                                     </div>
@@ -564,16 +564,16 @@ const SuperAdminDashboard = () => {
 
                                     <div className="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-2xl">
                                         <div className="p-10 border-b border-zinc-200 dark:border-zinc-800 bg-transparent/20">
-                                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter">Constituent Booking Logs</h3>
+                                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter">Booking List</h3>
                                         </div>
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left">
                                                 <thead className="bg-transparent/50 text-[10px] uppercase font-black text-zinc-600 tracking-[0.4em]">
                                                     <tr>
-                                                        <th className="py-8 px-12">Constituent</th>
-                                                        <th className="py-8 px-12 text-center">Volume</th>
-                                                        <th className="py-8 px-12 text-center">Yield</th>
-                                                        <th className="py-8 px-12 text-right">Registry Date</th>
+                                                        <th className="py-8 px-12">User Name</th>
+                                                        <th className="py-8 px-12 text-center">Tickets Booked</th>
+                                                        <th className="py-8 px-12 text-center">Amount Paid</th>
+                                                        <th className="py-8 px-12 text-right">Booking Date</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-800/50">

@@ -206,15 +206,15 @@ const OrganizerDashboard = () => {
                         </div>
 
                         <div className="space-y-1">
-                            <StepLink id="list" label="Portfolio" icon={LayoutDashboard} />
+                            <StepLink id="list" label="My Events" icon={LayoutDashboard} />
                         </div>
                         
                         <div className="pt-10 pb-4">
-                            <h3 className="px-5 text-[9px] font-black text-zinc-600 uppercase mb-4 tracking-[0.3em]">Pipeline Management</h3>
+                            <h3 className="px-5 text-[9px] font-black text-zinc-600 uppercase mb-4 tracking-[0.3em]">Event Management</h3>
                             <div className="space-y-1">
-                                <StepLink id="build" label="1. Engineering" icon={Hammer} />
-                                <StepLink id="tickets" label="2. Inventory" icon={Ticket} />
-                                <StepLink id="publish" label="3. Deployment" icon={Rocket} />
+                                <StepLink id="build" label="Create Event" icon={Hammer} />
+                                <StepLink id="tickets" label="build" icon={Ticket} />
+                                <StepLink id="publish" label="publish" icon={Rocket} />
                             </div>
                         </div>
                     </aside>
@@ -232,7 +232,7 @@ const OrganizerDashboard = () => {
                                     className="space-y-12"
                                 >
                                     <header>
-                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Studio Hub</h2>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Dashboard</h2>
                                         <p className="text-zinc-500 font-medium text-lg">Cross-portfolio performance and asset management.</p>
                                     </header>
 
@@ -240,8 +240,8 @@ const OrganizerDashboard = () => {
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                         {[
                                             { label: 'Live Inventory', value: stats?.totalEvents || 0, icon: Calendar, color: 'emerald' },
-                                            { label: 'Circulation', value: stats?.totalTicketsSold || 0, icon: Ticket, color: 'emerald' },
-                                            { label: 'Gross Yield', value: `${currency}${stats?.totalRevenue || 0}`, icon: DollarSign, color: 'emerald' }
+                                            { label: 'Tickets Sold', value: stats?.totalTicketsSold || 0, icon: Ticket, color: 'emerald' },
+                                            { label: 'Revenue', value: `${currency}${stats?.totalRevenue || 0}`, icon: DollarSign, color: 'emerald' }
                                         ].map((s, i) => (
                                             <div key={i} className="group bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/30 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
                                                 <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl -mr-12 -mt-12"></div>
@@ -305,7 +305,7 @@ const OrganizerDashboard = () => {
                                                             className="px-8 py-3.5 bg-transparent hover:bg-emerald-600 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white rounded-2xl transition-all border border-zinc-200 dark:border-zinc-800 flex items-center justify-center gap-3 shadow-lg"
                                                         >
                                                             <TrendingUp className="w-4 h-4" />
-                                                            Audit
+                                                            Overview
                                                         </button>
                                                         <button
                                                             onClick={() => deleteEvent(event._id)}
@@ -338,7 +338,7 @@ const OrganizerDashboard = () => {
                                             <ArrowLeft className="w-6 h-6 text-zinc-900 dark:text-white" />
                                         </button>
                                         <div>
-                                            <h2 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter leading-none mb-4 uppercase">Project Audit</h2>
+                                            <h2 className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter leading-none mb-4 uppercase">Event Overview</h2>
                                             <p className="text-emerald-500 font-black text-[10px] uppercase tracking-[0.4em]">{events.find(e => e._id === selectedEventId)?.title}</p>
                                         </div>
                                     </div>
@@ -346,17 +346,17 @@ const OrganizerDashboard = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                         <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group">
                                             <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Capital Yield</p>
+                                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Revenue</p>
                                             <h3 className="text-4xl font-black text-emerald-500 tracking-tighter">{currency}{viewingEventStats?.revenue || 0}</h3>
                                         </div>
                                         <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group">
                                             <div className="absolute inset-0 bg-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Booking Volume</p>
+                                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Tickets Sold</p>
                                             <h3 className="text-4xl font-black text-teal-500 tracking-tighter">{viewingEventStats?.ticketsSold || 0}</h3>
                                         </div>
                                         <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 relative overflow-hidden group">
                                             <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Available Inventory</p>
+                                            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-4">Available Tickets</p>
                                             <h3 className="text-4xl font-black text-zinc-900 dark:text-zinc-100 tracking-tighter">
                                                 {events.find(e => e._id === selectedEventId)?.ticketsAvailable - (viewingEventStats?.ticketsSold || 0)}
                                             </h3>
@@ -365,29 +365,29 @@ const OrganizerDashboard = () => {
 
                                     <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-2xl">
                                         <div className="p-10 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-transparent/20">
-                                            <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-widest hover:text-emerald-400 transition-colors">Constituent Ledger</h3>
+                                            <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-widest hover:text-emerald-400 transition-colors">Booking List</h3>
                                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
                                         </div>
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left">
                                                 <thead className="bg-transparent/50 text-[10px] uppercase font-black text-zinc-600 tracking-[0.3em]">
                                                     <tr>
-                                                        <th className="py-6 px-10">Constituent Name</th>
-                                                        <th className="py-6 px-10 text-center">Volume</th>
-                                                        <th className="py-6 px-10 text-center">Value</th>
-                                                        <th className="py-6 px-10 text-right">Registry Timestamp</th>
+                                                        <th className="py-6 px-10">User Name</th>
+                                                        <th className="py-6 px-10 text-center">Tickets Booked</th>
+                                                        <th className="py-6 px-10 text-center">Amount Paid</th>
+                                                        <th className="py-6 px-10 text-right">Booking Date</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-800/50">
                                                     {eventBookings.length === 0 ? (
                                                         <tr>
-                                                            <td colSpan="4" className="py-24 text-center text-zinc-700 font-black uppercase tracking-[0.4em] text-sm">No Registry Data Available</td>
+                                                            <td colSpan="4" className="py-24 text-center text-zinc-700 font-black uppercase tracking-[0.4em] text-sm">No Booking Data Available</td>
                                                         </tr>
                                                     ) : (
                                                         eventBookings.map(booking => (
                                                             <tr key={booking._id} className="hover:bg-transparent/30 transition-colors group">
                                                                 <td className="py-6 px-10">
-                                                                    <p className="font-black text-zinc-900 dark:text-white group-hover:text-emerald-400 Transition-colors uppercase tracking-tight">{booking.userId?.name || 'Anonymous Constituent'}</p>
+                                                                    <p className="font-black text-zinc-900 dark:text-white group-hover:text-emerald-400 Transition-colors uppercase tracking-tight">{booking.userId?.name || 'Anonymous User'}</p>
                                                                     <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">{booking.userId?.email}</p>
                                                                 </td>
                                                                 <td className="py-6 px-10 text-center font-black text-zinc-500 dark:text-zinc-400">{booking.tickets} Units</td>
@@ -413,7 +413,7 @@ const OrganizerDashboard = () => {
                                     className="max-w-3xl space-y-12"
                                 >
                                     <header>
-                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Project Engineering</h2>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Create Event</h2>
                                         <p className="text-zinc-500 font-medium text-lg">Define the primary parameters of your experience.</p>
                                     </header>
 
@@ -562,7 +562,7 @@ const OrganizerDashboard = () => {
                                     className="max-w-xl space-y-12"
                                 >
                                     <header>
-                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Inventory Flow</h2>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">build</h2>
                                         <p className="text-zinc-500 font-medium text-lg">Calibrate the monetary and volume constraints.</p>
                                     </header>
 
@@ -638,7 +638,7 @@ const OrganizerDashboard = () => {
                                     className="max-w-3xl space-y-12"
                                 >
                                     <header>
-                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Final Deployment</h2>
+                                        <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">publish</h2>
                                         <p className="text-zinc-500 font-medium text-lg">Configure metadata and technical specifications.</p>
                                     </header>
 

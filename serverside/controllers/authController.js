@@ -135,6 +135,7 @@ export const login = async (req, res) => {
         return res.json({
             success: true,
             userData: {
+                _id: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
@@ -144,6 +145,7 @@ export const login = async (req, res) => {
                 location: user.location
             }
         });
+
 
     } catch (error) {
         return res.json({ success: false, message: error.message });
@@ -295,6 +297,7 @@ export const isAuthenticated = async (req, res) => {
         return res.json({
             success: true,
             userData: {
+                _id: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
@@ -427,6 +430,7 @@ export const googleLogin = async (req, res) => {
         return res.json({
             success: true,
             userData: {
+                _id: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role,

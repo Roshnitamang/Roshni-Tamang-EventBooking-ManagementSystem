@@ -10,7 +10,7 @@ const eventSchema = new mongoose.Schema({
         latitude: { type: Number },
         longitude: { type: Number }
     },
-    organizer: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
+    organizer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     organizerName: { type: String }, // NEW: For display purposes
     price: { type: Number, required: true },
     ticketsAvailable: { type: Number, required: true },

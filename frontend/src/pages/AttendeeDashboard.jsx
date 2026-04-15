@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { AppContent } from '../context/AppContext'
 import OpenSourceMap from '../components/OpenSourceMap'
+import CommunityChat from '../components/CommunityChat'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Calendar, Ticket, ChevronDown, ChevronUp, CreditCard, Sparkles, Download, X, Search, Filter, ArrowRight, Rocket, Clock, Zap } from 'lucide-react'
+import { MapPin, Calendar, Ticket, ChevronDown, ChevronUp, CreditCard, Sparkles, Download, X, Search, Filter, ArrowRight, Rocket, MessageSquare } from 'lucide-react'
 
 const AttendeeDashboard = () => {
   const [events, setEvents] = useState([]);
@@ -12,7 +13,7 @@ const AttendeeDashboard = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('browse'); // 'browse' or 'bookings'
+  const [activeTab, setActiveTab] = useState('browse'); // 'browse', 'bookings', or 'community'
   const { backendUrl, userData, currency, locationSearch, setLocationSearch } = useContext(AppContent);
   const categoryRef = useRef(null);
   
@@ -118,6 +119,13 @@ const AttendeeDashboard = () => {
               className={`px-8 py-3.5 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${activeTab === 'bookings' ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-900/40' : 'text-zinc-500 hover:text-emerald-400'}`}
             >
               Access Tokens
+            </button>
+            <button
+              onClick={() => setActiveTab('community')}
+              className={`flex items-center gap-2 px-8 py-3.5 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${activeTab === 'community' ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-900/40' : 'text-zinc-500 hover:text-emerald-400'}`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              Community
             </button>
           </div>
         </header>
@@ -245,7 +253,7 @@ const AttendeeDashboard = () => {
                 )}
               </div>
             </motion.div>
-          ) : (
+          ) : activeTab === 'bookings' ? (
             <motion.div 
                key="bookings"
                initial={{ opacity: 0, y: 20 }}
@@ -280,6 +288,24 @@ const AttendeeDashboard = () => {
                   </div>
                 )}
               </section>
+            </motion.div>
+          ) : (
+            <motion.div
+               key="community"
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               exit={{ opacity: 0, y: -20 }}
+            >
+              <div className="flex items-center gap-4 mb-8">
+                 <div className="p-3 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                    <MessageSquare className="w-6 h-6 text-emerald-500" />
+                 </div>
+                 <div>
+                    <h2 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase leading-none">Community</h2>
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mt-1">Real-time Discussion</p>
+                 </div>
+              </div>
+              <CommunityChat events={events} />
             </motion.div>
           )}
         </AnimatePresence>

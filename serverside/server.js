@@ -12,9 +12,13 @@ import adminRouter from "./routes/adminRoutes.js";
 import notificationRouter from "./routes/notificationRoutes.js";
 import siteSettingsRouter from "./routes/siteSettingsRoutes.js";
 import aiRouter from "./routes/aiRoutes.js";
+import messageRouter from "./routes/messageRoutes.js";
 import { debugLog, errorLog } from "./config/debug.js";
+import http from "http";
+import { initSocket } from "./socket.js";
 
 const app = express();
+const server = http.createServer(app);
 const port = process.env.PORT || 4000
 connectDB();
 
@@ -38,6 +42,9 @@ app.use((req, res, next) => {
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use('/uploads', express.static('public/uploads'));
 
+// Initialize Socket.io
+initSocket(server, allowedOrigins);
+
 //endpoint api
 app.get('/', (req, res) => res.send("API ok fine"));
 app.use('/api/auth', authRouter);
@@ -49,16 +56,25 @@ app.use('/api/admin', adminRouter);
 app.use('/api/notifications', notificationRouter);
 app.use('/api/settings', siteSettingsRouter);
 app.use('/api/ai', aiRouter);
+app.use('/api/messages', messageRouter);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
     errorLog("Global Error Catch", err);
+
+    if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({
+            success: false,
+            message: "File exceeds maximum size limit of 15MB"
+        });
+    }
+
     res.status(500).json({
         success: false,
         message: err.message || "Internal Server Error"
     });
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
     debugLog(`Server started on PORT: ${port}`);
 });
