@@ -27,23 +27,37 @@ const normalizedClientUrl = rawClientUrl.endsWith('/') ? rawClientUrl.slice(0, -
 
 const allowedOrigins = [
     normalizedClientUrl,
+    'https://roshni-tamang-event-booking-managem-five.vercel.app',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
     'http://localhost:5176',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174'
-].filter(origin => origin); // Filter out empty strings/undefined
+].filter(origin => origin);
+
+debugLog("CORS Configuration", {
+    clientUrl: normalizedClientUrl,
+    allowedOriginsCount: allowedOrigins.length
+});
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log("CORS blocked origin:", origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
 
 app.use(express.json());
 app.use(cookieParser());
-
-app.use((req, res, next) => {
-    debugLog(`Request: ${req.method} ${req.url}`);
-    next();
-});
-
-app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use('/uploads', express.static('public/uploads'));
 
 // Initialize Socket.io
