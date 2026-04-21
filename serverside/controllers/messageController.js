@@ -37,3 +37,45 @@ export const getMessages = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const sendMessage = async (req, res) => {
+    try {
+        const { message, eventId } = req.body;
+
+        if (!message) {
+            return res.status(400).json({
+                success: false,
+                message: "Message is required"
+            });
+        }
+
+        const newMessage = new Message({
+            message,
+            userId: req.user ? req.user.id : null, // if auth exists
+            eventId: eventId || null
+        });
+
+        await newMessage.save();
+
+        const populatedMessage = await newMessage.populate("userId", "name");
+
+        res.json({
+            success: true,
+            message: {
+                _id: String(populatedMessage._id),
+                userId: populatedMessage.userId?._id || null,
+                name: populatedMessage.userId?.name || "Anonymous",
+                message: populatedMessage.message,
+                eventId: populatedMessage.eventId || null,
+                createdAt: populatedMessage.createdAt
+            }
+        });
+
+    } catch (error) {
+        console.error('[messageController] sendMessage error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};

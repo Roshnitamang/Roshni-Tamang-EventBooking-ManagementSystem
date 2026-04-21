@@ -69,6 +69,7 @@ app.use((err, req, res, next) => {
         });
     }
 
+    errorLog("Global Error Handler Caught", err);
     res.status(500).json({
         success: false,
         message: err.message || "Internal Server Error"

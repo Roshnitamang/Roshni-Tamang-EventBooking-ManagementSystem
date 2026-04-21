@@ -40,12 +40,12 @@ If you don't know something about a specific event, suggest they check the event
             parts: [{ text: message }]
         });
 
-        // Try multiple model names, starting with the one that successfully connected to v1beta
+        // Try multiple model names, starting with the most reliable ones
         const modelsToTry = [
-            "gemini-3.1-flash-lite-preview",
-            "gemini-2.0-flash",
             "gemini-1.5-flash",
-            "gemini-pro"
+            "gemini-2.0-flash-exp",
+            "gemini-1.5-pro",
+            "gemini-1.0-pro"
         ];
 
         for (const modelName of modelsToTry) {

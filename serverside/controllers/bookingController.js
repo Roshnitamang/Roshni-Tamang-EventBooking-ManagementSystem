@@ -7,6 +7,7 @@ import { BOOKING_CONFIRMATION_TEMPLATE } from '../config/emailTemplates.js';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 
+
 // Initiate eSewa Payment
 export const initiateEsewaPayment = async (req, res) => {
     try {
@@ -45,7 +46,7 @@ export const initiateEsewaPayment = async (req, res) => {
             return res.json({ success: false, message: 'Not enough tickets available' });
         }
 
-        // Calculate Amount
+        // Calculate Amount (Rollback to static price)
         const totalAmount = event.price * tickets;
         const transactionUuid = uuidv4().replace(/-/g, '');
 

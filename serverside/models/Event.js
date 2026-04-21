@@ -14,6 +14,12 @@ const eventSchema = new mongoose.Schema({
     organizerName: { type: String }, // NEW: For display purposes
     price: { type: Number, required: true },
     ticketsAvailable: { type: Number, required: true },
+    totalTickets: { type: Number }, // Required for demand calculation
+    dynamicPricing: {
+        enabled: { type: Boolean, default: false },
+        minPrice: { type: Number },
+        maxPrice: { type: Number }
+    },
     ticketTypes: [{
         name: { type: String, required: true },
         price: { type: Number, required: true },

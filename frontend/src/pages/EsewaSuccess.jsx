@@ -157,6 +157,13 @@ const EsewaSuccess = () => {
 
             <style>{`
                 @media print {
+                    @page { size: auto; margin: 0; }
+                    html, body {
+                        margin: 0;
+                        padding: 0;
+                        height: 100%;
+                        overflow: hidden;
+                    }
                     body * {
                         visibility: hidden;
                     }
@@ -168,22 +175,32 @@ const EsewaSuccess = () => {
                     }
                     .ticket-container {
                         position: absolute;
-                        left: 50%;
-                        top: 50%;
-                        transform: translate(-50%, -50%);
+                        left: 0;
+                        top: 0;
+                        transform: none;
                         width: 100%;
-                        max-width: 500px;
+                        height: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
                         margin: 0;
                         padding: 40px;
-                        border: 2px solid #000 !important;
+                        border: none !important;
                         box-shadow: none !important;
                         background: #fff !important;
                         color: #000 !important;
-                        border-radius: 20px !important;
+                        border-radius: 0 !important;
+                        box-sizing: border-box !important;
+                        page-break-after: avoid !important;
+                        page-break-before: avoid !important;
+                        page-break-inside: avoid !important;
                     }
                     .ticket-details {
                         background: #fff !important;
                         border: 1px dashed #000 !important;
+                        width: 100%;
+                        max-width: 500px;
                     }
                     .ticket-details * {
                         color: #000 !important;

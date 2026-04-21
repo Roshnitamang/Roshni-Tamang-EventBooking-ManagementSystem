@@ -8,6 +8,7 @@ import { getAIResponse } from '../utils/geminiService.js';
 import Booking from '../models/Booking.js';
 import jwt from 'jsonwebtoken';
 
+
 // Create Event
 export const createEvent = async (req, res) => {
     debugLog("Create Event start", { body: req.body, file: req.file ? req.file.filename : null, user: req.user });
@@ -15,7 +16,7 @@ export const createEvent = async (req, res) => {
         const {
             title, summary, description, date, location, price,
             ticketsAvailable, category, image, ticketTypes,
-            highlights, faqs, coordinates
+            highlights, faqs, coordinates, dynamicPricing
         } = req.body;
 
         debugLog("Extracted fields", { title, date, location, price, ticketsAvailable });
@@ -43,6 +44,8 @@ export const createEvent = async (req, res) => {
             organizer: req.user.id,
             price: price || 0,
             ticketsAvailable: ticketsAvailable || 100,
+            totalTickets: ticketsAvailable || 100, // Total equals capacity on creation
+            dynamicPricing: dynamicPricing ? parseJSON(dynamicPricing) : { enabled: false },
             category: category || 'General',
             image: req.file ? `/uploads/${req.file.filename}` : (image || ''),
             ticketTypes: ticketTypes ? parseJSON(ticketTypes) : [],
@@ -109,7 +112,7 @@ export const getRecommendedEvents = async (req, res) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const upcomingEvents = await Event.find({ date: { $gte: today } }).limit(20);
+        const upcomingEvents = await Event.find({ date: { $gte: today } }).limit(20).lean();
         
         if (upcomingEvents.length === 0) {
             return res.json({ success: true, events: [], message: "No upcoming events found." });
@@ -179,10 +182,15 @@ export const getRecommendedEvents = async (req, res) => {
             }
         }
 
-        return res.json({ success: true, events: recommendedEvents });
+        const recommendedWithPrice = recommendedEvents.map(e => ({
+            ...e,
+            currentPrice: e.price
+        }));
+
+        return res.json({ success: true, events: recommendedWithPrice });
     } catch (error) {
         errorLog("getRecommendedEvents Final Fail", error);
-        return res.status(500).json({ success: false, message: "Server Error" });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -205,9 +213,6 @@ export const getAllEvents = async (req, res) => {
         }
         if (date) {
             const requestedDate = new Date(date);
-            // If requested date is in the past, or we just want to honor the requested date
-            // but the requirement says "only upcoming and present should be shown".
-            // So if they search for a past date, we probably should return empty or just >= today.
             query.date = { $gte: requestedDate < today ? today : requestedDate };
         }
         if (location) {
@@ -216,9 +221,17 @@ export const getAllEvents = async (req, res) => {
 
         const events = await Event.find(query)
             .populate('organizer', 'name email')
-            .sort({ date: 1 });
+            .sort({ date: 1 })
+            .lean();
 
-        res.json({ success: true, events });
+        const eventsWithDynamicPrice = events.map(event => {
+            return {
+                ...event,
+                currentPrice: event.price
+            };
+        });
+
+        res.json({ success: true, events: eventsWithDynamicPrice });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -228,11 +241,13 @@ export const getAllEvents = async (req, res) => {
 export const getEventById = async (req, res) => {
     console.log("GET Event request for ID:", req.params.id);
     try {
-        const event = await Event.findById(req.params.id).populate('organizer', 'name email');
+        const event = await Event.findById(req.params.id)
+            .populate('organizer', 'name email')
+            .lean();
         if (!event) {
             return res.status(404).json({ success: false, message: 'Event not found' });
         }
-        res.json({ success: true, event });
+        res.json({ success: true, event: { ...event, currentPrice: event.price } });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -279,9 +294,15 @@ export const getEventsByCategory = async (req, res) => {
             date: { $gte: today }
         })
             .populate('organizer', 'name email')
-            .sort({ date: 1 });
+            .sort({ date: 1 })
+            .lean();
 
-        res.json({ success: true, events });
+        const eventsWithPrice = events.map(e => ({
+            ...e,
+            currentPrice: e.price
+        }));
+
+        res.json({ success: true, events: eventsWithPrice });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -308,7 +329,9 @@ export const getEventsByLocation = async (req, res) => {
             date: { $gte: today },
             'coordinates.latitude': { $exists: true },
             'coordinates.longitude': { $exists: true }
-        }).populate('organizer', 'name email');
+        })
+        .populate('organizer', 'name email')
+        .lean();
 
         // Calculate distance and filter by radius
         const eventsWithDistance = events.map(event => {
@@ -325,11 +348,16 @@ export const getEventsByLocation = async (req, res) => {
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             const distance = R * c;
 
-            return { ...event.toObject(), distance };
+            return { ...event, distance };
         }).filter(event => event.distance <= radiusInKm)
             .sort((a, b) => a.distance - b.distance);
 
-        res.json({ success: true, events: eventsWithDistance });
+        const eventsWithPrice = eventsWithDistance.map(e => ({
+            ...e,
+            currentPrice: e.price
+        }));
+
+        res.json({ success: true, events: eventsWithPrice });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }

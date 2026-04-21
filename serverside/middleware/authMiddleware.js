@@ -2,12 +2,22 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { debugLog, errorLog } from "../config/debug.js";
 
+
+
 export const verifyToken = async (req, res, next) => {
-    const { token } = req.cookies;
-    console.log("Middleware verifyToken - Cookie token present:", !!token);
+    console.log("Authorization header:", req.headers.authorization);
+    console.log("Cookie token:", req.cookies?.token);
+
+    let token;
+
+    // Support BOTH cookie + header
+    if (req.cookies?.token) {
+        token = req.cookies.token;
+    } else if (req.headers.authorization?.startsWith('Bearer ')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
 
     if (!token) {
-        console.log("No token cookie found in middleware");
         return res.status(401).json({
             success: false,
             message: 'Session expired. Please login again.'
@@ -16,6 +26,7 @@ export const verifyToken = async (req, res, next) => {
 
     try {
         const tokenDecode = jwt.verify(token, process.env.JWT_CODE);
+        console.log("Decoded token:", tokenDecode);
         debugLog("Decoded Token", { id: tokenDecode?.id, role: tokenDecode?.role });
 
         if (!tokenDecode?.id) {
@@ -89,3 +100,5 @@ export const isOrganizer = async (req, res, next) => {
         return res.status(500).json({ success: false, message: 'Internal Server Error in Authorization' });
     }
 };
+
+ 

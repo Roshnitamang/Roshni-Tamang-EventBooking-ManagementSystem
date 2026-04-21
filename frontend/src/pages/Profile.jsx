@@ -64,10 +64,10 @@ const Profile = () => {
                     <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-zinc-100 dark:border-zinc-900 pb-12">
                         <div>
                             <div className="flex items-center gap-3 mb-4">
-                               <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-900/20 rotate-3">
-                                  <User className="text-white w-6 h-6" />
-                               </div>
-                               <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-500 bg-clip-text text-transparent tracking-tighter">Profile Settings</h1>
+                            <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-900/20 rotate-3">
+                            <User className="text-white w-6 h-6" />
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-500 bg-clip-text text-transparent tracking-tighter">Profile Settings</h1>
                             </div>
                             <p className="text-zinc-500 font-bold text-lg">Personalize your Planora experience and account details.</p>
                         </div>

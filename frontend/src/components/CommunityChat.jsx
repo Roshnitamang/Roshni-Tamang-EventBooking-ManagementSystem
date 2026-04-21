@@ -101,10 +101,15 @@ const CommunityChat = ({ events = [] }) => {
 
     // ── KEY FIX 1: Only add message if it belongs to the current room ──
     socket.on('receive_message', (msg) => {
+      const incomingRoom = String(msg.room || '');
+      const currentRoom = String(currentRoomRef.current || '');
+      
+      console.log(`[Socket] Message from ${msg.name} in ${incomingRoom} (Local: ${currentRoom})`);
+
       // If server included room, filter by it
-      if (msg.room && msg.room !== currentRoomRef.current) {
-        console.log(`[Socket] Notification for room "${msg.room}"`);
-        setUnreadRooms(prev => ({ ...prev, [msg.room]: true }));
+      if (incomingRoom && incomingRoom !== currentRoom) {
+        console.log(`[Socket] Marking room "${incomingRoom}" as unread`);
+        setUnreadRooms(prev => ({ ...prev, [incomingRoom]: true }));
         return;
       }
 
@@ -306,7 +311,7 @@ const CommunityChat = ({ events = [] }) => {
                 <div className="relative">
                   <Hash className="w-4 h-4 flex-shrink-0" />
                   {unreadRooms['global'] && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full border-2 border-[#2b2d31] animate-pulse" />
+                    <span className="absolute -top-1.5 -right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-[#2b2d31] shadow-[0_0_8px_rgba(244,63,94,0.6)] animate-pulse" />
                   )}
                 </div>
                 <span className="text-sm font-medium truncate">general</span>
@@ -325,7 +330,7 @@ const CommunityChat = ({ events = [] }) => {
                       <div className="relative">
                         <Hash className="w-4 h-4 flex-shrink-0" />
                         {unreadRooms[`event-${ev._id}`] && (
-                          <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full border-2 border-[#2b2d31] animate-pulse" />
+                          <span className="absolute -top-1.5 -right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-[#2b2d31] shadow-[0_0_8px_rgba(244,63,94,0.6)] animate-pulse" />
                         )}
                       </div>
                       <span className="text-sm font-medium truncate">{ev.title}</span>

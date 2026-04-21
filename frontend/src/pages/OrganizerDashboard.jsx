@@ -51,6 +51,7 @@ const OrganizerDashboard = () => {
             doorTime: '',
             parking: 'Free parking'
         },
+        faqs: [],
         faqs: []
     });
     const [imageFile, setImageFile] = useState(null);
@@ -610,6 +611,7 @@ const OrganizerDashboard = () => {
                                             </div>
                                         </div>
 
+
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <button
                                                 onClick={() => setActiveStep('build')}
@@ -740,13 +742,13 @@ const OrganizerDashboard = () => {
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                           <button 
+                                        <button 
                                                 onClick={() => setActiveStep('tickets')}
                                                 className="py-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 rounded-[2rem] font-black uppercase tracking-[0.4em] text-[10px] hover:text-zinc-900 dark:text-white transition-all"
                                             >
                                                 Adjust Inventory
                                             </button>
-                                           <button
+                                        <button
                                                 onClick={handleSubmitEvent}
                                                 disabled={loading}
                                                 className="py-6 bg-emerald-600 text-zinc-900 dark:text-white rounded-[2rem] font-black uppercase tracking-[0.4em] text-[12px] hover:bg-emerald-500 transition-all shadow-2xl flex items-center justify-center gap-4 active:scale-95 disabled:opacity-50"

@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { debugLog, errorLog } from "../config/debug.js";
 
 /**
  * Call Gemini AI to get structured output or recommendations
@@ -22,6 +23,7 @@ export const getAIResponse = async (systemInstruction, prompt) => {
 
         for (const modelName of modelsToTry) {
             try {
+                debugLog(`AI: Trying model ${modelName}`);
                 const model = genAI.getGenerativeModel({ 
                     model: modelName,
                     systemInstruction: systemInstruction 
@@ -32,16 +34,17 @@ export const getAIResponse = async (systemInstruction, prompt) => {
                 const text = response.text();
                 
                 if (text) {
+                    debugLog(`AI: Model ${modelName} succeeded`);
                     return text;
                 }
             } catch (err) {
-                console.error(`Failed with model ${modelName}:`, err.message);
+                errorLog(`AI Model ${modelName} failed`, err);
                 continue;
             }
         }
         throw new Error("All Gemini models failed");
     } catch (error) {
-        console.error("Gemini Service Error:", error.message);
+        errorLog("Gemini Service Final Error", error);
         throw error;
     }
 };

@@ -15,8 +15,8 @@ eventRouter.post('/create', verifyToken, isOrganizer, upload.single('image'), cr
 eventRouter.get('/recommendations', getRecommendedEvents); // Public or Protected
 eventRouter.get('/category/:category', getEventsByCategory); // Filter by category
 eventRouter.get('/location', getEventsByLocation); // Location-based search
-eventRouter.get('/', getAllEvents); // Public access
 eventRouter.get('/my-events', verifyToken, isOrganizer, getMyEvents);
+eventRouter.get('/', getAllEvents); // Public access
 eventRouter.get('/:id', getEventById); // Public access
 eventRouter.delete('/:id', verifyToken, isOrganizer, deleteEvent);
 

@@ -493,9 +493,11 @@ const Checkout = () => {
                                                <p className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.4em]">Total Commitment</p>
                                                <p className="text-zinc-500 text-[10px] font-bold">Standard Network Fees Included</p>
                                             </div>
-                                            <div className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter">
-                                               <span className="text-lg opacity-40 mr-2">{currency}</span>
-                                               {event.price * tickets}
+                                            <div className="text-4xl font-black text-zinc-900 dark:text-white tracking-tighter flex flex-col items-end">
+                                               <div className="flex items-center">
+                                                   <span className="text-lg opacity-40 mr-2">{currency}</span>
+                                                   {event.price * tickets}
+                                               </div>
                                             </div>
                                         </div>
                                     </div>

@@ -156,7 +156,7 @@ const Login = () => {
           </div>
 
           <div className="relative z-10">
-             <div className="w-12 h-1 bg-white/20 mb-8 rounded-full"></div>
+            <div className="w-12 h-1 bg-white/20 mb-8 rounded-full"></div>
             <h2 className="text-5xl font-black tracking-tighter leading-[0.9] mb-6">
               {state === 'sign up' ? "JOIN THE COMMUNITY." : "WELCOME BACK."}
             </h2>
@@ -179,8 +179,8 @@ const Login = () => {
           <div className="max-w-md mx-auto w-full">
             <div className="mb-10">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-4">
-                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                 <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest">Security Verified</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest">Security Verified</span>
               </div>
               <h2 className="text-4xl font-black text-zinc-900 dark:text-zinc-900 dark:text-white tracking-tighter mb-3 leading-none">
                 {state === 'sign up' ? 'Create Account' : 'Sign In'}

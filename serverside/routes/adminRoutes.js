@@ -1,6 +1,7 @@
 import express from 'express';
 import { getSystemStats, getAllUsers, deleteUser, getAllEventsAdmin, approveEvent, deleteEventAdmin, getPendingOrganizers, approveOrganizer, demoteOrganizer, rejectOrganizer, updateUserRole, getEventBookingsAdmin } from '../controllers/adminController.js';
 import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
+import kycModel from '../models/KYC.js';
 
 const adminRouter = express.Router();
 
@@ -19,5 +20,6 @@ adminRouter.put('/organizers/:id/approve', verifyToken, isAdmin, approveOrganize
 adminRouter.put('/organizers/:id/reject', verifyToken, isAdmin, rejectOrganizer);
 adminRouter.put('/users/:id/demote', verifyToken, isAdmin, demoteOrganizer);
 adminRouter.put('/users/:id/role', verifyToken, isAdmin, updateUserRole); // Protected inside controller check
+
 
 export default adminRouter;

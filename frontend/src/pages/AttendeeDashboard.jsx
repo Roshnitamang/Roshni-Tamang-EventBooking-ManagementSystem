@@ -240,9 +240,11 @@ const AttendeeDashboard = () => {
                         <h3 className="font-black text-xl mb-4 line-clamp-1 text-zinc-900 dark:text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">{event.title}</h3>
                         
                         <div className="flex items-center justify-between pt-6 border-t border-zinc-200 dark:border-zinc-800/50">
-                          <span className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter">
-                            {currency}{event.price || 0}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter leading-none">
+                              {currency}{event.price || 0}
+                            </span>
+                          </div>
                           <div className="flex items-center gap-2 text-[10px] font-black uppercase text-emerald-500 tracking-widest group-hover:gap-4 transition-all">
                             Details <ArrowRight className="w-4 h-4" />
                           </div>
@@ -447,19 +449,37 @@ const BookingCard = ({ booking }) => {
                 
                 <style>{`
                     @media print {
+                        @page { size: auto; margin: 0; }
+                        html, body {
+                            margin: 0;
+                            padding: 0;
+                            height: 100%;
+                            overflow: hidden;
+                        }
                         body * { visibility: hidden; }
-                        .ticket-node, .ticket-node * { visibility: visible; }
                         .hidden-print { display: none !important; }
                         .ticket-node {
-                            position: absolute; left: 50%; top: 50%;
-                            transform: translate(-50%, -50%);
-                            width: 100%; max-width: 450px;
-                            border: 3px solid #000 !important;
-                            border-radius: 40px !important;
-                            padding: 40px !important;
+                            position: absolute !important;
+                            left: 0 !important;
+                            top: 0 !important;
+                            transform: none !important;
+                            width: 100% !important;
+                            height: 100% !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            border: none !important;
+                            border-radius: 0 !important;
+                            padding: 20px !important;
                             background: white !important;
                             color: black !important;
+                            box-sizing: border-box !important;
+                            page-break-after: avoid !important;
+                            page-break-before: avoid !important;
+                            page-break-inside: avoid !important;
                         }
+                        .ticket-node * { visibility: visible; }
                     }
                 `}</style>
                 
@@ -498,18 +518,18 @@ const BookingCard = ({ booking }) => {
                             </div>
 
                             <div className="space-y-6">
-                               <div className="flex justify-between items-center">
-                                   <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Registry Identifier</span>
-                                   <span className="font-mono font-black text-emerald-500 text-lg tracking-widest bg-emerald-500/5 px-4 py-1.5 rounded-xl border border-emerald-500/10">{_id?.slice(-8).toUpperCase()}</span>
-                               </div>
-                               <div className="flex justify-between items-center">
-                                   <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Seat Allocation</span>
-                                   <span className="font-black text-zinc-900 dark:text-white text-lg uppercase">{tickets}x {bookingType} Units</span>
-                               </div>
-                               <div className="flex justify-between items-center pt-6 border-t border-zinc-900">
-                                   <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Yield Value</span>
-                                   <span className="font-black text-emerald-500 text-3xl tracking-tighter">{currency}{totalAmount}</span>
-                               </div>
+                              <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Registry Identifier</span>
+                                <span className="font-mono font-black text-emerald-500 text-lg tracking-widest bg-emerald-500/5 px-4 py-1.5 rounded-xl border border-emerald-500/10">{_id?.slice(-8).toUpperCase()}</span>
+                              </div>
+                            <div className="flex justify-between items-center">
+                                  <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Seat Allocation</span>
+                                  <span className="font-black text-zinc-900 dark:text-white text-lg uppercase">{tickets}x {bookingType} Units</span>
+                              </div>
+                            <div className="flex justify-between items-center pt-6 border-t border-zinc-900">
+                                <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Yield Value</span>
+                                  <span className="font-black text-emerald-500 text-3xl tracking-tighter">{currency}{totalAmount}</span>
+                              </div>
                             </div>
                         </div>
                         
@@ -521,9 +541,9 @@ const BookingCard = ({ booking }) => {
                         </div>
 
                         <div className="w-full mt-10 space-y-4 relative z-10">
-                           <button onClick={handlePrint} className="w-full bg-emerald-600 text-zinc-900 dark:text-white py-6 rounded-[2.5rem] font-black flex items-center justify-center gap-4 hover:bg-emerald-500 transition-all shadow-2xl active:scale-95 uppercase tracking-[0.3em] text-[10px] hidden-print">
-                               <Download className="w-5 h-5" /> Download Archive
-                           </button>
+                          <button onClick={handlePrint} className="w-full bg-emerald-600 text-zinc-900 dark:text-white py-6 rounded-[2.5rem] font-black flex items-center justify-center gap-4 hover:bg-emerald-500 transition-all shadow-2xl active:scale-95 uppercase tracking-[0.3em] text-[10px] hidden-print">
+                            <Download className="w-5 h-5" /> Download Archive
+                        </button>
                         </div>
                     </div>
                 </motion.div>

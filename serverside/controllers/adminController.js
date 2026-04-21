@@ -55,8 +55,10 @@ export const getSystemStats = async (req, res) => {
         // 3. Top Events by Revenue
         const eventRevenueMap = {};
         bookings.forEach(booking => {
-            const eId = booking.eventId.toString();
-            eventRevenueMap[eId] = (eventRevenueMap[eId] || 0) + booking.totalAmount;
+            if (booking.eventId) {
+                const eId = booking.eventId.toString();
+                eventRevenueMap[eId] = (eventRevenueMap[eId] || 0) + booking.totalAmount;
+            }
         });
 
         const topEventsData = await Promise.all(

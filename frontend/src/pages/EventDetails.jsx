@@ -153,11 +153,13 @@ const EventDetails = () => {
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                            <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest">Limited</span>
+                                        <div className="flex flex-col items-end">
+                                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                                <span className="text-[10px] font-black uppercase text-emerald-500 tracking-widest">Limited</span>
+                                            </div>
+                                            <p className="font-bold text-zinc-500 dark:text-zinc-400 text-sm">{event.ticketsAvailable} left</p>
                                         </div>
-                                        <p className="font-bold text-zinc-500 dark:text-zinc-400 text-sm">{event.ticketsAvailable} left</p>
                                     </div>
                                 </div>
 

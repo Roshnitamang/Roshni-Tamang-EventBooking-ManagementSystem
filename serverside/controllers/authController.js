@@ -134,6 +134,7 @@ export const login = async (req, res) => {
 
         return res.json({
             success: true,
+            token,
             userData: {
                 _id: user._id,
                 name: user.name,
@@ -429,6 +430,7 @@ export const googleLogin = async (req, res) => {
 
         return res.json({
             success: true,
+            token,
             userData: {
                 _id: user._id,
                 name: user.name,

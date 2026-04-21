@@ -27,8 +27,12 @@ export const updateSiteSettings = async (req, res) => {
             // Delete old image if it exists and is not a default/external one
             if (settings.heroImage && settings.heroImage.startsWith('/uploads')) {
                 const oldPath = path.join('public', settings.heroImage);
-                if (fs.existsSync(oldPath)) {
-                    fs.unlinkSync(oldPath);
+                try {
+                    if (fs.existsSync(oldPath)) {
+                        fs.unlinkSync(oldPath);
+                    }
+                } catch (err) {
+                    console.error("Cleanup old hero image failed:", err.message);
                 }
             }
 
