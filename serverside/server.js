@@ -22,15 +22,18 @@ const server = http.createServer(app);
 const port = process.env.PORT || 4000
 connectDB();
 
+const rawClientUrl = (process.env.CLIENT_URL || '').trim();
+const normalizedClientUrl = rawClientUrl.endsWith('/') ? rawClientUrl.slice(0, -1) : rawClientUrl;
+
 const allowedOrigins = [
-    process.env.CLIENT_URL,
+    normalizedClientUrl,
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
     'http://localhost:5176',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174'
-].filter(origin => origin); // Filter out undefined if CLIENT_URL is not set
+].filter(origin => origin); // Filter out empty strings/undefined
 
 app.use(express.json());
 app.use(cookieParser());
