@@ -51,7 +51,6 @@ const OrganizerDashboard = () => {
             doorTime: '',
             parking: 'Free parking'
         },
-        faqs: [],
         faqs: []
     });
     const [imageFile, setImageFile] = useState(null);
