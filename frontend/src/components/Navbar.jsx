@@ -63,21 +63,23 @@ const Navbar = () => {
             <span className="hidden sm:block tracking-widest text-xl font-black">PLANORA</span>
           </div>
 
-          {/* SEARCH BAR */}
-          <div className="hidden md:flex flex-1 items-center max-w-md">
-            <div className="flex items-center bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-full px-5 py-2.5 focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/50 transition-all duration-300 w-full group">
-              <svg className="w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Find your next experience..."
-                className="bg-transparent flex-1 outline-none text-sm text-zinc-900 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
-                value={locationSearch}
-                onChange={(e) => setLocationSearch(e.target.value)}
-              />
+          {/* SEARCH BAR - Only show for guests and regular users */}
+          {(!userData || userData.role === 'user') && (
+            <div className="hidden md:flex flex-1 items-center max-w-md">
+              <div className="flex items-center bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-full px-5 py-2.5 focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/50 transition-all duration-300 w-full group">
+                <svg className="w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Find your next experience..."
+                  className="bg-transparent flex-1 outline-none text-sm text-zinc-900 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                  value={locationSearch}
+                  onChange={(e) => setLocationSearch(e.target.value)}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* PRIMARY NAV LINKS */}
           {userData ? (
