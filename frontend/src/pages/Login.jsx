@@ -102,7 +102,7 @@ const Login = () => {
         else if (data.userData?.role === 'admin') path = '/admin-dashboard'
         else if (data.userData?.role === 'organizer') path = '/organizer-dashboard'
 
-        navigate(path, { state: { welcomeMessage: 'Welcome!' } })
+        navigate(path, { state: { welcomeMessage: `Welcome back, ${data.userData.name}!` } })
       } else {
         setModalMessage(data.message)
         setShowModal(true)
@@ -115,8 +115,9 @@ const Login = () => {
     }
   }
 
-  const onGoogleError = () => {
-    setModalMessage("Google Authentication Failed")
+  const onGoogleError = (error) => {
+    console.error("Google Auth Error:", error);
+    setModalMessage("Google Authentication Failed. Please ensure your browser allows pop-ups and you have a stable connection.")
     setShowModal(true)
   }
 
@@ -130,7 +131,7 @@ const Login = () => {
   }
 
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}>
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-transparent p-4 transition-colors duration-300 relative overflow-hidden">
       
       {/* Decorative background blobs */}

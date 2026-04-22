@@ -28,6 +28,7 @@ const normalizedClientUrl = rawClientUrl.endsWith('/') ? rawClientUrl.slice(0, -
 const allowedOrigins = [
     normalizedClientUrl,
     'https://roshni-tamang-event-booking-managem-five.vercel.app',
+    'https://roshni-tamang-event-booking-managem.vercel.app',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',

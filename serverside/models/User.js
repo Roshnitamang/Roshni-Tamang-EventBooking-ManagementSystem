@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     },
     password: { type: String, required: false },
     googleId: { type: String, unique: true, sparse: true },
+    avatar: { type: String, default: '' },
 
 
     verifyToken: { type: String, default: '' },

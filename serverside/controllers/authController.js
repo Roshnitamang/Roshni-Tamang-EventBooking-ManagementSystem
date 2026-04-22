@@ -397,7 +397,7 @@ export const googleLogin = async (req, res) => {
             audience: process.env.GOOGLE_CLIENT_ID
         });
 
-        const { name, email, sub: googleId } = ticket.getPayload();
+        const { name, email, sub: googleId, picture } = ticket.getPayload();
 
         let user = await userModal.findOne({ email });
 
@@ -407,16 +407,32 @@ export const googleLogin = async (req, res) => {
                 name,
                 email,
                 googleId,
-                role: 'user', // Default as requested
+                role: 'user',
                 isAccountVerified: true, // Google emails are verified
-                isApproved: true
+                isApproved: true,
+                avatar: picture // Store profile picture if available
             });
             await user.save();
-        } else if (!user.googleId) {
-            // Update existing user with googleId
-            user.googleId = googleId;
-            user.isAccountVerified = true;
-            await user.save();
+            console.log(`🚀 New user created via Google: ${email}`);
+        } else {
+            // Update existing user with googleId if missing, or sync info
+            let needsUpdate = false;
+            if (!user.googleId) {
+                user.googleId = googleId;
+                user.isAccountVerified = true;
+                needsUpdate = true;
+                console.log(`🔗 Linked existing account to Google: ${email}`);
+            }
+            
+            // Sync name if it was empty
+            if (!user.name) {
+                user.name = name;
+                needsUpdate = true;
+            }
+
+            if (needsUpdate) {
+                await user.save();
+            }
         }
 
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_CODE, { expiresIn: '10d' });
@@ -439,7 +455,8 @@ export const googleLogin = async (req, res) => {
                 isApproved: user.isApproved,
                 isAccountVerified: user.isAccountVerified,
                 isOrganizerRequested: user.isOrganizerRequested,
-                location: user.location
+                location: user.location,
+                avatar: user.avatar
             }
         });
 
