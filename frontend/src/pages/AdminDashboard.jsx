@@ -408,7 +408,7 @@ const AdminDashboard = () => {
                                                     <tr>
                                                         <th className="py-6 px-10">User Info</th>
                                                         <th className="py-6 px-10 text-center">Role</th>
-                                                        <th className="py-6 px-10 text-center">Actions</th>
+                                                        <th className="py-6 px-10 text-right">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-800/50">
@@ -442,8 +442,8 @@ const AdminDashboard = () => {
                                                                     </select>
                                                                 </div>
                                                             </td>
-                                                            <td className="py-6 px-10 text-center">
-                                                                <div className="flex items-center justify-center gap-3 min-w-[100px]">
+                                                            <td className="py-6 px-10">
+                                                                <div className="flex items-center justify-end gap-3 min-w-[120px]">
                                                                     {user.kycDetails && (
                                                                         <button
                                                                             onClick={() => { setViewingKYC(user.kycDetails); setIsKYCModalOpen(true); }}
