@@ -7,6 +7,7 @@ import { debugLog, errorLog } from '../config/debug.js';
 import { getAIResponse } from '../utils/geminiService.js';
 import Booking from '../models/Booking.js';
 import jwt from 'jsonwebtoken';
+import { calculateDynamicPrice } from '../utils/pricing.js';
 
 
 // Create Event
@@ -184,7 +185,7 @@ export const getRecommendedEvents = async (req, res) => {
 
         const recommendedWithPrice = recommendedEvents.map(e => ({
             ...e,
-            currentPrice: e.price
+            currentPrice: calculateDynamicPrice(e)
         }));
 
         return res.json({ success: true, events: recommendedWithPrice });
@@ -227,7 +228,7 @@ export const getAllEvents = async (req, res) => {
         const eventsWithDynamicPrice = events.map(event => {
             return {
                 ...event,
-                currentPrice: event.price
+                currentPrice: calculateDynamicPrice(event)
             };
         });
 
@@ -247,7 +248,7 @@ export const getEventById = async (req, res) => {
         if (!event) {
             return res.status(404).json({ success: false, message: 'Event not found' });
         }
-        res.json({ success: true, event: { ...event, currentPrice: event.price } });
+        res.json({ success: true, event: { ...event, currentPrice: calculateDynamicPrice(event) } });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -299,7 +300,7 @@ export const getEventsByCategory = async (req, res) => {
 
         const eventsWithPrice = events.map(e => ({
             ...e,
-            currentPrice: e.price
+            currentPrice: calculateDynamicPrice(e)
         }));
 
         res.json({ success: true, events: eventsWithPrice });
@@ -354,7 +355,7 @@ export const getEventsByLocation = async (req, res) => {
 
         const eventsWithPrice = eventsWithDistance.map(e => ({
             ...e,
-            currentPrice: e.price
+            currentPrice: calculateDynamicPrice(e)
         }));
 
         res.json({ success: true, events: eventsWithPrice });

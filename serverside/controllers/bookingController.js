@@ -6,6 +6,7 @@ import { sendEmail } from '../utils/emailService.js';
 import { BOOKING_CONFIRMATION_TEMPLATE } from '../config/emailTemplates.js';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
+import { calculateDynamicPrice } from '../utils/pricing.js';
 
 
 // Initiate eSewa Payment
@@ -46,8 +47,9 @@ export const initiateEsewaPayment = async (req, res) => {
             return res.json({ success: false, message: 'Not enough tickets available' });
         }
 
-        // Calculate Amount (Rollback to static price)
-        const totalAmount = event.price * tickets;
+        // Calculate Amount (Dynamic Price)
+        const dynamicUnitPrice = calculateDynamicPrice(event);
+        const totalAmount = dynamicUnitPrice * tickets;
         const transactionUuid = uuidv4().replace(/-/g, '');
 
         // eSewa Config from ENV

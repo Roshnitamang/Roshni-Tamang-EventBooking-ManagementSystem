@@ -255,7 +255,7 @@ function Home() {
                   )}
                   <div className="absolute top-4 left-4">
                     <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-[10px] font-black text-emerald-400 uppercase tracking-widest shadow-2xl flex flex-col items-center">
-                        <span>{event.price > 0 ? `${currency}${event.price}` : 'Complimentary'}</span>
+                        <span>{ (event.currentPrice || event.price) > 0 ? `${currency}${event.currentPrice || event.price}` : 'Complimentary'}</span>
                     </div>
                   </div>
                 </div>

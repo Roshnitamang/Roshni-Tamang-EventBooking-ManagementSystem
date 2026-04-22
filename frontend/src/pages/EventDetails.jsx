@@ -149,8 +149,13 @@ const EventDetails = () => {
                                     <div>
                                         <p className="text-[10px] font-black uppercase text-zinc-500 tracking-widest mb-2">Price</p>
                                         <p className="text-4xl font-black text-zinc-900 dark:text-white">
-                                            {event.price > 0 ? `${currency}${event.price}` : 'Free'}
+                                            {(event.currentPrice || event.price) > 0 ? `${currency}${event.currentPrice || event.price}` : 'Free'}
                                         </p>
+                                        {event.dynamicPricing?.enabled && event.currentPrice !== event.price && (
+                                            <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-2 animate-pulse">
+                                                Demand-Based Pricing Active
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="text-right">
                                         <div className="flex flex-col items-end">

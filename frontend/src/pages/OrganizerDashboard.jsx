@@ -51,7 +51,12 @@ const OrganizerDashboard = () => {
             doorTime: '',
             parking: 'Free parking'
         },
-        faqs: []
+        faqs: [],
+        dynamicPricing: {
+            enabled: false,
+            minPrice: '',
+            maxPrice: ''
+        }
     });
     const [imageFile, setImageFile] = useState(null);
 
@@ -81,7 +86,7 @@ const OrganizerDashboard = () => {
 
             const formData = new FormData()
             Object.keys(eventData).forEach(key => {
-                if (key === 'highlights' || key === 'faqs' || key === 'ticketTypes' || key === 'coordinates') {
+                if (key === 'highlights' || key === 'faqs' || key === 'ticketTypes' || key === 'coordinates' || key === 'dynamicPricing') {
                     formData.append(key, JSON.stringify(eventData[key]))
                 } else if (key === 'image' && imageFile) {
                     // Skip
@@ -120,7 +125,8 @@ const OrganizerDashboard = () => {
             coordinates: { latitude: null, longitude: null },
             category: 'Music', image: '', price: '', ticketsAvailable: '100',
             highlights: { ageRestriction: 'All ages allowed', doorTime: '', parking: 'Free parking' },
-            faqs: []
+            faqs: [],
+            dynamicPricing: { enabled: false, minPrice: '', maxPrice: '' }
         })
         setImageFile(null)
     }
@@ -608,6 +614,68 @@ const OrganizerDashboard = () => {
                                                 <Sparkles className="w-4 h-4 text-emerald-500" />
                                                 <p className="text-[10px] font-black text-emerald-500/80 uppercase tracking-widest">Limited allocation strategy increases yield velocity.</p>
                                             </div>
+                                        </div>
+
+                                        <div className="bg-white dark:bg-zinc-900 rounded-[3rem] p-10 border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/30 transition-all shadow-2xl">
+                                            <div className="flex justify-between items-center mb-8">
+                                                <label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.4em] flex items-center gap-3">
+                                                    <TrendingUp className="w-4 h-4 text-emerald-500" />
+                                                    Dynamic Pricing Protocol
+                                                </label>
+                                                <button
+                                                    onClick={() => setEventData({
+                                                        ...eventData,
+                                                        dynamicPricing: { ...eventData.dynamicPricing, enabled: !eventData.dynamicPricing.enabled }
+                                                    })}
+                                                    className={`w-14 h-8 rounded-full transition-all duration-300 relative ${eventData.dynamicPricing.enabled ? 'bg-emerald-600' : 'bg-zinc-800'}`}
+                                                >
+                                                    <div className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all duration-300 ${eventData.dynamicPricing.enabled ? 'left-7' : 'left-1'}`}></div>
+                                                </button>
+                                            </div>
+                                            
+                                            <AnimatePresence>
+                                                {eventData.dynamicPricing.enabled && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, height: 0 }}
+                                                        animate={{ opacity: 1, height: 'auto' }}
+                                                        exit={{ opacity: 0, height: 0 }}
+                                                        className="space-y-6 overflow-hidden"
+                                                    >
+                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-relaxed">
+                                                            AI will automatically adjust prices based on demand velocity and time remaining. 
+                                                            Set your floor and ceiling values.
+                                                        </p>
+                                                        <div className="grid grid-cols-2 gap-6 pt-4">
+                                                            <div className="space-y-2">
+                                                                <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Min Price ({currency})</label>
+                                                                <input
+                                                                    type="number"
+                                                                    placeholder="Floor"
+                                                                    className="w-full bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl outline-none text-sm font-black text-zinc-900 dark:text-white"
+                                                                    value={eventData.dynamicPricing.minPrice}
+                                                                    onChange={e => setEventData({
+                                                                        ...eventData,
+                                                                        dynamicPricing: { ...eventData.dynamicPricing, minPrice: e.target.value }
+                                                                    })}
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Max Price ({currency})</label>
+                                                                <input
+                                                                    type="number"
+                                                                    placeholder="Ceiling"
+                                                                    className="w-full bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl outline-none text-sm font-black text-zinc-900 dark:text-white"
+                                                                    value={eventData.dynamicPricing.maxPrice}
+                                                                    onChange={e => setEventData({
+                                                                        ...eventData,
+                                                                        dynamicPricing: { ...eventData.dynamicPricing, maxPrice: e.target.value }
+                                                                    })}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
 
 
