@@ -48,12 +48,12 @@ const MyBookings = () => {
                         <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-900/20 rotate-3">
                    <History className="text-zinc-900 dark:text-white w-6 h-6" />
                     </div>
-                        <h1 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase">Order Treasury</h1>
+                        <h1 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase">My Bookings</h1>
                 </div>
-                    <p className="text-zinc-500 font-medium text-lg">Detailed ledger of your secured experience allocations.</p>
+                    <p className="text-zinc-500 font-medium text-lg">View all your booked events and tickets here.</p>
             </div>
                 <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 px-5 py-2 rounded-full border border-emerald-500/20 shadow-2xl">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{bookings.length} POSITIONS SECURED</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{bookings.length} BOOKINGS FOUND</span>
                 </div>
                 </header>
 
@@ -61,7 +61,7 @@ const MyBookings = () => {
                     {bookings.filter(b => b.eventId && new Date(b.eventId.date) >= new Date().setHours(0, 0, 0, 0)).length === 0 ? (
                         <div className="py-32 text-center bg-white dark:bg-zinc-900/30 rounded-[3rem] border border-dashed border-zinc-900 group">
                     <Package className="w-16 h-16 text-zinc-800 mx-auto mb-6 group-hover:text-emerald-500 transition-colors duration-500" />
-                        <p className="text-zinc-500 font-black uppercase tracking-[0.4em] text-sm">No Transactional Records Detected</p>
+                        <p className="text-zinc-500 font-black uppercase tracking-[0.4em] text-sm">No bookings found</p>
                         </div>
                     ) : (
                         bookings.filter(b => b.eventId && new Date(b.eventId.date) >= new Date().setHours(0, 0, 0, 0)).map((booking) => (
@@ -80,7 +80,7 @@ const MyBookings = () => {
                                     <div className="flex flex-wrap items-center gap-6">
                                     <div className="flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                        <span className="text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{booking.tickets} Allocation Units</span>
+                                        <span className="text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{booking.tickets} Tickets</span>
                                     </div>
                                     <div className="text-lg font-black text-emerald-500 tracking-tighter">
                                         {currency}{booking.totalAmount}
@@ -93,7 +93,7 @@ const MyBookings = () => {
                                          ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
                                          : 'bg-red-500/10 text-red-500 border-red-500/20'
                                      }`}>
-                                         {booking.status === 'booked' ? 'Confirmed' : 'Deficit'}
+                                         {booking.status === 'booked' ? 'Booked' : 'Failed'}
                                      </span>
                                      <div className="w-10 h-10 rounded-full border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-700 group-hover:text-emerald-500 group-hover:border-emerald-500/30 transition-all">
                                         <ChevronRight className="w-5 h-5" />
@@ -129,10 +129,10 @@ const MyBookings = () => {
                                 <Sparkles className="w-10 h-10 text-emerald-500" />
                             </div>
                             
-                            <h3 className="text-4xl font-black text-zinc-900 dark:text-white mb-4 uppercase tracking-tighter leading-none italic">Protocol Success</h3>
+                            <h3 className="text-4xl font-black text-zinc-900 dark:text-white mb-4 uppercase tracking-tighter leading-none italic">Success!</h3>
                             <div className="flex items-center justify-center gap-2 mb-8">
                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
-                            <p className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.5em]">Transaction Secured</p>
+                            <p className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.5em]">Booking Confirmed</p>
                             </div>
                             
                             <p className="text-zinc-500 text-lg font-medium leading-relaxed mb-12">
@@ -143,7 +143,7 @@ const MyBookings = () => {
                                 onClick={() => setShowModal(false)}
                                 className="w-full py-6 bg-emerald-600 text-zinc-900 dark:text-white font-black uppercase tracking-[0.4em] text-xs rounded-[2.5rem] hover:bg-emerald-500 transition-all shadow-2xl active:scale-95"
                             >
-                                Re-enter Vault
+                                Go Back
                             </button>
                         </motion.div>
                     </div>

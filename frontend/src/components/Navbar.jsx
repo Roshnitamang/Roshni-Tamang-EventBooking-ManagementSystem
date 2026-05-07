@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import { useNavigate, NavLink, useLocation } from 'react-router-dom'
 import { AppContent } from '../context/AppContext'
 import { useTheme } from '../context/ThemeContext'
@@ -13,6 +13,16 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme()
   const { userData, backendUrl, setUserData, setIsLoggedin, isLoggedin, setSearchQuery, locationSearch, setLocationSearch } =
     useContext(AppContent)
+
+  const dashboardPath = useMemo(() => {
+    if (!userData) return '/dashboard'
+    switch (userData.role) {
+      case 'super-admin': return '/super-admin-dashboard'
+      case 'admin': return '/admin-dashboard'
+      case 'organizer': return '/organizer-dashboard'
+      default: return '/dashboard'
+    }
+  }, [userData])
 
   useEffect(() => {
     if (location.state?.welcomeMessage) {
@@ -72,7 +82,7 @@ const Navbar = () => {
                 </svg>
                 <input
                   type="text"
-                  placeholder="Find your next experience..."
+                  placeholder="Search events..."
                   className="bg-transparent flex-1 outline-none text-sm text-zinc-900 dark:text-zinc-300 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                   value={locationSearch}
                   onChange={(e) => setLocationSearch(e.target.value)}
@@ -90,7 +100,7 @@ const Navbar = () => {
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/dashboard" className={({ isActive }) => `hover:text-emerald-400 transition-colors ${isActive ? 'text-emerald-500' : ''}`}>
+                <NavLink to={dashboardPath} className={({ isActive }) => `hover:text-emerald-400 transition-colors ${isActive ? 'text-emerald-500' : ''}`}>
                   Dashboard
                 </NavLink>
               </li>
@@ -99,7 +109,7 @@ const Navbar = () => {
             <ul className="hidden lg:flex items-center gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">
               <li>
                 <NavLink to="/" className={({ isActive }) => `hover:text-emerald-400 transition-colors ${isActive ? 'text-emerald-500' : ''}`}>
-                  Exploration
+                  Home
                 </NavLink>
               </li>
               <li>
@@ -141,13 +151,13 @@ const Navbar = () => {
                 <div className="absolute right-0 mt-0 w-64 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                   <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden py-3">
                     <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 mb-2">
-                      <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-1">Authenticated as</p>
+                      <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-1">Logged in as</p>
                       <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{userData.name}</p>
                     </div>
                     <button onClick={() => navigate('/profile')} className="w-full text-left px-6 py-3 text-sm font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-emerald-500 dark:hover:text-emerald-400 transition">
                       Profile
                     </button>
-                    <button onClick={() => navigate('/dashboard')} className="w-full text-left px-6 py-3 text-sm font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-emerald-500 dark:hover:text-emerald-400 transition">
+                    <button onClick={() => navigate(dashboardPath)} className="w-full text-left px-6 py-3 text-sm font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-emerald-500 dark:hover:text-emerald-400 transition">
                       Dashboard
                     </button>
                     <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2 mx-6"></div>

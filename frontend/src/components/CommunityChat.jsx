@@ -64,6 +64,7 @@ const CommunityChat = ({ events = [] }) => {
   const socketRef = useRef(null);
   const currentRoomRef = useRef('global');
   const bottomRef = useRef(null);
+  const scrollContainerRef = useRef(null);
   const inputRef = useRef(null);
   const typingTimeout = useRef(null);
 
@@ -79,7 +80,7 @@ const CommunityChat = ({ events = [] }) => {
 
     const socket = io(backendUrl, {
       withCredentials: true,
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
     });
@@ -199,9 +200,11 @@ const CommunityChat = ({ events = [] }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room, selectedEvent]);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom - Targeted to container only
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
   }, [messages, typingUsers]);
 
   // ─── Send message ──────────────────────────────────────────────────────
@@ -271,7 +274,7 @@ const CommunityChat = ({ events = [] }) => {
   const grouped = groupMessagesByDate(messages);
 
   return (
-    <div className="flex h-[80vh] min-h-[560px] bg-[#1e1f22] rounded-[2rem] overflow-hidden border border-zinc-700/50 shadow-2xl">
+    <div className="flex h-[75vh] min-h-[500px] bg-[#1e1f22] rounded-[2rem] overflow-hidden border border-zinc-700/50 shadow-2xl transition-all duration-500">
 
       {/* ── Sidebar ── */}
       <AnimatePresence>
@@ -383,7 +386,10 @@ const CommunityChat = ({ events = [] }) => {
         </div>
 
         {/* Messages list */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-0.5 bg-[#313338]">
+        <div 
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto px-4 py-4 space-y-0.5 bg-[#313338] scroll-smooth"
+        >
           {loading ? (
             <div className="flex justify-center items-center py-16">
               <Loader2 className="w-7 h-7 text-emerald-500 animate-spin" />

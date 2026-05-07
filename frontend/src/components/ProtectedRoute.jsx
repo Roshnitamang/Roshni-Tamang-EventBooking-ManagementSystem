@@ -18,7 +18,12 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     }
 
     if (allowedRoles && userData && !allowedRoles.includes(userData.role)) {
-        return <Navigate to="/" replace />; // Or unauthorized page
+        let dashboardPath = '/dashboard';
+        if (userData.role === 'super-admin') dashboardPath = '/super-admin-dashboard';
+        else if (userData.role === 'admin') dashboardPath = '/admin-dashboard';
+        else if (userData.role === 'organizer') dashboardPath = '/organizer-dashboard';
+        
+        return <Navigate to={dashboardPath} replace />;
     }
 
     return children;

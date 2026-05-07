@@ -8,7 +8,7 @@ import { CheckCircle2, Download, Home, Ticket, Sparkles } from 'lucide-react';
 const EsewaSuccess = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { backendUrl, isLoggedin, loading } = useContext(AppContent);
+    const { backendUrl, isLoggedin, loading, userData } = useContext(AppContent);
     const [status, setStatus] = useState('verifying'); // verifying, success, failed
     const [bookingDetails, setBookingDetails] = useState(null);
     const ticketRef = useRef(null);
@@ -97,7 +97,7 @@ const EsewaSuccess = () => {
                     </div>
 
                     <h2 className="text-3xl font-black mb-2 uppercase tracking-tight text-zinc-900 dark:text-zinc-100 dark:text-zinc-900 dark:text-white relative z-10">Payment Successful</h2>
-                    <p className="text-zinc-500 text-sm mb-8 font-medium relative z-10">Your spot is officially secured.</p>
+                    <p className="text-zinc-500 text-sm mb-8 font-medium relative z-10">Your booking is confirmed.</p>
 
                     <div className="w-full text-left bg-zinc-50 dark:bg-zinc-800/50 p-6 rounded-[2rem] mb-2 border border-dashed border-zinc-300 dark:border-zinc-700 relative z-10 ticket-details">
                         {/* Event Name */}
@@ -146,9 +146,15 @@ const EsewaSuccess = () => {
 
                     <div className="w-full flex max-sm:flex-col gap-4 hidden-print z-10 mt-4">
                         <button onClick={handleDownloadTicket} className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-zinc-900 dark:text-white px-6 py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-green-500/20 uppercase tracking-widest text-xs">
-                            <Download className="w-5 h-5" /> Save Ticket
+                            <Download className="w-5 h-5" /> Download Ticket
                         </button>
-                        <button onClick={() => navigate('/dashboard')} className="flex-1 bg-transparent dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 dark:text-zinc-900 dark:text-white px-6 py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-700 border-2 border-zinc-100 dark:border-zinc-700 hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs">
+                        <button onClick={() => {
+                            let path = '/dashboard'
+                            if (userData?.role === 'super-admin') path = '/super-admin-dashboard'
+                            else if (userData?.role === 'admin') path = '/admin-dashboard'
+                            else if (userData?.role === 'organizer') path = '/organizer-dashboard'
+                            navigate(path)
+                        }} className="flex-1 bg-transparent dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 dark:text-zinc-900 dark:text-white px-6 py-5 rounded-[2rem] font-black flex items-center justify-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-700 border-2 border-zinc-100 dark:border-zinc-700 hover:scale-105 active:scale-95 transition-all uppercase tracking-widest text-xs">
                             <Home className="w-5 h-5" /> My Tickets
                         </button>
                     </div>

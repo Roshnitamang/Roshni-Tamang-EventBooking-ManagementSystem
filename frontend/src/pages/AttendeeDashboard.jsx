@@ -24,11 +24,9 @@ const AttendeeDashboard = () => {
   const dailyMessages = [
     "Seize the day and build experiences that will define your future.",
     "Your journey to extraordinary moments begins with a single bold step.",
-    "Excellence is a habit. Welcome to your command center for elite exploration.",
-    "The future belongs to the prepared. Let's discover your next horizon.",
-    "Energy and persistence conquer all obstacles. Your elite access is ready.",
-    "Success is where preparation meets opportunity. You are in the right place.",
-    "Dream big, act decisively, and savor the finest moments life has to offer."
+    "Find your next event and join the community.",
+    "You're all set to explore.",
+    "enjoy the best moments life has to offer."
   ];
 
   const getDailyMessage = () => {
@@ -75,11 +73,14 @@ const AttendeeDashboard = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Removed: Auto-set location search from user profile
+  /*
   useEffect(() => {
     if (!locationSearch && userData?.location) {
         setLocationSearch(userData.location);
     }
   }, [userData]);
+  */
 
   useEffect(() => {
     fetchEvents();
@@ -92,7 +93,7 @@ const AttendeeDashboard = () => {
     <div className="min-h-screen bg-transparent py-20 px-6 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8 hidden-print border-b border-zinc-100 dark:border-zinc-900 pb-12">
+        <header className={`flex flex-col md:flex-row justify-between items-end gap-8 hidden-print border-b border-zinc-100 dark:border-zinc-900 pb-12 transition-all duration-500 ${activeTab === 'community' ? 'mb-8' : 'mb-16'}`}>
           <div>
             <div className="flex items-center gap-3 mb-4">
                <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-900/20 rotate-3">
@@ -112,13 +113,13 @@ const AttendeeDashboard = () => {
               onClick={() => setActiveTab('browse')}
               className={`px-8 py-3.5 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${activeTab === 'browse' ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-900/40' : 'text-zinc-500 hover:text-emerald-400'}`}
             >
-              Browse Inventory
+              Browse Events
             </button>
             <button
               onClick={() => setActiveTab('bookings')}
               className={`px-8 py-3.5 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${activeTab === 'bookings' ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-900/40' : 'text-zinc-500 hover:text-emerald-400'}`}
             >
-              Access Tokens
+              My Tickets
             </button>
             <button
               onClick={() => setActiveTab('community')}
@@ -143,7 +144,7 @@ const AttendeeDashboard = () => {
                 <div className="flex-[2] relative group">
                   <input
                     type="text"
-                    placeholder="Search global experiences..."
+                    placeholder="Search events..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[2.5rem] px-14 py-6 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-bold text-zinc-900 dark:text-white placeholder:text-zinc-400 shadow-xl"
@@ -211,7 +212,7 @@ const AttendeeDashboard = () => {
                 {events.length === 0 ? (
                   <div className="col-span-full py-32 text-center bg-white dark:bg-zinc-900/50 rounded-[3rem] border-2 border-dashed border-zinc-800">
                     <Rocket className="w-16 h-16 text-zinc-800 mx-auto mb-6" />
-                    <p className="text-zinc-600 font-black uppercase tracking-[0.3em] text-sm">No Signal Found Matching Parameters</p>
+                    <p className="text-zinc-600 font-black uppercase tracking-[0.3em] text-sm">No events found matching your search</p>
                   </div>
                 ) : (
                   events.map((event) => (
@@ -269,10 +270,10 @@ const AttendeeDashboard = () => {
                       <Ticket className="w-6 h-6 text-emerald-500" />
                    </div>
                    <div>
-                      <h2 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase leading-none">Active Access</h2>
+                      <h2 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase leading-none">My Upcoming Events</h2>
                       <div className="flex items-center gap-2 mt-2">
                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                         <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{upcomingBookings.length} Secured Experiences</p>
+                         <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{upcomingBookings.length} Booked Events</p>
                       </div>
                    </div>
                 </div>
@@ -280,7 +281,7 @@ const AttendeeDashboard = () => {
                 {upcomingBookings.length === 0 ? (
                   <div className="text-center py-24 bg-white dark:bg-zinc-900/30 rounded-[3rem] border border-dashed border-zinc-200 dark:border-zinc-800">
                     <Ticket className="w-12 h-12 text-zinc-800 mx-auto mb-6" />
-                    <p className="text-zinc-600 font-black uppercase tracking-[0.3em] text-sm">No Active Booking Records Detected</p>
+                    <p className="text-zinc-600 font-black uppercase tracking-[0.3em] text-sm">No upcoming bookings found</p>
                   </div>
                 ) : (
                   <div className="grid gap-8">
@@ -357,7 +358,7 @@ const BookingCard = ({ booking }) => {
                 <h3 className="font-black text-3xl text-zinc-900 dark:text-white tracking-tighter uppercase mb-2">{eventId.title}</h3>
                 <div className="flex items-center gap-3">
                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Confidential Reference: {_id.slice(-8).toUpperCase()}</p>
+                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">Booking ID: {_id.slice(-8).toUpperCase()}</p>
                 </div>
               </div>
               <div className="flex gap-4">
@@ -365,10 +366,10 @@ const BookingCard = ({ booking }) => {
                   onClick={() => setShowTicket(true)} 
                   className="btn-primary !py-3.5 !px-8 shadow-emerald-900/20"
                 >
-                  Retrieve Ticket
+                  View Ticket
                 </button>
                 <Link to={`/event/${eventId._id}`} className="px-8 py-3.5 bg-transparent border border-zinc-200 dark:border-zinc-800 rounded-[2rem] text-zinc-900 dark:text-white text-[10px] font-black uppercase tracking-widest hover:border-emerald-500 transition-all">
-                  Event Brief
+                  View Event
                 </Link>
               </div>
             </div>
@@ -377,7 +378,7 @@ const BookingCard = ({ booking }) => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-emerald-500">
                    <Calendar className="w-3.5 h-3.5" />
-                   <p className="text-[9px] font-black uppercase tracking-[0.3em]">Protocol Date</p>
+                   <p className="text-[9px] font-black uppercase tracking-[0.3em]">Event Date</p>
                 </div>
                 <p className="text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-wider">{new Date(eventId.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</p>
               </div>
@@ -385,15 +386,15 @@ const BookingCard = ({ booking }) => {
               <div className="space-y-3">
                  <div className="flex items-center gap-2 text-emerald-500">
                     <Ticket className="w-3.5 h-3.5" />
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em]">Allocation</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em]">Tickets</p>
                  </div>
-                 <p className="text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-wider">{tickets} Reserved Units</p>
+                 <p className="text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-wider">{tickets} Tickets Booked</p>
               </div>
 
               <div className="space-y-3">
                  <div className="flex items-center gap-2 text-emerald-500">
                     <CreditCard className="w-3.5 h-3.5" />
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em]">Capital Vol.</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em]">Total Amount</p>
                  </div>
                  <p className="text-lg font-black text-emerald-500 tracking-tighter">{currency}{totalAmount}</p>
               </div>
@@ -401,7 +402,7 @@ const BookingCard = ({ booking }) => {
               <div className="space-y-3">
                  <div className="flex items-center gap-2 text-emerald-500">
                     <MapPin className="w-3.5 h-3.5" />
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em]">Coordinate</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em]">Location</p>
                  </div>
                  <div className="flex flex-col gap-2">
                     <p className="text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-tight truncate max-w-[150px]">{eventId.location}</p>
@@ -409,7 +410,7 @@ const BookingCard = ({ booking }) => {
                       onClick={() => setShowMap(!showMap)}
                       className="text-[9px] text-zinc-500 font-black uppercase tracking-widest hover:text-emerald-500 flex items-center gap-2 transition-colors"
                     >
-                      {showMap ? <><ChevronUp className="w-3 h-3" /> Hide Logic</> : <><ChevronDown className="w-3 h-3" /> Map Overlay</>}
+                      {showMap ? <><ChevronUp className="w-3 h-3" /> Hide Map</> : <><ChevronDown className="w-3 h-3" /> Show Map</>}
                     </button>
                  </div>
               </div>
@@ -506,10 +507,10 @@ const BookingCard = ({ booking }) => {
                             <Ticket className="w-12 h-12 text-emerald-500" />
                         </div>
 
-                        <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter text-zinc-900 dark:text-white relative z-10 leading-none">Access Token</h2>
+                        <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter text-zinc-900 dark:text-white relative z-10 leading-none">Your Ticket</h2>
                         <div className="flex items-center gap-2 mb-10 relative z-10">
                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                           <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.5em]">Global Clearance SECURED</p>
+                           <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.5em]">Your ticket is confirmed</p>
                         </div>
 
                         <div className="w-full text-left bg-transparent p-10 rounded-[3rem] space-y-8 relative z-10 border border-zinc-200 dark:border-zinc-800 shadow-inner">
@@ -519,15 +520,15 @@ const BookingCard = ({ booking }) => {
 
                             <div className="space-y-6">
                               <div className="flex justify-between items-center">
-                            <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Registry Identifier</span>
+                             <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Booking ID</span>
                                 <span className="font-mono font-black text-emerald-500 text-lg tracking-widest bg-emerald-500/5 px-4 py-1.5 rounded-xl border border-emerald-500/10">{_id?.slice(-8).toUpperCase()}</span>
                               </div>
                             <div className="flex justify-between items-center">
-                                  <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Seat Allocation</span>
-                                  <span className="font-black text-zinc-900 dark:text-white text-lg uppercase">{tickets}x {bookingType} Units</span>
+                                   <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Ticket Details</span>
+                                   <span className="font-black text-zinc-900 dark:text-white text-lg uppercase">{tickets}x {bookingType} Tickets</span>
                               </div>
                             <div className="flex justify-between items-center pt-6 border-t border-zinc-900">
-                                <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Yield Value</span>
+                                 <span className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em]">Amount Paid</span>
                                   <span className="font-black text-emerald-500 text-3xl tracking-tighter">{currency}{totalAmount}</span>
                               </div>
                             </div>
@@ -537,12 +538,12 @@ const BookingCard = ({ booking }) => {
                             <div className="p-4 bg-white rounded-3xl shadow-2xl transform group-hover/qr:scale-110 transition-transform duration-500">
                                 <img src={qrUrl} alt="Secure QR" className="w-32 h-32" />
                             </div>
-                            <p className="mt-6 text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Present for Extraction</p>
+                             <p className="mt-6 text-[9px] font-black text-zinc-600 uppercase tracking-[0.5em]">Show this at the event</p>
                         </div>
 
                         <div className="w-full mt-10 space-y-4 relative z-10">
                           <button onClick={handlePrint} className="w-full bg-emerald-600 text-zinc-900 dark:text-white py-6 rounded-[2.5rem] font-black flex items-center justify-center gap-4 hover:bg-emerald-500 transition-all shadow-2xl active:scale-95 uppercase tracking-[0.3em] text-[10px] hidden-print">
-                            <Download className="w-5 h-5" /> Download Archive
+                             <Download className="w-5 h-5" /> Download Ticket
                         </button>
                         </div>
                     </div>

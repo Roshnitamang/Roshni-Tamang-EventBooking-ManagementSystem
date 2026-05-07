@@ -207,7 +207,7 @@ const OrganizerDashboard = () => {
                             </div>
                             <div className="flex items-center gap-2">
                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></div>
-                               <p className="text-[10px] uppercase tracking-widest font-black text-zinc-500">Professional Console</p>
+                               <p className="text-[10px] uppercase tracking-widest font-black text-zinc-500">Organizer Dashboard</p>
                             </div>
                         </div>
 
@@ -239,13 +239,13 @@ const OrganizerDashboard = () => {
                                 >
                                     <header>
                                         <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Dashboard</h2>
-                                        <p className="text-zinc-500 font-medium text-lg">Cross-portfolio performance and asset management.</p>
+                                        <p className="text-zinc-500 font-medium text-lg">Manage your events and track performance.</p>
                                     </header>
 
                                     {/* Stats Grid */}
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                         {[
-                                            { label: 'Live Inventory', value: stats?.totalEvents || 0, icon: Calendar, color: 'emerald' },
+                                            { label: 'Total Events', value: stats?.totalEvents || 0, icon: Calendar, color: 'emerald' },
                                             { label: 'Tickets Sold', value: stats?.totalTicketsSold || 0, icon: Ticket, color: 'emerald' },
                                             { label: 'Revenue', value: `${currency}${stats?.totalRevenue || 0}`, icon: DollarSign, color: 'emerald' }
                                         ].map((s, i) => (
@@ -268,13 +268,13 @@ const OrganizerDashboard = () => {
                                         {events.length === 0 ? (
                                             <div className="py-24 text-center border-2 border-dashed border-zinc-900 rounded-[3rem] bg-white dark:bg-zinc-900/20 group">
                                                 <Rocket className="w-16 h-16 mx-auto mb-6 text-zinc-800 group-hover:text-emerald-500 transition-colors group-hover:-translate-y-2 duration-700" />
-                                                <p className="text-zinc-500 font-black uppercase tracking-[0.3em] mb-8 text-sm">No Active Deployments Found</p>
+                                                <p className="text-zinc-500 font-black uppercase tracking-[0.3em] mb-8 text-sm">No events found</p>
                                                 <button
                                                     onClick={() => setActiveStep('build')}
                                                     className="btn-primary flex items-center gap-3 mx-auto shadow-2xl shadow-emerald-900/40"
                                                 >
                                                     <Plus className="w-5 h-5" />
-                                                    Initialize Project
+                                                    Initialize Event
                                                 </button>
                                             </div>
                                         ) : (
@@ -296,7 +296,7 @@ const OrganizerDashboard = () => {
                                                         <div className="flex items-center gap-3 mb-4">
                                                             <Calendar className="w-3.5 h-3.5 text-emerald-500" />
                                                             <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">
-                                                                Execution Date: {new Date(event.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                                Event Date: {new Date(event.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                                                             </span>
                                                         </div>
                                                         <h4 className="text-2xl font-black text-zinc-900 dark:text-white group-hover:text-emerald-400 transition-colors duration-300 uppercase tracking-tight truncate leading-none mb-6">{event.title}</h4>
@@ -420,7 +420,7 @@ const OrganizerDashboard = () => {
                                 >
                                     <header>
                                         <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">Create Event</h2>
-                                        <p className="text-zinc-500 font-medium text-lg">Define the primary parameters of your experience.</p>
+                                        <p className="text-zinc-500 font-medium text-lg">Set the basic details for your event.</p>
                                     </header>
 
                                     <div className="space-y-10">
@@ -436,7 +436,7 @@ const OrganizerDashboard = () => {
                                                     <div className="p-6 bg-zinc-800 rounded-3xl mb-6 group-hover:scale-110 transition-transform duration-500 shadow-xl">
                                                         <ImagePlus className="w-12 h-12 text-zinc-600 group-hover:text-emerald-500 transition-colors" />
                                                     </div>
-                                                    <p className="font-black text-zinc-600 uppercase tracking-widest text-xs group-hover:text-zinc-500 dark:text-zinc-400 transition-colors">Select Visual Artifact</p>
+                                                    <p className="font-black text-zinc-600 uppercase tracking-widest text-xs group-hover:text-zinc-500 dark:text-zinc-400 transition-colors">Select Event Image</p>
                                                     <p className="text-[9px] text-zinc-700 uppercase font-black mt-2 tracking-[0.2em]">Format: 16:9 Optimized</p>
                                                 </>
                                             )}
@@ -469,10 +469,10 @@ const OrganizerDashboard = () => {
 
                                         <div className="grid gap-8">
                                             <div className="relative bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 group transition-all duration-300">
-                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Designation / Title</label>
+                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Event Title</label>
                                                 <input
                                                     type="text"
-                                                    placeholder="PROJECT CODE NAME..."
+                                                    placeholder="EVENT NAME..."
                                                     className="w-full bg-transparent text-2xl font-black outline-none placeholder:text-zinc-800 text-zinc-900 dark:text-white uppercase tracking-tight"
                                                     value={eventData.title}
                                                     onChange={e => setEventData({ ...eventData, title: e.target.value })}
@@ -480,10 +480,10 @@ const OrganizerDashboard = () => {
                                             </div>
 
                                             <div className="relative bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 group transition-all duration-300">
-                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Executive Summary</label>
+                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Brief Summary</label>
                                                 <input
                                                     type="text"
-                                                    placeholder="Brief objective summary..."
+                                                    placeholder="Short summary of the event..."
                                                     className="w-full bg-transparent font-bold text-zinc-600 dark:text-zinc-300 outline-none placeholder:text-zinc-800"
                                                     value={eventData.summary}
                                                     onChange={e => setEventData({ ...eventData, summary: e.target.value })}
@@ -492,7 +492,7 @@ const OrganizerDashboard = () => {
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                 <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 group transition-all duration-300">
-                                                    <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Classification</label>
+                                                    <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Category</label>
                                                     <select
                                                         className="w-full bg-transparent font-black text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer uppercase tracking-widest text-sm"
                                                         value={eventData.category}
@@ -508,7 +508,7 @@ const OrganizerDashboard = () => {
                                                     </select>
                                                 </div>
                                                 <div className="bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 group transition-all duration-300">
-                                                    <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Deployment Timestamp</label>
+                                                    <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Date & Time</label>
                                                     <input
                                                         type="datetime-local"
                                                         className="w-full bg-transparent font-black text-zinc-900 dark:text-zinc-100 outline-none uppercase tracking-widest text-sm"
@@ -519,11 +519,11 @@ const OrganizerDashboard = () => {
                                             </div>
 
                                             <div className="relative bg-white dark:bg-zinc-900 rounded-[2rem] p-8 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 group transition-all duration-300">
-                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Operation Zone (Location)</label>
+                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.3em] block mb-4 group-focus-within:text-emerald-500 transition-colors">Event Location</label>
                                                 <div className="relative">
                                                    <input
                                                        type="text"
-                                                       placeholder="STATION COORDINATES OR ADDRESS..."
+                                                       placeholder="EVENT LOCATION OR ADDRESS..."
                                                        className="w-full bg-transparent font-black text-zinc-900 dark:text-white outline-none placeholder:text-zinc-800 uppercase tracking-tight"
                                                        value={eventData.location}
                                                        onChange={e => setEventData({ ...eventData, location: e.target.value })}
@@ -535,7 +535,7 @@ const OrganizerDashboard = () => {
                                             {/* Map Location Picker */}
                                             <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-4 border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-2xl">
                                                 <div className="p-6">
-                                                   <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.4em] block mb-4">Precision Targeting (Map)</label>
+                                                   <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.4em] block mb-4">Event Location (Map)</label>
                                                 </div>
                                                 <LeafletLocationPicker
                                                     initialLat={eventData.coordinates?.latitude}
@@ -551,7 +551,7 @@ const OrganizerDashboard = () => {
                                             onClick={() => setActiveStep('tickets')}
                                             className="w-full py-6 bg-emerald-600 text-zinc-900 dark:text-white rounded-[2rem] font-black uppercase tracking-[0.4em] text-sm hover:bg-emerald-500 transition-all shadow-2xl shadow-emerald-900/30 flex items-center justify-center gap-4 active:scale-95"
                                         >
-                                            Next: Inventory Setup
+                                            Next: Pricing & Tickets
                                             <Ticket className="w-5 h-5" />
                                         </button>
                                     </div>
@@ -569,7 +569,7 @@ const OrganizerDashboard = () => {
                                 >
                                     <header>
                                         <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">build</h2>
-                                        <p className="text-zinc-500 font-medium text-lg">Calibrate the monetary and volume constraints.</p>
+                                        <p className="text-zinc-500 font-medium text-lg">Set the price and number of tickets.</p>
                                     </header>
 
                                     <div className="space-y-10">
@@ -579,7 +579,7 @@ const OrganizerDashboard = () => {
                                             <div className="relative z-10">
                                                 <label className="text-[10px] font-black uppercase text-emerald-200 tracking-[0.4em] block mb-6 flex items-center gap-2">
                                                     <DollarSign className="w-4 h-4" />
-                                                    Protocol Yield (Price)
+                                                    Ticket Price
                                                 </label>
                                                 <div className="flex items-center">
                                                     <span className="text-5xl font-black text-zinc-900 dark:text-white mr-4 opacity-50">{currency}</span>
@@ -598,7 +598,7 @@ const OrganizerDashboard = () => {
                                             <div className="flex justify-between items-center mb-8">
                                                 <label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.4em] flex items-center gap-3">
                                                     <Users className="w-4 h-4 text-emerald-500" />
-                                                    Quota Capacity
+                                                    Total Tickets
                                                 </label>
                                                 <span className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">{eventData.ticketsAvailable}</span>
                                             </div>
@@ -612,7 +612,7 @@ const OrganizerDashboard = () => {
                                             />
                                             <div className="mt-8 flex items-center gap-3 p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
                                                 <Sparkles className="w-4 h-4 text-emerald-500" />
-                                                <p className="text-[10px] font-black text-emerald-500/80 uppercase tracking-widest">Limited allocation strategy increases yield velocity.</p>
+                                                <p className="text-[10px] font-black text-emerald-500/80 uppercase tracking-widest">Set the number of tickets available for this event.</p>
                                             </div>
                                         </div>
 
@@ -620,7 +620,7 @@ const OrganizerDashboard = () => {
                                             <div className="flex justify-between items-center mb-8">
                                                 <label className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.4em] flex items-center gap-3">
                                                     <TrendingUp className="w-4 h-4 text-emerald-500" />
-                                                    Dynamic Pricing Protocol
+                                                    Dynamic Pricing
                                                 </label>
                                                 <button
                                                     onClick={() => setEventData({
@@ -684,13 +684,13 @@ const OrganizerDashboard = () => {
                                                 onClick={() => setActiveStep('build')}
                                                 className="py-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-900 dark:text-white hover:bg-zinc-800 rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] transition-all"
                                             >
-                                                Return to Design
+                                                Back to Basics
                                             </button>
                                             <button
                                                 onClick={() => setActiveStep('publish')}
                                                 className="py-6 bg-emerald-600 text-zinc-900 dark:text-white rounded-[2rem] font-black uppercase tracking-[0.4em] text-[10px] hover:bg-emerald-500 transition-all shadow-2xl active:scale-95"
                                             >
-                                                Finalize Protocol
+                                                Next: Details
                                             </button>
                                         </div>
                                     </div>
@@ -708,28 +708,28 @@ const OrganizerDashboard = () => {
                                 >
                                     <header>
                                         <h2 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tighter mb-4 leading-none uppercase">publish</h2>
-                                        <p className="text-zinc-500 font-medium text-lg">Configure metadata and technical specifications.</p>
+                                        <p className="text-zinc-500 font-medium text-lg">Add additional details and publishing options.</p>
                                     </header>
 
                                     <div className="space-y-10">
                                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-10 rounded-[3rem] space-y-12 shadow-2xl">
                                             <section>
-                                                <h3 className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.4em] mb-8 border-l-4 border-emerald-500 pl-4">Operation Highlights</h3>
+                                                <h3 className="text-[10px] font-black uppercase text-emerald-500 tracking-[0.4em] mb-8 border-l-4 border-emerald-500 pl-4">Event Highlights</h3>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                     <div className="space-y-3">
-                                                        <label className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] ml-2">Access Control (Age)</label>
+                                                        <label className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] ml-2">Age Restriction</label>
                                                         <select
                                                             className="w-full bg-transparent border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl outline-none font-black uppercase tracking-widest text-[10px] text-zinc-600 dark:text-zinc-300 hover:border-emerald-500 transition-all"
                                                             value={eventData.highlights.ageRestriction}
                                                             onChange={e => setEventData({ ...eventData, highlights: { ...eventData.highlights, ageRestriction: e.target.value } })}
                                                         >
                                                             <option className="bg-transparent">All ages allowed</option>
-                                                            <option className="bg-transparent">18+ Protocol</option>
+                                                            <option className="bg-transparent">18+</option>
                                                             <option className="bg-transparent">21+ Restricted</option>
                                                         </select>
                                                     </div>
                                                     <div className="space-y-3">
-                                                        <label className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] ml-2">Logistic Support (Parking)</label>
+                                                        <label className="text-[9px] font-black uppercase text-zinc-600 tracking-[0.2em] ml-2">Parking</label>
                                                         <select
                                                             className="w-full bg-transparent border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl outline-none font-black uppercase tracking-widest text-[10px] text-zinc-600 dark:text-zinc-300 hover:border-emerald-500 transition-all"
                                                             value={eventData.highlights.parking}
@@ -738,7 +738,7 @@ const OrganizerDashboard = () => {
                                                             <option className="bg-transparent">Free logistics</option>
                                                             <option className="bg-transparent">Premium logistics</option>
                                                             <option className="bg-transparent">Valet Support</option>
-                                                            <option className="bg-transparent">Self-Manage Only</option>
+                                                            <option className="bg-transparent">No Parking</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -746,7 +746,7 @@ const OrganizerDashboard = () => {
 
                                             <section>
                                                 <div className="flex justify-between items-center mb-8">
-                                                    <h3 className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.4em] border-l-4 border-zinc-200 dark:border-zinc-800 pl-4">Knowledge Base (FAQ)</h3>
+                                                    <h3 className="text-[10px] font-black uppercase text-zinc-500 tracking-[0.4em] border-l-4 border-zinc-200 dark:border-zinc-800 pl-4">Frequently Asked Questions</h3>
                                                     <button
                                                         onClick={() => setEventData({
                                                             ...eventData,
@@ -762,7 +762,7 @@ const OrganizerDashboard = () => {
                                                     {eventData.faqs.map((faq, index) => (
                                                         <div key={index} className="bg-transparent p-6 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 relative group/faq hover:border-emerald-500/30 transition-all">
                                                             <input
-                                                                placeholder="Core Question Token..."
+                                                                placeholder="Question..."
                                                                 className="w-full bg-transparent font-black text-zinc-900 dark:text-white mb-3 outline-none uppercase tracking-tight text-sm placeholder:text-zinc-800"
                                                                 value={faq.question}
                                                                 onChange={e => {
@@ -772,7 +772,7 @@ const OrganizerDashboard = () => {
                                                                 }}
                                                             />
                                                             <textarea
-                                                                placeholder="Detailed response payload..."
+                                                                placeholder="Answer..."
                                                                 className="w-full bg-transparent text-xs font-medium text-zinc-500 outline-none placeholder:text-zinc-800 leading-relaxed"
                                                                 rows="3"
                                                                 value={faq.answer}
@@ -797,7 +797,7 @@ const OrganizerDashboard = () => {
                                             </section>
 
                                             <section>
-                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.4em] block mb-6 border-l-4 border-zinc-200 dark:border-zinc-800 pl-4">Master Narrative</label>
+                                                <label className="text-[10px] font-black uppercase text-zinc-600 tracking-[0.4em] block mb-6 border-l-4 border-zinc-200 dark:border-zinc-800 pl-4">Detailed Description</label>
                                                 <textarea
                                                     rows="8"
                                                     className="w-full bg-transparent border border-zinc-200 dark:border-zinc-800 p-8 rounded-[2.5rem] outline-none font-medium text-sm leading-relaxed text-zinc-600 dark:text-zinc-300 focus:border-emerald-500 transition-all placeholder:text-zinc-800"

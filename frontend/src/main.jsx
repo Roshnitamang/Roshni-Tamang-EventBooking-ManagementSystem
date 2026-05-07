@@ -15,9 +15,11 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider>
-        <AppContextProvider>
-          <App />
-        </AppContextProvider>
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <AppContextProvider>
+            <App />
+          </AppContextProvider>
+        </GoogleOAuthProvider>
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>
