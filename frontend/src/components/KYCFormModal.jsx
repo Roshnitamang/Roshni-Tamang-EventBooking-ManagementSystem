@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, CheckCircle, Info, User, ShieldCheck, MapPin, Camera, ChevronRight, Check } from 'lucide-react';
+import { X, Upload, CheckCircle, Info, User, ShieldCheck, MapPin, Camera, ChevronRight, Check, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import { AppContent } from '../context/AppContext';
 import { toast } from 'react-toastify';
@@ -228,8 +228,9 @@ const KYCFormModal = ({ isOpen, onClose }) => {
                                                     ) : (
                                                         <User className="w-12 h-12 text-zinc-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                                                     )}
-                                                    <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                                                        <Camera className="w-6 h-6 text-white" />
+                                                    <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center cursor-pointer backdrop-blur-[2px]">
+                                                        <RefreshCw className="w-6 h-6 text-white mb-2 animate-spin-slow" />
+                                                        <span className="text-[8px] font-black uppercase text-white tracking-widest">Change Photo</span>
                                                         <input type="file" name="profilePhoto" className="hidden" accept="image/*" onChange={handleFileChange} />
                                                     </label>
                                                 </div>
@@ -305,7 +306,7 @@ const SelectField = ({ label, options, ...props }) => (
 const FileUpload = ({ label, name, preview, onChange }) => (
     <div className="space-y-2">
         <label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-1">{label}</label>
-        <div className="relative group overflow-hidden bg-zinc-950 dark:bg-zinc-900 rounded-2xl aspect-video border-2 border-dashed border-zinc-100 dark:border-zinc-800 hover:border-green-500/50 transition-all flex items-center justify-center">
+        <label className="relative group overflow-hidden bg-zinc-950 dark:bg-zinc-900 rounded-2xl aspect-video border-2 border-dashed border-zinc-100 dark:border-zinc-800 hover:border-green-500/50 transition-all flex items-center justify-center cursor-pointer">
             {preview ? (
                 <img src={preview} className="w-full h-full object-cover" alt={label} />
             ) : (
@@ -317,16 +318,19 @@ const FileUpload = ({ label, name, preview, onChange }) => (
             <input
                 type="file"
                 name={name}
-                className="absolute inset-0 opacity-0 cursor-pointer"
+                className="hidden"
                 accept="image/*"
                 onChange={onChange}
             />
             {preview && (
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <p className="text-[10px] text-white font-black uppercase tracking-widest">Change Photo</p>
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center backdrop-blur-[1px]">
+                    <div className="bg-white/20 p-2 rounded-full mb-2">
+                        <RefreshCw className="w-5 h-5 text-white" />
+                    </div>
+                    <p className="text-[10px] text-white font-black uppercase tracking-widest">Change Document</p>
                 </div>
             )}
-        </div>
+        </label>
     </div>
 );
 

@@ -402,7 +402,9 @@ const Login = () => {
                   theme={document.documentElement.classList.contains('dark') ? 'filled_black' : 'outline'}
                   shape="pill"
                   width="350"
-                  use_fedcm_for_prompt={true}
+                  use_fedcm_for_prompt={false}
+                  locale="en"
+                  text={state === 'sign up' ? 'signup_with' : 'signin_with'}
                 />
               </div>
             </div>
