@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
-import { MessageSquare, Github, Twitter, Instagram } from 'lucide-react';
-import ChatWidget from './ChatWidget';
+import React from 'react';
+import { Github, Twitter, Instagram } from 'lucide-react';
+import InquiryCenter from './InquiryCenter';
 
 const Footer = () => {
-    const [isChatOpen, setIsChatOpen] = useState(false);
-
     return (
         <>
             <footer className="bg-zinc-950 border-t border-zinc-900/50 py-24 relative overflow-hidden">
@@ -74,20 +72,8 @@ const Footer = () => {
                 </div>
             </footer>
 
-            {/* AI Chat Widget */}
-            <ChatWidget isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
-
-            {/* Floating Assistance Button */}
-            <button 
-                onClick={() => setIsChatOpen(!isChatOpen)}
-                className="fixed bottom-10 right-10 flex items-center gap-3 px-8 py-4 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 rounded-full border border-zinc-800 shadow-2xl z-50 group hover:-translate-y-1 transition-all duration-300"
-            >
-                <div className="relative">
-                    <MessageSquare className="w-5 h-5 text-emerald-500 group-hover:rotate-12 transition-transform" />
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
-                </div>
-                <span className="text-xs font-black uppercase tracking-widest">Inquiry Center</span>
-            </button>
+            {/* Global Inquiry Center */}
+            <InquiryCenter />
         </>
     );
 };

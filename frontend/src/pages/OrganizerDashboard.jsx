@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { AppContent } from '../context/AppContext'
@@ -30,9 +30,10 @@ const OrganizerDashboard = () => {
     const context = useContext(AppContent);
     const { backendUrl, userData, currency } = context || {};
     const navigate = useNavigate();
+    const location = useLocation();
 
     // Step Management
-    const [activeStep, setActiveStep] = useState('list'); // build, tickets, publish, list, insights
+    const [activeStep, setActiveStep] = useState(location.state?.activeStep || 'list'); // build, tickets, publish, list, insights
 
     // Event Data State
     const [eventData, setEventData] = useState({
@@ -79,6 +80,14 @@ const OrganizerDashboard = () => {
     useEffect(() => {
         fetchData()
     }, [backendUrl])
+
+    useEffect(() => {
+        if (location.state?.activeStep) {
+            setActiveStep(location.state.activeStep);
+            // Clear the state to prevent re-triggering if user refreshes or navigates back
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
 
     const handleSubmitEvent = async () => {
         try {

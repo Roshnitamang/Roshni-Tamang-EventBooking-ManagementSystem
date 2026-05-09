@@ -400,8 +400,7 @@ const SuperAdminDashboard = () => {
                                                 <thead className="bg-transparent/50 text-[10px] uppercase font-black text-zinc-500 tracking-[0.3em]">
                                                     <tr>
                                                         <th className="py-6 px-10">User Info</th>
-                                                        <th className="py-6 px-10 text-center">Current Role</th>
-                                                        <th className="py-6 px-10 text-center">Change Role</th>
+                                                        <th className="py-6 px-10 text-center">Role</th>
                                                         <th className="py-6 px-10 text-right">Actions</th>
                                                     </tr>
                                                 </thead>
@@ -420,16 +419,11 @@ const SuperAdminDashboard = () => {
                                                                 </div>
                                                             </td>
                                                             <td className="py-6 px-10 text-center">
-                                                                <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap 
-                                                                    ${user.role === 'super-admin' ? 'bg-teal-50 text-teal-600 border border-teal-500/20' :
-                                                                        user.role === 'admin' ? 'bg-emerald-50 text-emerald-600 border border-emerald-500/20' :
-                                                                            user.role === 'organizer' ? 'bg-blue-50 text-blue-600 border border-blue-500/20' :
-                                                                                'bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-700'}`}>
-                                                                    {user.role}
-                                                                </span>
-                                                            </td>
-                                                            <td className="py-6 px-10 text-center">
-                                                                {user.role !== 'super-admin' && (
+                                                                {user.role === 'super-admin' ? (
+                                                                    <span className="px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap bg-teal-50 text-teal-600 border border-teal-500/20">
+                                                                        {user.role}
+                                                                    </span>
+                                                                ) : (
                                                                     <select
                                                                         className="bg-transparent border border-zinc-200 dark:border-zinc-800 text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl outline-none focus:border-teal-500 transition-all cursor-pointer"
                                                                         value={user.role}
