@@ -42,11 +42,10 @@ If you don't know something about a specific event, suggest they check the event
 
         // Try multiple model names, starting with the most reliable ones
         const modelsToTry = [
-            "gemini-2.0-flash",
-            "gemini-flash-latest",
             "gemini-1.5-flash",
+            "gemini-2.0-flash-exp",
             "gemini-1.5-pro",
-            "gemini-pro"
+            "gemini-1.0-pro"
         ];
 
         for (const modelName of modelsToTry) {
@@ -147,66 +146,51 @@ Return only a JSON array of event IDs, nothing else. Example: ["id1", "id2", "id
 If no history, suggest the most popular looking ones. 
 If no events match well, suggest the ones with the soonest dates.`;
 
-        const modelsToTry = [
-            "gemini-2.0-flash",
-            "gemini-flash-latest",
-            "gemini-1.5-flash",
-            "gemini-1.5-pro",
-            "gemini-pro"
-        ];
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        
+        const body = JSON.stringify({
+            contents: [{
+                parts: [{ text: prompt }]
+            }],
+            generationConfig: {
+                maxOutputTokens: 200,
+            }
+        });
 
-        let lastError = null;
+        const result = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: body
+        });
 
-        for (const modelName of modelsToTry) {
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-                
-                const body = JSON.stringify({
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }],
-                    generationConfig: {
-                        maxOutputTokens: 200,
-                    }
-                });
+        const data = await result.json();
 
-                const result = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: body
-                });
+        if (!result.ok) {
+            console.error("Gemini API Error Response:", JSON.stringify(data));
+            return res.json({ success: false, message: "Gemini API error" });
+        }
 
-                const data = await result.json();
-
-                if (result.ok && data.candidates && data.candidates[0] && data.candidates[0].content) {
-                    const text = data.candidates[0].content.parts[0].text;
-                    console.log(`Gemini Suggestion Raw Text (${modelName}):`, text);
-                    
-                    // Clean the text to extract JSON array
-                    const jsonMatch = text.match(/\[.*\]/s);
-                    if (jsonMatch) {
-                        try {
-                            const suggestedIds = JSON.parse(jsonMatch[0]);
-                            return res.json({ success: true, suggestedIds });
-                        } catch (parseError) {
-                            console.error(`JSON Parse Error for AI response (${modelName}):`, parseError);
-                        }
-                    }
-                } else if (!result.ok) {
-                    console.error(`Gemini API Error Response (${modelName}):`, JSON.stringify(data));
-                    lastError = data;
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+            const text = data.candidates[0].content.parts[0].text;
+            console.log("Gemini Suggestion Raw Text:", text);
+            
+            // Clean the text to extract JSON array
+            const jsonMatch = text.match(/\[.*\]/s);
+            if (jsonMatch) {
+                try {
+                    const suggestedIds = JSON.parse(jsonMatch[0]);
+                    return res.json({ success: true, suggestedIds });
+                } catch (parseError) {
+                    console.error("JSON Parse Error for AI response:", parseError);
                 }
-            } catch (err) {
-                console.error(`Model ${modelName} failed:`, err.message);
             }
         }
 
-        console.warn("All Gemini models failed for suggestions");
-        res.json({ success: false, message: "Failed to generate AI suggestions", details: lastError });
+        console.warn("Gemini returned unexpected format or no content");
+        res.json({ success: false, message: "Failed to parse AI response" });
 
     } catch (error) {
         console.error("Gemini Suggestion Exception:", error);
         res.json({ success: false, message: error.message });
     }
 }
-

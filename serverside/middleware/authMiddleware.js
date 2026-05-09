@@ -10,11 +10,11 @@ export const verifyToken = async (req, res, next) => {
 
     let token;
 
-    // Support BOTH cookie + header
-    if (req.cookies?.token) {
-        token = req.cookies.token;
-    } else if (req.headers.authorization?.startsWith('Bearer ')) {
+    // Support BOTH header + cookie, prioritizing header for cross-domain stability
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
         token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies && req.cookies.token) {
+        token = req.cookies.token;
     }
 
     if (!token) {
