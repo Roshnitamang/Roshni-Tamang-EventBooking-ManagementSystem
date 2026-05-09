@@ -237,7 +237,10 @@ const Checkout = () => {
 
             const { data } = await axios.post(`${backendUrl}/api/bookings/initiate-esewa?isBypassed=${isBypassed ? 'true' : 'false'}`, formData, {
                 withCredentials: true,
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 
+                    'Content-Type': 'multipart/form-data',
+                    'X-Bypass': isBypassed ? 'true' : 'false'
+                }
             });
 
             if (data.success && data.esewaData) {
