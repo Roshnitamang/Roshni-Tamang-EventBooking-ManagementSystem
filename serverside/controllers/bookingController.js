@@ -57,30 +57,29 @@ export const initiateEsewaPayment = async (req, res) => {
         const secretKey = process.env.ESEWA_SECRET_KEY || '8gBm/:&EnhH.1/q';
 
         // Group Photo handling
-        console.log("Full Request Body:", JSON.stringify(req.body));
+        console.log("--- DEBUG: Booking Initiation ---");
+        console.log("Body:", req.body);
+        console.log("Query:", req.query);
         
-        // Very permissive bypass check (Check body and query)
-        const isBypassedRaw = req.body.isBypassed || req.query.isBypassed;
+        // Comprehensive check for bypass flag in any common format
+        const bypassFlag = req.body.isBypassed || req.query.isBypassed;
+        const isBypassed = bypassFlag === true || 
+                          bypassFlag === 'true' || 
+                          bypassFlag === 1 || 
+                          bypassFlag === '1';
         
-        const isBypassed = isBypassedRaw && (
-            isBypassedRaw === true || 
-            isBypassedRaw === 'true' || 
-            isBypassedRaw === '1' || 
-            isBypassedRaw === 1
-        );
-        
-        console.log("Bypass Status:", isBypassed);
+        console.log("Is Bypassed Detected:", isBypassed);
 
         let groupPhoto = '';
         if (bookingType === 'group') {
             if (req.file) {
                 groupPhoto = `/uploads/${req.file.filename}`;
-                console.log("Group photo received:", groupPhoto);
+                console.log("Photo uploaded:", groupPhoto);
             } else if (isBypassed) {
-                console.log("Bypass enabled, proceeding without photo");
-                groupPhoto = ''; // Proceed empty
+                console.log("Bypass enabled, proceeding without photo.");
+                groupPhoto = ''; 
             } else {
-                console.log("Booking failed: Group photo required and bypass not detected");
+                console.log("Validation Failed: Group booking requires photo or bypass flag.");
                 return res.json({ success: false, message: 'Group photo is required for group bookings.' });
             }
         }

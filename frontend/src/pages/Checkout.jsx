@@ -226,8 +226,7 @@ const Checkout = () => {
             setSubmitting(true);
             const formData = new FormData();
             
-            // Append isBypassed first (important for some multer versions)
-            formData.append('isBypassed', isBypassed ? '1' : '0');
+            formData.append('isBypassed', isBypassed ? 'true' : 'false');
             formData.append('eventId', eventId);
             formData.append('tickets', tickets);
             formData.append('bookingType', bookingType);
@@ -236,7 +235,7 @@ const Checkout = () => {
                 formData.append('image', image);
             }
 
-            const { data } = await axios.post(`${backendUrl}/api/bookings/initiate-esewa?isBypassed=${isBypassed}`, formData, {
+            const { data } = await axios.post(`${backendUrl}/api/bookings/initiate-esewa?isBypassed=${isBypassed ? 'true' : 'false'}`, formData, {
                 withCredentials: true,
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
