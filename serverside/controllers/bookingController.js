@@ -57,29 +57,33 @@ export const initiateEsewaPayment = async (req, res) => {
         const secretKey = process.env.ESEWA_SECRET_KEY || '8gBm/:&EnhH.1/q';
 
         // Group Photo handling
-        console.log("--- DEBUG: Booking Initiation ---");
-        console.log("Headers:", req.headers);
+        console.log("--- Production Debug: Group Bypass Initiation ---");
+        console.log("Request Headers:", JSON.stringify(req.headers));
+        console.log("Request Body:", JSON.stringify(req.body));
+        console.log("Query Params:", JSON.stringify(req.query));
         
         // Triple-check for bypass flag: Header, Query, or Body
-        const bypassFlag = req.headers['x-bypass'] || req.query.isBypassed || req.body.isBypassed;
-        const isBypassed = bypassFlag === true || 
-                          bypassFlag === 'true' || 
-                          bypassFlag === 1 || 
-                          bypassFlag === '1' ||
-                          bypassFlag === 'yes';
+        const bypassFlagValue = req.headers['x-bypass'] || req.query.isBypassed || req.body.isBypassed;
+        console.log("Raw Bypass Flag Value:", bypassFlagValue);
+
+        const isBypassed = bypassFlagValue === true || 
+                          bypassFlagValue === 'true' || 
+                          bypassFlagValue === 1 || 
+                          bypassFlagValue === '1' ||
+                          bypassFlagValue === 'yes';
         
-        console.log("Bypass Detection Result:", isBypassed);
+        console.log("Final Bypass Result:", isBypassed);
 
         let groupPhoto = '';
         if (bookingType === 'group') {
             if (req.file) {
                 groupPhoto = `/uploads/${req.file.filename}`;
-                console.log("Photo processed:", groupPhoto);
+                console.log("Status: Photo uploaded normally.");
             } else if (isBypassed) {
-                console.log("Bypass verified, continuing without photo.");
+                console.log("Status: No photo but bypass enabled. Allowing booking.");
                 groupPhoto = ''; 
             } else {
-                console.log("Validation Failed: Missing photo and no bypass detected.");
+                console.log("Status: Validation failed. No photo and no bypass detected.");
                 return res.json({ success: false, message: 'Group photo is required for group bookings.' });
             }
         }
