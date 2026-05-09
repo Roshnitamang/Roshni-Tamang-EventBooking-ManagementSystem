@@ -87,7 +87,7 @@ const AttendeeDashboard = () => {
     fetchBookings();
   }, [backendUrl, search, category, locationSearch]);
 
-  const upcomingBookings = bookings.filter(b => b.eventId && new Date(b.eventId.date) >= new Date());
+  const upcomingBookings = bookings.filter(b => b.eventId && new Date(b.eventId.date) >= new Date() && b.paymentStatus === 'completed');
 
   return (
     <div className="min-h-screen bg-transparent py-20 px-6 transition-colors duration-300">
@@ -343,7 +343,7 @@ const BookingCard = ({ booking }) => {
             {booking.paymentStatus !== 'completed' && (
                 <div className="absolute inset-0 bg-red-950/60 backdrop-blur-sm flex items-center justify-center p-4">
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-red-400 rotate-[-15deg] border border-red-500/30 px-3 py-1 bg-red-950/80 rounded-lg">
-                        Processing
+                        Pending Payment
                     </span>
                 </div>
             )}
@@ -507,10 +507,14 @@ const BookingCard = ({ booking }) => {
                             <Ticket className="w-12 h-12 text-emerald-500" />
                         </div>
 
-                        <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter text-zinc-900 dark:text-white relative z-10 leading-none">Your Ticket</h2>
+                        <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter text-zinc-900 dark:text-white relative z-10 leading-none">
+                            {booking.paymentStatus === 'completed' ? 'Your Ticket' : 'Booking Status'}
+                        </h2>
                         <div className="flex items-center gap-2 mb-10 relative z-10">
-                           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                           <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.5em]">Your ticket is confirmed</p>
+                           <div className={`w-1.5 h-1.5 rounded-full ${booking.paymentStatus === 'completed' ? 'bg-emerald-500 animate-ping' : 'bg-amber-500 animate-pulse'}`} />
+                           <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.5em]">
+                                {booking.paymentStatus === 'completed' ? 'Your ticket is confirmed' : 'Waiting for payment confirmation'}
+                           </p>
                         </div>
 
                         <div className="w-full text-left bg-transparent p-10 rounded-[3rem] space-y-8 relative z-10 border border-zinc-200 dark:border-zinc-800 shadow-inner">
@@ -542,8 +546,12 @@ const BookingCard = ({ booking }) => {
                         </div>
 
                         <div className="w-full mt-10 space-y-4 relative z-10">
-                          <button onClick={handlePrint} className="w-full bg-emerald-600 text-zinc-900 dark:text-white py-6 rounded-[2.5rem] font-black flex items-center justify-center gap-4 hover:bg-emerald-500 transition-all shadow-2xl active:scale-95 uppercase tracking-[0.3em] text-[10px] hidden-print">
-                             <Download className="w-5 h-5" /> Download Ticket
+                          <button 
+                            onClick={handlePrint} 
+                            disabled={booking.paymentStatus !== 'completed'}
+                            className={`w-full py-6 rounded-[2.5rem] font-black flex items-center justify-center gap-4 transition-all shadow-2xl active:scale-95 uppercase tracking-[0.3em] text-[10px] hidden-print ${booking.paymentStatus === 'completed' ? 'bg-emerald-600 text-zinc-900 dark:text-white hover:bg-emerald-500' : 'bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-50'}`}
+                          >
+                             <Download className="w-5 h-5" /> {booking.paymentStatus === 'completed' ? 'Download Ticket' : 'Payment Required'}
                         </button>
                         </div>
                     </div>

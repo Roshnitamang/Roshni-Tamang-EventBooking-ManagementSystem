@@ -165,8 +165,9 @@ const OrganizerDashboard = () => {
             const { data } = await axios.get(`${backendUrl}/api/organizer/event-bookings/${id}`, { withCredentials: true })
             if (data.success) {
                 setEventBookings(data.bookings)
-                const totalRevenue = data.bookings.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0)
-                const ticketsSold = data.bookings.reduce((acc, curr) => acc + (curr.tickets || 0), 0)
+                const paidBookings = data.bookings.filter(b => b.paymentStatus === 'completed')
+                const totalRevenue = paidBookings.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0)
+                const ticketsSold = paidBookings.reduce((acc, curr) => acc + (curr.tickets || 0), 0)
                 setViewingEventStats({
                     revenue: totalRevenue,
                     ticketsSold: ticketsSold,
@@ -390,13 +391,14 @@ const OrganizerDashboard = () => {
                                                         <th className="py-6 px-10">User Name</th>
                                                         <th className="py-6 px-10 text-center">Tickets Booked</th>
                                                         <th className="py-6 px-10 text-center">Amount Paid</th>
+                                                        <th className="py-6 px-10 text-center">Status</th>
                                                         <th className="py-6 px-10 text-right">Booking Date</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-800/50">
                                                     {eventBookings.length === 0 ? (
                                                         <tr>
-                                                            <td colSpan="4" className="py-24 text-center text-zinc-700 font-black uppercase tracking-[0.4em] text-sm">No Booking Data Available</td>
+                                                            <td colSpan="5" className="py-24 text-center text-zinc-700 font-black uppercase tracking-[0.4em] text-sm">No Booking Data Available</td>
                                                         </tr>
                                                     ) : (
                                                         eventBookings.map(booking => (
@@ -407,6 +409,11 @@ const OrganizerDashboard = () => {
                                                                 </td>
                                                                 <td className="py-6 px-10 text-center font-black text-zinc-500 dark:text-zinc-400">{booking.tickets} Units</td>
                                                                 <td className="py-6 px-10 text-center font-black text-emerald-500">{currency}{booking.totalAmount}</td>
+                                                                <td className="py-6 px-10 text-center">
+                                                                    <span className={`text-[9px] font-black uppercase px-3 py-1 rounded-full ${booking.paymentStatus === 'completed' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>
+                                                                        {booking.paymentStatus === 'completed' ? 'Paid' : 'Pending'}
+                                                                    </span>
+                                                                </td>
                                                                 <td className="py-6 px-10 text-right text-zinc-700 font-black text-[10px] uppercase tracking-widest">{new Date(booking.createdAt).toLocaleDateString()}</td>
                                                             </tr>
                                                         ))

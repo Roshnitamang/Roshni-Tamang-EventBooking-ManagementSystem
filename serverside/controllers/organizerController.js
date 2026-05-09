@@ -10,8 +10,11 @@ export const getDashboardStats = async (req, res) => {
         const events = await Event.find({ organizer: organizerId });
         const eventIds = events.map(event => event._id);
 
-        // Get bookings for these events
-        const bookings = await Booking.find({ eventId: { $in: eventIds } });
+        // Get bookings for these events (Only completed payments)
+        const bookings = await Booking.find({ 
+            eventId: { $in: eventIds },
+            paymentStatus: 'completed'
+        });
 
         const totalEvents = events.length;
         const totalTicketsSold = bookings.reduce((sum, booking) => sum + booking.tickets, 0);
