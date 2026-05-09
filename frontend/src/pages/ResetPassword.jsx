@@ -64,8 +64,26 @@ const ResetPassword = () => {
   const onSubmitOTP = async (e) => {
     e.preventDefault()
     const enteredOtp = inputRefs.current.map((i) => i.value).join('')
-    setOtp(enteredOtp)
-    setIsOtpSubmitted(true)
+    
+    try {
+      setLoading(true)
+      const { data } = await axios.post(
+        backendUrl + '/api/auth/verify-reset-otp',
+        { email, otp: enteredOtp }
+      )
+      
+      if (data.success) {
+        setOtp(enteredOtp)
+        setIsOtpSubmitted(true)
+        toast.success(data.message)
+      } else {
+        toast.error(data.message)
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const onSubmitNewPassword = async (e) => {
@@ -188,10 +206,17 @@ const ResetPassword = () => {
 
               <button
                 type="submit"
+                disabled={loading}
                 className="btn-primary !w-full !py-4 flex items-center justify-center gap-3 transition-all mt-6"
               >
-                <span>Verify Access</span>
-                <ArrowRight className="w-4 h-4" />
+                {loading ? (
+                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <span>Verify Access</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
           )}

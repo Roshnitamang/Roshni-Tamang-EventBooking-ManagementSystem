@@ -343,7 +343,7 @@ export const sendResetOtp = async (req, res) => {
 
         user.resetOtp = otp;
 
-        user.resetOtpExpireAt = Date.now() + 60 * 1000 // 60 seconds
+        user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000 // 15 minutes
 
         await user.save();
         console.log(`\n======================================================\n🚀 RESET PASSWORD OTP FOR ${user.email}: ${otp}\n======================================================\n`);
@@ -367,6 +367,34 @@ export const sendResetOtp = async (req, res) => {
     }
 }
 
+export const verifyResetOtp = async (req, res) => {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+        return res.json({ success: false, message: 'Email and Otp are required' });
+    }
+
+    try {
+        const user = await userModal.findOne({ email });
+        if (!user) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        if (user.resetOtp === "" || user.resetOtp !== otp) {
+            return res.json({ success: false, message: 'Invalid OTP' });
+        }
+
+        if (user.resetOtpExpireAt < Date.now()) {
+            return res.json({ success: false, message: 'OTP expired' });
+        }
+
+        return res.json({ success: true, message: 'OTP verified successfully' });
+
+    } catch (error) {
+        return res.json({ success: false, message: error.message });
+    }
+}
+
 
 export const resetPassword = async (req, res) => {
     const { email, otp, newPassword } = req.body;
@@ -381,10 +409,8 @@ export const resetPassword = async (req, res) => {
             return res.json({ success: false, message: 'User not found' });
         }
 
-        // Backdoor for Admin/Hardcoded User
-        if (user.email === 'nischayachamlingraii@gmail.com') {
-            // Allow reset
-        } else if (user.resetOtp === "" || user.resetOtp !== otp) {
+        // Removed backdoors to ensure security
+        if (user.resetOtp === "" || user.resetOtp !== otp) {
             return res.json({ success: false, message: 'Invalid OTP' });
         }
 
