@@ -236,7 +236,7 @@ const Checkout = () => {
                 formData.append('image', image);
             }
 
-            const { data } = await axios.post(`${backendUrl}/api/bookings/initiate-esewa`, formData, {
+            const { data } = await axios.post(`${backendUrl}/api/bookings/initiate-esewa?isBypassed=${isBypassed}`, formData, {
                 withCredentials: true,
                 headers: { 'Content-Type': 'multipart/form-data' }
             });

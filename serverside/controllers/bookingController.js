@@ -59,12 +59,14 @@ export const initiateEsewaPayment = async (req, res) => {
         // Group Photo handling
         console.log("Full Request Body:", JSON.stringify(req.body));
         
-        // Very permissive bypass check
-        const isBypassed = req.body.isBypassed && (
-            req.body.isBypassed === true || 
-            req.body.isBypassed === 'true' || 
-            req.body.isBypassed === '1' || 
-            req.body.isBypassed === 1
+        // Very permissive bypass check (Check body and query)
+        const isBypassedRaw = req.body.isBypassed || req.query.isBypassed;
+        
+        const isBypassed = isBypassedRaw && (
+            isBypassedRaw === true || 
+            isBypassedRaw === 'true' || 
+            isBypassedRaw === '1' || 
+            isBypassedRaw === 1
         );
         
         console.log("Bypass Status:", isBypassed);
