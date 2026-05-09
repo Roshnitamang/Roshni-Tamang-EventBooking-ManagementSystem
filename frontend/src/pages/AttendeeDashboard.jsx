@@ -14,6 +14,8 @@ const AttendeeDashboard = () => {
   const [category, setCategory] = useState('');
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('browse'); // 'browse', 'bookings', or 'community'
+  const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const { backendUrl, userData, currency, locationSearch, setLocationSearch } = useContext(AppContent);
   const categoryRef = useRef(null);
   
@@ -63,6 +65,28 @@ const AttendeeDashboard = () => {
     }
   };
 
+  const fetchAiSuggestions = async () => {
+    if (events.length === 0) return;
+    try {
+      setIsAiLoading(true);
+      const { data } = await axios.post(`${backendUrl}/api/ai/suggestions`, {
+        bookings,
+        events: events.slice(0, 20) // Only send a subset to avoid payload size issues
+      }, { withCredentials: true });
+      
+      if (data.success && data.suggestedIds) {
+        const suggested = events.filter(e => 
+          data.suggestedIds.some(id => id.toString() === e._id.toString())
+        );
+        setAiSuggestions(suggested);
+      }
+    } catch (error) {
+      console.error("Error fetching AI suggestions:", error.message);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (categoryRef.current && !categoryRef.current.contains(event.target)) {
@@ -86,6 +110,12 @@ const AttendeeDashboard = () => {
     fetchEvents();
     fetchBookings();
   }, [backendUrl, search, category, locationSearch]);
+
+  useEffect(() => {
+    if (events.length > 0 && bookings.length >= 0 && aiSuggestions.length === 0) {
+      fetchAiSuggestions();
+    }
+  }, [events, bookings]);
 
   const upcomingBookings = bookings.filter(b => b.eventId && new Date(b.eventId.date) >= new Date() && b.paymentStatus === 'completed');
 
@@ -207,6 +237,65 @@ const AttendeeDashboard = () => {
                   </AnimatePresence>
                 </div>
               </div>
+
+              {/* AI Suggestions Section */}
+              {(isAiLoading || aiSuggestions.length > 0) && (
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="bg-emerald-500/5 border border-emerald-500/20 rounded-[3rem] p-10 relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[80px] -mr-32 -mt-32"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="p-3 bg-emerald-500 rounded-2xl shadow-lg shadow-emerald-900/20 rotate-3">
+                        <Sparkles className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase leading-none">Personalized for You</h2>
+                        <p className="text-[10px] font-black text-emerald-500/60 uppercase tracking-[0.3em] mt-2">AI-Powered Recommendations</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {isAiLoading ? (
+                        [1, 2, 3].map(i => (
+                          <div key={`shimmer-${i}`} className="flex items-center gap-4 bg-white/50 dark:bg-zinc-900/30 p-4 rounded-[2rem] animate-pulse">
+                            <div className="w-20 h-20 bg-zinc-200 dark:bg-zinc-800 rounded-2xl"></div>
+                            <div className="flex-1 space-y-2">
+                              <div className="h-2 w-12 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                              <div className="h-4 w-full bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                              <div className="h-2 w-16 bg-zinc-200 dark:bg-zinc-800 rounded"></div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        aiSuggestions.map((event) => (
+                          <Link
+                            key={`ai-${event._id}`}
+                            to={`/event/${event._id}`}
+                            className="flex items-center gap-4 bg-white dark:bg-zinc-900/50 p-4 rounded-[2rem] border border-zinc-200 dark:border-zinc-800/50 hover:border-emerald-500/50 transition-all group"
+                          >
+                            <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0">
+                              <img 
+                                src={event.image && event.image.startsWith('/uploads') ? backendUrl + event.image : event.image} 
+                                alt="" 
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-1">{event.category}</p>
+                              <h4 className="font-black text-sm text-zinc-900 dark:text-white truncate uppercase">{event.title}</h4>
+                              <p className="text-[10px] font-bold text-zinc-500 mt-1">{new Date(event.date).toLocaleDateString()}</p>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:text-emerald-500 transition-colors mr-2" />
+                          </Link>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {events.length === 0 ? (

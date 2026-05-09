@@ -16,7 +16,7 @@ export const getSystemStats = async (req, res) => {
 
         const bookings = await Booking.find({ paymentStatus: 'completed' });
         const totalRevenue = bookings.reduce(
-            (sum, booking) => sum + booking.totalAmount,
+            (sum, booking) => sum + (booking.totalAmount || 0),
             0
         );
 
@@ -54,26 +54,27 @@ export const getSystemStats = async (req, res) => {
         }));
 
         // 3. Top Events by Revenue
-        const eventRevenueMap = {};
-        bookings.forEach(booking => {
-            if (booking.eventId) {
-                const eId = booking.eventId.toString();
-                eventRevenueMap[eId] = (eventRevenueMap[eId] || 0) + booking.totalAmount;
+        const topEventsData = await Booking.aggregate([
+            { $match: { paymentStatus: 'completed' } },
+            { $group: { _id: '$eventId', revenue: { $sum: '$totalAmount' } } },
+            { $sort: { revenue: -1 } },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: 'events',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'eventInfo'
+                }
+            },
+            { $unwind: { path: '$eventInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    name: { $ifNull: ['$eventInfo.title', 'Deleted Event'] },
+                    revenue: 1
+                }
             }
-        });
-
-        const topEventsData = await Promise.all(
-            Object.keys(eventRevenueMap)
-                .sort((a, b) => eventRevenueMap[b] - eventRevenueMap[a])
-                .slice(0, 5)
-                .map(async (id) => {
-                    const event = await Event.findById(id).select('title');
-                    return {
-                        name: event ? event.title : 'Deleted Event',
-                        revenue: eventRevenueMap[id]
-                    };
-                })
-        );
+        ]);
 
         res.json({
             success: true,
@@ -204,7 +205,10 @@ export const getEventBookingsAdmin = async (req, res) => {
     try {
         const { eventId } = req.params;
         const bookings = await Booking.find({ 
-            eventId,
+            $or: [
+                { eventId: eventId },
+                { eventId: eventId.toString() }
+            ],
             paymentStatus: 'completed'
         })
             .populate('userId', 'name email')

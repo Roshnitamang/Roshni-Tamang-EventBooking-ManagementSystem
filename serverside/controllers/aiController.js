@@ -42,10 +42,11 @@ If you don't know something about a specific event, suggest they check the event
 
         // Try multiple model names, starting with the most reliable ones
         const modelsToTry = [
+            "gemini-2.0-flash",
+            "gemini-flash-latest",
             "gemini-1.5-flash",
-            "gemini-2.0-flash-exp",
             "gemini-1.5-pro",
-            "gemini-1.0-pro"
+            "gemini-pro"
         ];
 
         for (const modelName of modelsToTry) {
@@ -112,3 +113,100 @@ If you don't know something about a specific event, suggest they check the event
         });
     }
 }
+
+export const getAISuggestions = async (req, res) => {
+    const { bookings, events } = req.body;
+
+    if (!bookings || !events) {
+        return res.json({ success: false, message: "Missing data" });
+    }
+
+    try {
+        const rawApiKey = process.env.GEMINI_API_KEY;
+        const apiKey = rawApiKey ? rawApiKey.trim() : null;
+
+        if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
+            return res.json({ 
+                success: false, 
+                message: "API Key not configured"
+            });
+        }
+
+        // Build the prompt
+        const historyText = bookings.length > 0 
+            ? bookings.map(b => `${b.eventId?.title} (${b.eventId?.category})`).join(', ')
+            : "No past bookings yet.";
+            
+        const availableEventsText = events.map(e => `ID: ${e._id}, Title: ${e.title}, Category: ${e.category}, Date: ${e.date}`).join(' | ');
+
+        const prompt = `User's past booking history: ${historyText}.
+Available upcoming events: ${availableEventsText}.
+
+Based on their history, suggest the top 3 events they might like from the available upcoming events. 
+Return only a JSON array of event IDs, nothing else. Example: ["id1", "id2", "id3"]. 
+If no history, suggest the most popular looking ones. 
+If no events match well, suggest the ones with the soonest dates.`;
+
+        const modelsToTry = [
+            "gemini-2.0-flash",
+            "gemini-flash-latest",
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
+            "gemini-pro"
+        ];
+
+        let lastError = null;
+
+        for (const modelName of modelsToTry) {
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+                
+                const body = JSON.stringify({
+                    contents: [{
+                        parts: [{ text: prompt }]
+                    }],
+                    generationConfig: {
+                        maxOutputTokens: 200,
+                    }
+                });
+
+                const result = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body
+                });
+
+                const data = await result.json();
+
+                if (result.ok && data.candidates && data.candidates[0] && data.candidates[0].content) {
+                    const text = data.candidates[0].content.parts[0].text;
+                    console.log(`Gemini Suggestion Raw Text (${modelName}):`, text);
+                    
+                    // Clean the text to extract JSON array
+                    const jsonMatch = text.match(/\[.*\]/s);
+                    if (jsonMatch) {
+                        try {
+                            const suggestedIds = JSON.parse(jsonMatch[0]);
+                            return res.json({ success: true, suggestedIds });
+                        } catch (parseError) {
+                            console.error(`JSON Parse Error for AI response (${modelName}):`, parseError);
+                        }
+                    }
+                } else if (!result.ok) {
+                    console.error(`Gemini API Error Response (${modelName}):`, JSON.stringify(data));
+                    lastError = data;
+                }
+            } catch (err) {
+                console.error(`Model ${modelName} failed:`, err.message);
+            }
+        }
+
+        console.warn("All Gemini models failed for suggestions");
+        res.json({ success: false, message: "Failed to generate AI suggestions", details: lastError });
+
+    } catch (error) {
+        console.error("Gemini Suggestion Exception:", error);
+        res.json({ success: false, message: error.message });
+    }
+}
+

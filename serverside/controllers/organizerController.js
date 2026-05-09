@@ -10,9 +10,10 @@ export const getDashboardStats = async (req, res) => {
         const events = await Event.find({ organizer: organizerId });
         const eventIds = events.map(event => event._id);
 
-        // Get bookings for these events (Only completed payments)
+        // Get bookings for these events (Only completed payments, matching both ObjectId and String formats)
+        const stringEventIds = eventIds.map(id => id.toString());
         const bookings = await Booking.find({ 
-            eventId: { $in: eventIds },
+            eventId: { $in: [...eventIds, ...stringEventIds] },
             paymentStatus: 'completed'
         });
 
@@ -38,7 +39,10 @@ export const getEventBookings = async (req, res) => {
     try {
         const { eventId } = req.params;
         const bookings = await Booking.find({ 
-            eventId,
+            $or: [
+                { eventId: eventId },
+                { eventId: eventId.toString() }
+            ],
             paymentStatus: 'completed'
         })
             .populate('userId', 'name email')

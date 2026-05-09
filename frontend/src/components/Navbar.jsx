@@ -51,11 +51,11 @@ const Navbar = () => {
                 setIsLoggedin(false)
                 setUserData(null)
                 localStorage.removeItem('token')
-                navigate('/login', { state: { welcomeMessage: "Logged out successfully", mode: 'login' } })
+                navigate('/', { state: { welcomeMessage: "Logged out successfully" } })
             }
         } catch (error) {
             console.error(error)
-            navigate('/login', { state: { welcomeMessage: "Logged out", mode: 'login' } })
+            navigate('/')
         }
     }
 

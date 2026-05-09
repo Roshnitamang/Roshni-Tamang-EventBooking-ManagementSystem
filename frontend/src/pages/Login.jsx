@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useContext, useState, useEffect, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { AppContent } from '../context/AppContext'
 import axios from 'axios'
@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Lock, User, ArrowRight, Sparkles, Eye, EyeOff, Check, ShieldCheck, Info } from 'lucide-react'
 import { GoogleLogin } from '@react-oauth/google'
+import { memo } from 'react'
 
 
 const Login = () => {
@@ -160,6 +161,19 @@ const Login = () => {
     setModalMessage("Google Authentication Failed. Please ensure your browser allows pop-ups and you have a stable connection.")
     setShowModal(true)
   }
+
+  const GoogleLoginButton = useMemo(() => (
+    <GoogleLogin
+      onSuccess={onGoogleSuccess}
+      onError={onGoogleError}
+      theme={document.documentElement.classList.contains('dark') ? 'filled_black' : 'outline'}
+      shape="pill"
+      width="350"
+      use_fedcm_for_prompt={false}
+      locale="en"
+      text={state === 'sign up' ? 'signup_with' : 'signin_with'}
+    />
+  ), [state]); // Only re-render when state changes (login vs signup text)
 
 
   const handleCloseModal = () => {
@@ -401,16 +415,7 @@ const Login = () => {
               </div>
 
               <div className="flex justify-center transition-all hover:scale-[1.02]">
-                <GoogleLogin
-                  onSuccess={onGoogleSuccess}
-                  onError={onGoogleError}
-                  theme={document.documentElement.classList.contains('dark') ? 'filled_black' : 'outline'}
-                  shape="pill"
-                  width="350"
-                  use_fedcm_for_prompt={false}
-                  locale="en"
-                  text={state === 'sign up' ? 'signup_with' : 'signin_with'}
-                />
+                {GoogleLoginButton}
               </div>
             </div>
 

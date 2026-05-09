@@ -127,7 +127,7 @@ const InquiryCenter = () => {
             </motion.div>
 
             {/* Global CSS for spacing variables */}
-            <style jsx global>{`
+            <style dangerouslySetInnerHTML={{ __html: `
                 :root {
                     --floating-bottom: 24px;
                     --floating-right: 24px;
@@ -144,7 +144,7 @@ const InquiryCenter = () => {
                         --floating-right: 16px;
                     }
                 }
-            `}</style>
+            ` }} />
         </>
     );
 };
