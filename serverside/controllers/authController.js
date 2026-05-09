@@ -75,11 +75,21 @@ export const register = async (req, res) => {
 
         // Send Verification Email
         const verificationUrl = `${process.env.CLIENT_URL}/email-verify?token=${verificationToken}&userId=${user._id}&email=${user.email}`;
-        await sendEmail({
+        const emailResult = await sendEmail({
             to: user.email,
             subject: 'Verify your Account',
             html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", user.email).replace("{{otp}}", verificationToken)
         });
+
+        if (!emailResult.success) {
+            console.error("Failed to send registration email:", emailResult.error);
+            // We still return success because user is created, but warn them
+            return res.json({ 
+                success: true, 
+                message: "Account created, but we couldn't send the verification email. Please try resending it from the login page.",
+                tokenStoredLocally: true // Hint to frontend if needed
+            });
+        }
 
         return res.json({ success: true, message: "Registration successful. Please check your email for verification code." });
 
@@ -204,12 +214,15 @@ export const resendVerificationEmail = async (req, res) => {
         console.log("URL:", verificationUrl);
         console.log("To:", user.email);
 
-        await sendEmail({
+        const emailResult = await sendEmail({
             to: user.email,
             subject: 'Verify your Account',
             html: EMAIL_VERIFY_TEMPLATE.replace("{{url}}", verificationUrl).replace("{{email}}", user.email).replace("{{otp}}", verificationToken)
         });
-        console.log("----------------------------------------------------------------");
+
+        if (!emailResult.success) {
+            return res.json({ success: false, message: "Failed to send verification email: " + emailResult.error });
+        }
 
         res.json({ success: true, message: 'Verification email resent.' });
 
@@ -336,11 +349,15 @@ export const sendResetOtp = async (req, res) => {
         console.log(`\n======================================================\n🚀 RESET PASSWORD OTP FOR ${user.email}: ${otp}\n======================================================\n`);
 
         console.log("Attempting to send Reset OTP to:", user.email);
-        await sendEmail({
+        const emailResult = await sendEmail({
             to: user.email,
-            subject: 'Password reset OPT',
+            subject: 'Password reset OTP',
             html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace("{{email}}", user.email)
         });
+
+        if (!emailResult.success) {
+            return res.json({ success: false, message: "Failed to send reset code: " + emailResult.error });
+        }
 
         return res.json({ success: true, message: 'OTP has been sent to your mail' });
 
