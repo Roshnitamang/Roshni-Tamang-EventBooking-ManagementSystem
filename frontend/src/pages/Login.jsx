@@ -94,6 +94,9 @@ const Login = () => {
         } else {
           setUserData(data.userData)
           setIsLoggedin(true)
+          if (data.token) {
+            localStorage.setItem('token', data.token)
+          }
 
           // Determine redirect path
           let path = '/dashboard'
@@ -130,6 +133,9 @@ const Login = () => {
       if (data.success) {
         setUserData(data.userData)
         setIsLoggedin(true)
+        if (data.token) {
+          localStorage.setItem('token', data.token)
+        }
 
         let path = '/dashboard'
         if (data.userData?.role === 'super-admin') path = '/super-admin-dashboard'
@@ -165,7 +171,6 @@ const Login = () => {
   }
 
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}>
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 p-4 sm:p-6 md:p-8 transition-colors duration-500 relative overflow-hidden">
       
       {/* Dynamic Background Effects */}
@@ -463,7 +468,6 @@ const Login = () => {
         )}
       </AnimatePresence>
       </div>
-    </GoogleOAuthProvider>
   )
 }
 

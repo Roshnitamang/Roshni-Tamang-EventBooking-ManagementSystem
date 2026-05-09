@@ -49,6 +49,7 @@ const Navbar = () => {
       if (data.success) {
         setIsLoggedin(false)
         setUserData(null)
+        localStorage.removeItem('token')
         navigate('/login', { state: { welcomeMessage: "Logged out successfully", mode: 'login' } })
       }
     } catch (error) {
