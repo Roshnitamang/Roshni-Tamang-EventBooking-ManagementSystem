@@ -5,7 +5,7 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Lock, User, ArrowRight, Sparkles, Eye, EyeOff, Check, ShieldCheck, Info } from 'lucide-react'
-import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
+import { GoogleLogin } from '@react-oauth/google'
 
 
 const Login = () => {

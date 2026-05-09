@@ -5,7 +5,8 @@ import { toast } from "react-toastify";
 export const AppContent = createContext();
 
 export const AppContextProvider = (props) => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const rawBackendUrl = import.meta.env.VITE_BACKEND_URL;
+    const backendUrl = rawBackendUrl ? rawBackendUrl.replace(/\/$/, '') : '';
     const [isLoggedin, setIsLoggedin] = useState(false);
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
