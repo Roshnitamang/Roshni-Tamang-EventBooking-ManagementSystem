@@ -170,9 +170,10 @@ const SuperAdminDashboard = () => {
             setSelectedEventId(id);
             const { data } = await axios.get(`${backendUrl}/api/admin/event-bookings/${id}`, { withCredentials: true });
             if (data.success) {
-                setEventBookings(data.bookings);
-                const totalRevenue = data.bookings.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
-                const ticketsSold = data.bookings.reduce((acc, curr) => acc + (curr.tickets || 0), 0);
+                const paidBookings = data.bookings.filter(b => b.paymentStatus === 'completed');
+                setEventBookings(paidBookings);
+                const totalRevenue = paidBookings.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
+                const ticketsSold = paidBookings.reduce((acc, curr) => acc + (curr.tickets || 0), 0);
                 setViewingEventStats({ revenue: totalRevenue, ticketsSold: ticketsSold });
                 setActiveStep('insights');
             }
@@ -595,24 +596,24 @@ const SuperAdminDashboard = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                         <div className="bg-white dark:bg-zinc-900 p-10 rounded-[3rem] border border-zinc-200 dark:border-zinc-800 relative group overflow-hidden">
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[60px] -mr-16 -mt-16"></div>
-                                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] mb-4">Gross Yield</p>
+                                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] mb-4">Total Revenue</p>
                                             <h3 className="text-5xl font-black text-emerald-500 tracking-tighter">{currency}{viewingEventStats?.revenue || 0}</h3>
                                         </div>
                                         <div className="bg-white dark:bg-zinc-900 p-10 rounded-[3rem] border border-zinc-200 dark:border-zinc-800 relative group overflow-hidden">
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 blur-[60px] -mr-16 -mt-16"></div>
-                                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] mb-4">Allocation Volume</p>
+                                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] mb-4">Tickets Sold</p>
                                             <h3 className="text-5xl font-black text-teal-500 tracking-tighter">{viewingEventStats?.ticketsSold || 0}</h3>
                                         </div>
                                         <div className="bg-white dark:bg-zinc-900 p-10 rounded-[3rem] border border-zinc-200 dark:border-zinc-800 relative group overflow-hidden">
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[60px] -mr-16 -mt-16"></div>
-                                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] mb-4">Principal Identity</p>
+                                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] mb-4">Event Organizer</p>
                                             <h3 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">{events.find(e => e._id === selectedEventId)?.organizer?.name}</h3>
                                         </div>
                                     </div>
 
                                     <div className="bg-white dark:bg-zinc-900 rounded-[3rem] border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-2xl">
                                         <div className="p-10 border-b border-zinc-200 dark:border-zinc-800 bg-transparent/20">
-                                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter">Booking List</h3>
+                                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter">Booking History</h3>
                                         </div>
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left">

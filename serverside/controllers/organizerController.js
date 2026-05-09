@@ -37,7 +37,10 @@ export const getDashboardStats = async (req, res) => {
 export const getEventBookings = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const bookings = await Booking.find({ eventId })
+        const bookings = await Booking.find({ 
+            eventId,
+            paymentStatus: 'completed'
+        })
             .populate('userId', 'name email')
             .sort({ createdAt: -1 });
 

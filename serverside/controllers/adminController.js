@@ -12,9 +12,9 @@ export const getSystemStats = async (req, res) => {
     try {
         const totalUsers = await User.countDocuments();
         const totalEvents = await Event.countDocuments();
-        const totalBookings = await Booking.countDocuments();
+        const totalBookings = await Booking.countDocuments({ paymentStatus: 'completed' });
 
-        const bookings = await Booking.find();
+        const bookings = await Booking.find({ paymentStatus: 'completed' });
         const totalRevenue = bookings.reduce(
             (sum, booking) => sum + booking.totalAmount,
             0
@@ -38,7 +38,8 @@ export const getSystemStats = async (req, res) => {
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
         const recentBookings = await Booking.find({
-            createdAt: { $gte: thirtyDaysAgo }
+            createdAt: { $gte: thirtyDaysAgo },
+            paymentStatus: 'completed'
         }).sort({ createdAt: 1 });
 
         const trendMap = {};
@@ -202,7 +203,10 @@ export const deleteEventAdmin = async (req, res) => {
 export const getEventBookingsAdmin = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const bookings = await Booking.find({ eventId })
+        const bookings = await Booking.find({ 
+            eventId,
+            paymentStatus: 'completed'
+        })
             .populate('userId', 'name email')
             .sort({ createdAt: -1 });
 

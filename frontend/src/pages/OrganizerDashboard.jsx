@@ -396,12 +396,12 @@ const OrganizerDashboard = () => {
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-800/50">
-                                                    {eventBookings.length === 0 ? (
+                                                    {eventBookings.filter(b => b.paymentStatus === 'completed').length === 0 ? (
                                                         <tr>
-                                                            <td colSpan="5" className="py-24 text-center text-zinc-700 font-black uppercase tracking-[0.4em] text-sm">No Booking Data Available</td>
+                                                            <td colSpan="5" className="py-24 text-center text-zinc-700 font-black uppercase tracking-[0.4em] text-sm">No Paid Bookings Available</td>
                                                         </tr>
                                                     ) : (
-                                                        eventBookings.map(booking => (
+                                                        eventBookings.filter(b => b.paymentStatus === 'completed').map(booking => (
                                                             <tr key={booking._id} className="hover:bg-transparent/30 transition-colors group">
                                                                 <td className="py-6 px-10">
                                                                     <p className="font-black text-zinc-900 dark:text-white group-hover:text-emerald-400 Transition-colors uppercase tracking-tight">{booking.userId?.name || 'Anonymous User'}</p>
