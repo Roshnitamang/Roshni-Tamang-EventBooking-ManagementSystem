@@ -57,12 +57,26 @@ export const initiateEsewaPayment = async (req, res) => {
         const secretKey = process.env.ESEWA_SECRET_KEY || '8gBm/:&EnhH.1/q';
 
         // Group Photo handling
-        const isBypassed = req.body.isBypassed === 'true' || req.body.isBypassed === true;
+        console.log("--- Booking Initiation Debug ---");
+        console.log("User ID:", userId);
+        console.log("Booking Type:", bookingType);
+        console.log("Is Bypassed (Raw):", req.body.isBypassed);
+        console.log("Is Bypassed (Type):", typeof req.body.isBypassed);
+        
+        const isBypassed = req.body.isBypassed === 'true' || 
+                          req.body.isBypassed === true || 
+                          req.body.isBypassed === 1 || 
+                          req.body.isBypassed === '1' ||
+                          String(req.body.isBypassed).toLowerCase() === 'true';
+        
+        console.log("Is Bypassed (Parsed):", isBypassed);
+
         let groupPhoto = '';
         if (bookingType === 'group') {
             if (req.file) {
                 groupPhoto = `/uploads/${req.file.filename}`;
             } else if (!isBypassed) {
+                console.log("Blocking booking: No photo and not bypassed");
                 return res.json({ success: false, message: 'Group photo is required for group bookings.' });
             }
         }

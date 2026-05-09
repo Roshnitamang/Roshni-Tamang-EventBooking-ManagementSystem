@@ -228,7 +228,7 @@ const Checkout = () => {
             formData.append('eventId', eventId);
             formData.append('tickets', tickets);
             formData.append('bookingType', bookingType);
-            formData.append('isBypassed', isBypassed);
+            formData.append('isBypassed', String(isBypassed));
             if (image) formData.append('image', image);
 
             const { data } = await axios.post(`${backendUrl}/api/bookings/initiate-esewa`, formData, {
@@ -480,7 +480,7 @@ const Checkout = () => {
                                     <button
                                         onClick={() => (captured || isBypassed || (bookingType === 'group' && preview)) && setStep(3)}
                                         disabled={!isBypassed && !preview && (bookingType === 'group' || (bookingType === 'single' && !captured))}
-                                        className="flex-[2] py-5 rounded-[2rem] bg-emerald-600 text-zinc-900 dark:text-white font-black uppercase tracking- [0.4em] text-[10px] shadow-2xl shadow-emerald-900/40 disabled:opacity-20 transition-all active:scale-[0.98]"
+                                        className="flex-[2] py-5 rounded-[2rem] bg-emerald-600 text-zinc-900 dark:text-white font-black uppercase tracking-[0.4em] text-[10px] shadow-2xl shadow-emerald-900/40 disabled:opacity-20 transition-all active:scale-[0.98]"
                                     >
                                         Seal Identity
                                     </button>
