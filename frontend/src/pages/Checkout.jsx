@@ -23,6 +23,7 @@ const Checkout = () => {
     const [tickets, setTickets] = useState(1);
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState(null);
+    const [isBypassed, setIsBypassed] = useState(false);
 
     // AI/Webcam Diagnostics
     const [detectionStatus, setDetectionStatus] = useState("Initializing sensors...");
@@ -227,6 +228,7 @@ const Checkout = () => {
             formData.append('eventId', eventId);
             formData.append('tickets', tickets);
             formData.append('bookingType', bookingType);
+            formData.append('isBypassed', isBypassed);
             if (image) formData.append('image', image);
 
             const { data } = await axios.post(`${backendUrl}/api/bookings/initiate-esewa`, formData, {
@@ -405,26 +407,43 @@ const Checkout = () => {
                                             )}
                                         </div>
                                     ) : (
-                                        <div onClick={() => document.getElementById('group-img').click()} className="aspect-[4/3] rounded-[3rem] border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center gap-6 cursor-pointer hover:border-emerald-500/50 transition-all bg-transparent/50 overflow-hidden relative group/upload">
-                                            {preview ? (
-                                                <>
-                                                    <img src={preview} className="w-full h-full object-cover grayscale-[50%] group-hover/upload:grayscale-0 transition-all duration-700" />
-                                                    <div className="absolute inset-0 bg-emerald-600/20 opacity-0 group-hover/upload:opacity-100 flex items-center justify-center transition-all backdrop-blur-sm">
-                                                        <span className="bg-white text-emerald-950 rounded-full px-6 py-3 font-black uppercase text-[10px] tracking-widest shadow-2xl">Replace Artifact</span>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <div className="p-6 bg-zinc-800 rounded-3xl group-hover/upload:scale-110 transition-transform duration-500 shadow-xl text-emerald-500">
-                                                        <Camera className="w-10 h-10" />
-                                                    </div>
-                                                    <div className="text-center">
-                                                        <p className="text-xs font-black uppercase text-zinc-900 dark:text-white tracking-[0.2em]">Upload Group Dossier</p>
-                                                        <p className="text-[10px] text-zinc-600 mt-2 uppercase tracking-[0.3em]">Detecting {tickets} Active Faces</p>
-                                                    </div>
-                                                </>
-                                            )}
-                                            <input id="group-img" type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                                        <div className="space-y-6">
+                                            <div onClick={() => !isBypassed && document.getElementById('group-img').click()} className={`aspect-[4/3] rounded-[3rem] border-2 border-dashed flex flex-col items-center justify-center gap-6 transition-all bg-transparent/50 overflow-hidden relative group/upload ${isBypassed ? 'opacity-20 cursor-not-allowed border-zinc-800' : 'cursor-pointer border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/50'}`}>
+                                                {preview ? (
+                                                    <>
+                                                        <img src={preview} className="w-full h-full object-cover grayscale-[50%] group-hover/upload:grayscale-0 transition-all duration-700" />
+                                                        <div className="absolute inset-0 bg-emerald-600/20 opacity-0 group-hover/upload:opacity-100 flex items-center justify-center transition-all backdrop-blur-sm">
+                                                            <span className="bg-white text-emerald-950 rounded-full px-6 py-3 font-black uppercase text-[10px] tracking-widest shadow-2xl">Replace Artifact</span>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="p-6 bg-zinc-800 rounded-3xl group-hover/upload:scale-110 transition-transform duration-500 shadow-xl text-emerald-500">
+                                                            <Camera className="w-10 h-10" />
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="text-xs font-black uppercase text-zinc-900 dark:text-white tracking-[0.2em]">Upload Group Dossier</p>
+                                                            <p className="text-[10px] text-zinc-600 mt-2 uppercase tracking-[0.3em]">Detecting {tickets} Active Faces</p>
+                                                        </div>
+                                                    </>
+                                                )}
+                                                <input id="group-img" type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                                            </div>
+
+                                            <div className="flex items-center gap-4">
+                                                <button 
+                                                    onClick={() => {
+                                                        setIsBypassed(!isBypassed);
+                                                        if (!isBypassed) {
+                                                            setImage(null);
+                                                            setPreview(null);
+                                                        }
+                                                    }}
+                                                    className={`flex-1 py-4 rounded-2xl border-2 font-black uppercase text-[10px] tracking-widest transition-all ${isBypassed ? 'bg-emerald-600 border-emerald-600 text-zinc-900' : 'bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
+                                                >
+                                                    {isBypassed ? 'Photo Bypassed ✓' : 'Bypass Photo Verification'}
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
 
@@ -459,9 +478,9 @@ const Checkout = () => {
                                 <div className="flex gap-4">
                                     <button onClick={() => setStep(1)} className="flex-1 py-5 rounded-[2rem] bg-transparent border border-zinc-200 dark:border-zinc-800 text-zinc-600 font-black uppercase tracking-[0.3em] text-[10px] hover:text-zinc-900 dark:text-white transition-all">Previous</button>
                                     <button
-                                        onClick={() => (captured || (bookingType === 'group' && preview)) && setStep(3)}
-                                        disabled={!preview && (bookingType === 'group' || (bookingType === 'single' && !captured))}
-                                        className="flex-[2] py-5 rounded-[2rem] bg-emerald-600 text-zinc-900 dark:text-white font-black uppercase tracking-[0.4em] text-[10px] shadow-2xl shadow-emerald-900/40 disabled:opacity-20 transition-all active:scale-[0.98]"
+                                        onClick={() => (captured || isBypassed || (bookingType === 'group' && preview)) && setStep(3)}
+                                        disabled={!isBypassed && !preview && (bookingType === 'group' || (bookingType === 'single' && !captured))}
+                                        className="flex-[2] py-5 rounded-[2rem] bg-emerald-600 text-zinc-900 dark:text-white font-black uppercase tracking- [0.4em] text-[10px] shadow-2xl shadow-emerald-900/40 disabled:opacity-20 transition-all active:scale-[0.98]"
                                     >
                                         Seal Identity
                                     </button>

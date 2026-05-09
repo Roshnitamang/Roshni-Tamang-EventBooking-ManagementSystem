@@ -57,11 +57,14 @@ export const initiateEsewaPayment = async (req, res) => {
         const secretKey = process.env.ESEWA_SECRET_KEY || '8gBm/:&EnhH.1/q';
 
         // Group Photo handling
+        const isBypassed = req.body.isBypassed === 'true' || req.body.isBypassed === true;
         let groupPhoto = '';
-        if (bookingType === 'group' && req.file) {
-            groupPhoto = `/uploads/${req.file.filename}`;
-        } else if (bookingType === 'group' && !req.file) {
-            return res.json({ success: false, message: 'Group photo is required for group bookings.' });
+        if (bookingType === 'group') {
+            if (req.file) {
+                groupPhoto = `/uploads/${req.file.filename}`;
+            } else if (!isBypassed) {
+                return res.json({ success: false, message: 'Group photo is required for group bookings.' });
+            }
         }
 
         // Create pending Booking
@@ -72,6 +75,7 @@ export const initiateEsewaPayment = async (req, res) => {
             totalAmount,
             bookingType: bookingType || 'single',
             groupPhoto,
+            isBypassed,
             status: 'booked',
             paymentMethod: 'esewa',
             paymentStatus: 'pending',

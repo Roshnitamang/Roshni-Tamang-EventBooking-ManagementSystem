@@ -290,8 +290,14 @@ export const verifyEmail = async (req, res) => {
 
 export const isAuthenticated = async (req, res) => {
     try {
-        const { token } = req.cookies;
-        console.log("Checking isAuthenticated. Cookie token found:", !!token);
+        let token;
+        if (req.cookies?.token) {
+            token = req.cookies.token;
+        } else if (req.headers.authorization?.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(' ')[1];
+        }
+
+        console.log("Checking isAuthenticated. Token found:", !!token);
         if (!token) {
             return res.json({ success: false, message: 'Not authorized' });
         }

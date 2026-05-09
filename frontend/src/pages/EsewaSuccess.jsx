@@ -22,8 +22,11 @@ const EsewaSuccess = () => {
             }
 
             try {
+                // Ensure we use the token from localStorage even if cookies are missing
+                const token = localStorage.getItem('token');
                 const response = await axios.get(`${backendUrl}/api/bookings/verify-esewa?data=${encodeURIComponent(data)}`, {
-                    withCredentials: true
+                    withCredentials: true,
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
 
                 if (response.data.success) {
@@ -35,17 +38,20 @@ const EsewaSuccess = () => {
                     toast.error(response.data.message || "Payment verification failed");
                 }
             } catch (error) {
+                console.error("Verification error:", error);
                 setStatus('failed');
                 toast.error("Error verifying payment");
             }
         };
 
-        if (loading) return; // Wait until auth state is confirmed
+        if (loading) return; 
 
-        if (isLoggedin) {
+        // If logged in via context OR we have a token in localstorage, proceed
+        const localToken = localStorage.getItem('token');
+        if (isLoggedin || localToken) {
             verifyPayment();
         } else {
-            toast.error("Please login to verify payment");
+            toast.error("Authentication required to verify payment");
             navigate('/login');
         }
     }, [searchParams, backendUrl, isLoggedin, loading, navigate]);
@@ -163,57 +169,61 @@ const EsewaSuccess = () => {
 
             <style>{`
                 @media print {
-                    @page { size: auto; margin: 0; }
+                    @page { 
+                        size: A4 portrait; 
+                        margin: 0; 
+                    }
                     html, body {
-                        margin: 0;
-                        padding: 0;
+                        margin: 0 !important;
+                        padding: 0 !important;
                         height: 100%;
-                        overflow: hidden;
+                        background: #fff !important;
                     }
                     body * {
                         visibility: hidden;
                     }
                     .ticket-container, .ticket-container * {
                         visibility: visible;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
                     }
                     .hidden-print {
                         display: none !important;
                     }
                     .ticket-container {
                         position: absolute;
-                        left: 0;
-                        top: 0;
-                        transform: none;
-                        width: 100%;
-                        height: 100%;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 90%;
+                        max-width: 450px;
+                        height: auto;
                         display: flex;
                         flex-direction: column;
                         align-items: center;
                         justify-content: center;
                         margin: 0;
                         padding: 40px;
-                        border: none !important;
+                        border: 2px solid #000 !important;
                         box-shadow: none !important;
                         background: #fff !important;
                         color: #000 !important;
-                        border-radius: 0 !important;
+                        border-radius: 20px !important;
                         box-sizing: border-box !important;
-                        page-break-after: avoid !important;
-                        page-break-before: avoid !important;
-                        page-break-inside: avoid !important;
                     }
                     .ticket-details {
-                        background: #fff !important;
+                        background: #f8f8f8 !important;
                         border: 1px dashed #000 !important;
                         width: 100%;
-                        max-width: 500px;
+                        padding: 20px !important;
+                        margin-top: 20px !important;
                     }
                     .ticket-details * {
                         color: #000 !important;
-                        text-shadow: none !important;
                     }
                     .ticket-container h2 {
                         color: #000 !important;
+                        margin-bottom: 10px !important;
                     }
                 }
             `}</style>
