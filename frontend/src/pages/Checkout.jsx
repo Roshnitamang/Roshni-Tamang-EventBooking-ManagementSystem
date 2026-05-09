@@ -225,11 +225,16 @@ const Checkout = () => {
         try {
             setSubmitting(true);
             const formData = new FormData();
+            
+            // Append isBypassed first (important for some multer versions)
+            formData.append('isBypassed', isBypassed ? '1' : '0');
             formData.append('eventId', eventId);
             formData.append('tickets', tickets);
             formData.append('bookingType', bookingType);
-            formData.append('isBypassed', String(isBypassed));
-            if (image) formData.append('image', image);
+            
+            if (image) {
+                formData.append('image', image);
+            }
 
             const { data } = await axios.post(`${backendUrl}/api/bookings/initiate-esewa`, formData, {
                 withCredentials: true,
